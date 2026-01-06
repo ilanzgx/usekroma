@@ -21,3 +21,6 @@ pip-log.txt
 .vscode/
 *.swp
 *~
+
+# Assets
+app/images
