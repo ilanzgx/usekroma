@@ -1,0 +1,17 @@
+{
+  "name": "saas-image",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+	"dev": "concurrently -k \"pnpm run start:worker-image\"",
+    "start:worker-image": "cd apps/worker-image && uv run uvicorn app.main:app --reload"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.24.0",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

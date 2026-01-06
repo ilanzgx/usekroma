@@ -1,0 +1,23 @@
+# uv-managed virtual environment
+.venv/
+
+# Byte-compiled Python files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Distribution / build artifacts
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# Installer logs
+pip-log.txt
+
+# Editor/IDE specific files
+.idea/
+.vscode/
+*.swp
+*~
