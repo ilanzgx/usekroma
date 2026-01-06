@@ -1,8 +1,16 @@
-from app.processor.filters import apply_sharpen
+from app.processor import apply_sharpen, apply_blur, apply_upscale
 from PIL import Image
 
 def process_image(image: Image.Image, operation: str) -> Image.Image:
-    if operation == "sharpen" :
-        return apply_sharpen(image)
+    """Processa a imagem com a operação especificada."""
 
-    raise ValueError("Incorrect operation")
+    operations = {
+        "sharpen": apply_sharpen,
+        "blur": apply_blur,
+        "upscale": apply_upscale,
+    }
+
+    if operation not in operations:
+        raise ValueError(f"Operação inválida: {operation}. Disponíveis: {list(operations.keys())}")
+
+    return operations[operation](image)
