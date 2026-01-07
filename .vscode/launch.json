@@ -1,0 +1,29 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug API (Fastify)",
+      "type": "node",
+      "request": "launch",
+      "runtimeArgs": ["-r", "ts-node/register"],
+      "args": ["${workspaceFolder}/apps/api/src/index.ts"],
+      "cwd": "${workspaceFolder}/apps/api",
+      "env": {
+        "TS_NODE_PROJECT": "${workspaceFolder}/apps/api/tsconfig.json"
+      },
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "Debug Worker (Python)",
+      "type": "debugpy",
+      "request": "launch",
+      "python": "${workspaceFolder}/apps/worker-image/.venv/Scripts/python.exe",
+      "module": "uvicorn",
+      "args": ["app.main:app", "--reload", "--port", "8000"],
+      "cwd": "${workspaceFolder}/apps/worker-image",
+      "console": "integratedTerminal"
+    }
+  ]
+}
