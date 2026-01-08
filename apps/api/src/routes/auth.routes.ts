@@ -23,6 +23,7 @@ declare module "fastify" {
 export async function authRoutes(fastify: FastifyInstance) {
   fastify.get(
     "/google/callback",
+    { config: { public: true } },
     async (req: FastifyRequest, reply: FastifyReply) => {
       try {
         // Get access token from Google OAuth2

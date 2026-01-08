@@ -15,7 +15,11 @@ import ScalarApiReference from "@scalar/fastify-api-reference";
 import { routes } from "@/routes";
 import { googleOAuthConfig } from "@/config/oauth.config";
 import { jwtConfig } from "@/config/jwt.config";
+import { authMiddleware } from "@/middlewares/auth.middleware";
 
+// ********************************************
+// Fastify instance
+// ********************************************
 const app = fastify({
   logger: {
     level: process.env.LOG_LEVEL || "info",
@@ -70,6 +74,11 @@ app.register(fastifyJwt, jwtConfig);
 
 // Routes plugin
 app.register(routes);
+
+// ********************************************
+// Global Auth Middleware
+// ********************************************
+app.addHook("preHandler", authMiddleware);
 
 // ********************************************
 // Server initialization
