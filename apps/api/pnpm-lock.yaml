@@ -29,6 +29,9 @@ importers:
       '@scalar/fastify-api-reference':
         specifier: ^1.40.9
         version: 1.40.9
+      close-with-grace:
+        specifier: ^2.4.0
+        version: 2.4.0
       dotenv:
         specifier: ^17.2.3
         version: 17.2.3
@@ -663,6 +666,9 @@ packages:
 
   buffer-from@1.1.2:
     resolution: {integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==}
+
+  close-with-grace@2.4.0:
+    resolution: {integrity: sha512-bzAYS0Kax7I0ejiCFHVshsT9giz6MrOpkdpP1CEGpkDRG3mXVgHZ9QdzVGHRZR0jrAq6JyN1mB4Ty3ILnmzLdg==}
 
   colorette@2.0.20:
     resolution: {integrity: sha512-IfEDxwoWIjkeXL1eXcDiow4UbKjhLdq6/EuSVR9GMN7KVH3r9gQ83e73hsz1Nd1T3ijd5xv1wcWRYO+D6kCI2w==}
@@ -1513,6 +1519,8 @@ snapshots:
   bn.js@4.12.2: {}
 
   buffer-from@1.1.2: {}
+
+  close-with-grace@2.4.0: {}
 
   colorette@2.0.20: {}
 

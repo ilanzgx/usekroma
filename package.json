@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently -k \"pnpm run start:worker-image\" \"pnpm run start:api\"",
+    "dev": "concurrently -k \"pnpm run start:worker-image\" \"pnpm run start:api\" \"pnpm run start:drizzle-studio\"",
     "start:api": "cd apps/api && pnpm run dev",
+    "start:drizzle-studio": "cd apps/api && pnpm run db:studio",
     "start:worker-image": "cd apps/worker-image && uv run uvicorn app.main:app --reload"
   },
   "keywords": [],

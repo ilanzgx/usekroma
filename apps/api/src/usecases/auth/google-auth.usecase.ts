@@ -16,6 +16,11 @@ export class GoogleAuthUseCase {
   }) {
     const user = await this.repository.findByEmail(email);
     if (user) {
+      await this.repository.update(user.id, {
+        name,
+        googleId,
+        picture,
+      });
       return user;
     }
 

@@ -24,6 +24,15 @@ export class UserRepository {
   async findAll(): Promise<User[]> {
     return db.select().from(users);
   }
+
+  async update(id: string, data: Partial<User>): Promise<User> {
+    const [result] = await db
+      .update(users)
+      .set(data)
+      .where(eq(users.id, id))
+      .returning();
+    return result;
+  }
 }
 
 export const userRepository = new UserRepository();
