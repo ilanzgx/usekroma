@@ -4,6 +4,12 @@ export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
+
+  // From Google OAuth2
+  googleId: text("google_id").notNull().unique(),
+  picture: text("picture").notNull(),
+
+  // Timestamps
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

@@ -6,11 +6,14 @@ import {
   type ZodTypeProvider,
 } from "fastify-type-provider-zod";
 import { fastifyCors } from "@fastify/cors";
+import { fastifyCookie } from "@fastify/cookie";
 import { fastifySwagger } from "@fastify/swagger";
+import { fastifyOauth2 } from "@fastify/oauth2";
+import { fastifyJwt } from "@fastify/jwt";
 import ScalarApiReference from "@scalar/fastify-api-reference";
-import { db } from "@/database";
-import { sql } from "drizzle-orm";
 import { routes } from "@/routes";
+import { googleOAuthConfig } from "@/config/oauth.config";
+import { jwtConfig } from "@/config/jwt.config";
 
 const app = fastify({
   logger: {
@@ -29,24 +32,15 @@ app.get("/", (req, reply) => {
   return { message: "Hello World" };
 });
 
-app.get("/health", async (req, reply) => {
-  try {
-    await db.execute(sql`SELECT 1`);
-    return { status: "ok", database: "connected" };
-  } catch (error) {
-    reply.status(503);
-    return { status: "error", database: "disconnected", error: String(error) };
-  }
-});
-
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
 app.register(fastifyCors, {
   origin: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  // credentials: true,
 });
+
+app.register(fastifyCookie);
 
 app.register(fastifySwagger, {
   openapi: {
@@ -63,19 +57,33 @@ app.register(ScalarApiReference, {
   routePrefix: "/docs",
 });
 
+app.register(fastifyOauth2, googleOAuthConfig);
+
+app.register(fastifyJwt, jwtConfig);
+
 app.register(routes);
 
-try {
-  app
-    .listen({
-      port: 8080,
-      host: "0.0.0.0",
-    })
-    .then(() => {
-      console.log("HTTP Server running on http://localhost:8080");
-      console.log("API Reference available at http://localhost:8080/docs");
-    });
-} catch (err) {
-  app.log.error(err);
-  process.exit(1);
-}
+app
+  .listen({
+    port: 8080,
+    host: "0.0.0.0",
+  })
+  .then(() => {
+    console.log("HTTP Server running on http://localhost:8080");
+    console.log("API Reference available at http://localhost:8080/docs");
+  });
+
+const gracefulShutdown = async (signal: string) => {
+  console.log(`\n${signal} received. Shutting down gracefully...`);
+  try {
+    await app.close();
+    console.log("Server closed successfully.");
+    process.exit(0);
+  } catch (err) {
+    console.error("Error during shutdown:", err);
+    process.exit(1);
+  }
+};
+
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
