@@ -2,7 +2,6 @@ import { fastify } from "fastify";
 import {
   serializerCompiler,
   validatorCompiler,
-  jsonSchemaTransform,
   type ZodTypeProvider,
 } from "fastify-type-provider-zod";
 import { fastifyCors } from "@fastify/cors";
@@ -10,12 +9,16 @@ import { fastifyCookie } from "@fastify/cookie";
 import { fastifySwagger } from "@fastify/swagger";
 import { fastifyOauth2 } from "@fastify/oauth2";
 import { fastifyJwt } from "@fastify/jwt";
-import closeWithGrace from "close-with-grace";
-import ScalarApiReference from "@scalar/fastify-api-reference";
+import { fastifyMultipart } from "@fastify/multipart";
 import { routes } from "@/routes";
+import { authMiddleware } from "@/middlewares/auth.middleware";
 import { googleOAuthConfig } from "@/config/oauth.config";
 import { jwtConfig } from "@/config/jwt.config";
-import { authMiddleware } from "@/middlewares/auth.middleware";
+import { multipartConfig } from "@/config/multipart.config";
+import { swaggerConfig } from "@/config/swagger.config";
+import { corsConfig } from "@/config/cors.config";
+import ScalarApiReference from "@scalar/fastify-api-reference";
+import closeWithGrace from "close-with-grace";
 
 // ********************************************
 // Fastify instance
@@ -41,25 +44,13 @@ app.setSerializerCompiler(serializerCompiler);
 // ********************************************
 
 // Cors plugin
-app.register(fastifyCors, {
-  origin: true,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-});
+app.register(fastifyCors, corsConfig);
 
 // Cookie plugin
 app.register(fastifyCookie);
 
 // Swagger plugin
-app.register(fastifySwagger, {
-  openapi: {
-    info: {
-      title: "API",
-      version: "1.0.0",
-      description: "API description",
-    },
-  },
-  transform: jsonSchemaTransform,
-});
+app.register(fastifySwagger, swaggerConfig);
 
 // Scalar API Reference plugin
 app.register(ScalarApiReference, {
@@ -71,6 +62,9 @@ app.register(fastifyOauth2, googleOAuthConfig);
 
 // JWT plugin
 app.register(fastifyJwt, jwtConfig);
+
+// Multipart plugin
+app.register(fastifyMultipart, multipartConfig);
 
 // Routes plugin
 app.register(routes);
