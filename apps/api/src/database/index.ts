@@ -1,2 +1,2 @@
 export { db } from "./connection";
-export * from "./schema/users.schema";
+export { users } from "./schema/users.schema";

@@ -1,9 +1,10 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/database";
-import { users, type NewUser, type User } from "@/database/schema/users.schema";
+import { users } from "@/database/schema/users.schema";
+import { User, CreateUserDto, UpdateUserDto } from "@/models/user.model";
 
 export class UserRepository {
-  async create(data: NewUser): Promise<User> {
+  async create(data: CreateUserDto): Promise<User> {
     const [result] = await db.insert(users).values(data).returning();
     return result;
   }
@@ -25,7 +26,7 @@ export class UserRepository {
     return db.select().from(users);
   }
 
-  async update(id: string, data: Partial<User>): Promise<User> {
+  async update(id: string, data: UpdateUserDto): Promise<User> {
     const [result] = await db
       .update(users)
       .set(data)

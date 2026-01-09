@@ -1,10 +1,10 @@
-import { NewUser } from "@/database";
+import { CreateUserDto } from "@/models/user.model";
 import { UserRepository } from "@/repositories/user.repository";
 
 export class CreateUserUseCase {
   constructor(private repository: UserRepository) {}
 
-  async execute(data: NewUser) {
+  async execute(data: CreateUserDto) {
     const user = await this.repository.create(data);
     return user;
   }
