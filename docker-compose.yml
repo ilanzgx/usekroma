@@ -1,4 +1,30 @@
 services:
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    ports:
+      - "18080:8080"
+    env_file:
+      - ./apps/api/.env
+    environment:
+      - NODE_ENV=production
+      - GOOGLE_CALLBACK_URL=http://localhost:18080/v1/auth/google/callback
+    depends_on:
+      - database
+      - worker-image
+    networks:
+      - saas-image
+
+  worker-image:
+    build:
+      context: ./apps/worker-image
+      dockerfile: Dockerfile
+    ports:
+      - "18000:8000"
+    networks:
+      - saas-image
+
   database:
     image: postgres:17
     ports:
@@ -14,3 +40,9 @@ services:
       retries: 10
     volumes:
       - .docker/postgres:/var/lib/postgresql/data
+    networks:
+      - saas-image
+
+networks:
+  saas-image:
+    driver: bridge

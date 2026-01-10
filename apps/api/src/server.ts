@@ -23,17 +23,23 @@ import closeWithGrace from "close-with-grace";
 // ********************************************
 // Fastify instance
 // ********************************************
+const isDev = process.env.NODE_ENV !== "production";
+
 const app = fastify({
-  logger: {
-    level: process.env.LOG_LEVEL || "info",
-    transport: {
-      target: "pino-pretty",
-      options: {
-        translateTime: "HH:MM:ss Z",
-        ignore: "pid,hostname",
+  logger: isDev
+    ? {
+        level: process.env.LOG_LEVEL || "info",
+        transport: {
+          target: "pino-pretty",
+          options: {
+            translateTime: "HH:MM:ss Z",
+            ignore: "pid,hostname",
+          },
+        },
+      }
+    : {
+        level: process.env.LOG_LEVEL || "info",
       },
-    },
-  },
 }).withTypeProvider<ZodTypeProvider>();
 
 app.setValidatorCompiler(validatorCompiler);
