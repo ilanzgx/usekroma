@@ -4,10 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently -k \"pnpm run start:worker-image\" \"pnpm run start:api\" \"pnpm run start:drizzle-studio\"",
+    "dev": "concurrently -k \"pnpm run start:worker-image\" \"pnpm run start:api\" \"pnpm run start:web\"",
     "start:api": "cd apps/api && pnpm run dev",
     "start:drizzle-studio": "cd apps/api && pnpm run db:studio",
-    "start:worker-image": "cd apps/worker-image && uv run uvicorn app.main:app --reload"
+    "start:worker-image": "cd apps/worker-image && uv run uvicorn app.main:app --reload",
+    "start:web": "cd apps/web && pnpm run dev"
   },
   "keywords": [],
   "author": "",

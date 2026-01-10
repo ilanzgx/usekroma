@@ -25,6 +25,15 @@ services:
     networks:
       - saas-image
 
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    ports:
+      - "13000:3000"
+    networks:
+      - saas-image
+
   database:
     image: postgres:17
     ports:
