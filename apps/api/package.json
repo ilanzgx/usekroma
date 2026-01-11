@@ -2,7 +2,7 @@
   "name": "@saas-image/api",
   "version": "1.0.0",
   "description": "",
-  "main": "src/index.js",
+  "main": "src/server.js",
   "scripts": {
     "dev": "tsx watch --env-file=.env src/server.ts",
     "build": "tsc && tsc-alias",
