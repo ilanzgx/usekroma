@@ -35,6 +35,10 @@ saas-image/
 │   │       ├── routes/
 │   │       └── usecases/
 │   │
+│   ├── web/                   # Frontend (Next.js)
+│   │   ├── app/
+│   │   └── public/
+│   │
 │   └── worker-image/         # Worker Python
 │       └── app/
 │           ├── processor/
@@ -50,14 +54,17 @@ saas-image/
 # Instalar dependências
 pnpm install
 
-# Dev (API + Worker + Drizzle Studio)
+# Dev (API + Worker + Web)
 pnpm dev
 
-# Apenas API
+# Apenas API (Backend Fastify)
 pnpm start:api
 
-# Apenas Worker
+# Apenas Worker (Backend Python)
 pnpm start:worker-image
+
+# Apenas Web (Frontend Next.js)
+pnpm start:web
 ```
 
 ## Requisitos
