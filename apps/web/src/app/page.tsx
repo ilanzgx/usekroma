@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ImageIcon, ArrowRightIcon } from "lucide-react";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -16,8 +17,12 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Button variant="ghost">Cadastre-se</Button>
-            <Button>Fazer Login</Button>
+            <Button variant="ghost" asChild>
+              <Link href="/login">Cadastre-se</Link>
+            </Button>
+            <Button asChild>
+              <Link href="/login">Fazer Login</Link>
+            </Button>
           </div>
         </div>
       </header>

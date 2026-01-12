@@ -23,6 +23,7 @@ const PUBLIC_ROUTES = [
   "/docs/openapi.json",
   "/v1/auth/google",
   "/v1/auth/google/callback",
+  "/v1/auth/logout",
 ];
 
 export async function authMiddleware(

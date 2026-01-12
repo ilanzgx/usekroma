@@ -5,4 +5,8 @@ export const jwtConfig: FastifyJWTOptions = {
   sign: {
     expiresIn: "7d",
   },
+  cookie: {
+    cookieName: "token",
+    signed: false,
+  },
 };
