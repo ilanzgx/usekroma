@@ -1,22 +1,20 @@
 import { api } from "@/lib/api/client";
 import { User } from "./auth.types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
-export const authService = {
-  getMe: async (): Promise<User> => {
-    const { data } = await api.get<User>("/auth/me");
-    return data;
-  },
+export async function getProfile() {
+  const response = await api.get<User>("/users/me");
+  return response.data;
+}
 
-  loginWithGoogle: () => {
-    window.location.href = `${API_URL}/v1/auth/google`;
-  },
+export async function loginWithGoogle() {
+  window.location.href = `${API_BASE_URL}/auth/google`;
+}
 
-  logout: async () => {
-    try {
-      await api.post("/auth/logout");
-    } catch {}
-    window.location.href = "/login";
-  },
-};
+export async function logout() {
+  try {
+    await api.post("/auth/logout");
+  } catch {}
+  window.location.href = "/login";
+}

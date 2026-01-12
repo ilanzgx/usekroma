@@ -34,9 +34,14 @@ export default function Home() {
             Plataforma de edição de imagens. Edite e transforme suas imagens com
             facilidade, sem precisar de conhecimento técnico.
           </p>
-          <Button className="mt-6 px-12 py-6 text-lg flex items-center gap-2">
-            <span>Começar agora</span>
-            <ArrowRightIcon className="size-7" />
+          <Button
+            asChild
+            className="mt-6 px-12 py-6 text-lg flex items-center gap-2"
+          >
+            <Link href="/studio">
+              <span>Começar agora</span>
+              <ArrowRightIcon className="size-7" />
+            </Link>
           </Button>
         </div>
       </main>

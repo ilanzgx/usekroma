@@ -58,17 +58,15 @@ export const authController = (fastify: FastifyInstance) => {
           maxAge: 60 * 60 * 24 * 7, // 7 days
         });
 
-        // redirect to frontend (success)
-        return reply.redirect(`${FRONTEND_URL}/auth/callback?success=true`);
+        // redirect to studio
+        return reply.redirect(`${FRONTEND_URL}/studio`);
       } catch (error) {
         req.log.error(error);
-        // redirect to frontend (with error)
+        // redirect to login with error
         const errorMessage =
           error instanceof Error ? error.message : "Authentication failed";
         return reply.redirect(
-          `${FRONTEND_URL}/auth/callback?error=${encodeURIComponent(
-            errorMessage
-          )}`
+          `${FRONTEND_URL}/login?error=${encodeURIComponent(errorMessage)}`
         );
       }
     }
