@@ -18,6 +18,6 @@ export const googleOAuthConfig: FastifyOAuth2Options = {
     "http://localhost:8080/v1/auth/google/callback",
   cookie: {
     secure: IS_PRODUCTION,
-    sameSite: "lax",
+    sameSite: IS_PRODUCTION ? "none" : "lax",
   },
 };
