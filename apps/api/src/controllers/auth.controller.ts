@@ -52,7 +52,7 @@ export const authController = (fastify: FastifyInstance) => {
         // set HttpOnly cookie
         reply.setCookie("token", jwtToken, {
           httpOnly: true,
-          // secure: IS_PRODUCTION,
+          secure: IS_PRODUCTION,
           sameSite: "lax",
           path: "/",
           maxAge: 60 * 60 * 24 * 7, // 7 days

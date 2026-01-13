@@ -1,5 +1,7 @@
 import OAuth2, { FastifyOAuth2Options } from "@fastify/oauth2";
 
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
+
 export const googleOAuthConfig: FastifyOAuth2Options = {
   name: "googleOAuth2",
   scope: ["profile", "email"],
@@ -14,4 +16,8 @@ export const googleOAuthConfig: FastifyOAuth2Options = {
   callbackUri:
     process.env.GOOGLE_CALLBACK_URL ||
     "http://localhost:8080/v1/auth/google/callback",
+  cookie: {
+    secure: IS_PRODUCTION,
+    sameSite: "lax",
+  },
 };
