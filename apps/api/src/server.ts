@@ -26,6 +26,7 @@ import closeWithGrace from "close-with-grace";
 const isDev = process.env.NODE_ENV !== "production";
 
 const app = fastify({
+  trustProxy: true,
   logger: isDev
     ? {
         level: process.env.LOG_LEVEL || "info",
