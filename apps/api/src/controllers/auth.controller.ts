@@ -49,17 +49,10 @@ export const authController = (fastify: FastifyInstance) => {
           email: user.email,
         });
 
-        // set HttpOnly cookie
-        reply.setCookie("token", jwtToken, {
-          httpOnly: true,
-          secure: IS_PRODUCTION,
-          sameSite: "lax",
-          path: "/",
-          maxAge: 60 * 60 * 24 * 7, // 7 days
-        });
-
-        // redirect to studio
-        return reply.redirect(`${FRONTEND_URL}/studio`);
+        // redirect to frontend API route with token (frontend will set HttpOnly cookie)
+        return reply.redirect(
+          `${FRONTEND_URL}/api/auth/callback?token=${jwtToken}`
+        );
       } catch (error) {
         req.log.error(error);
         // redirect to login with error

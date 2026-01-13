@@ -3,11 +3,12 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
-import { loginWithGoogle } from "@/resources/auth";
+import { getGoogleAuthUrl } from "@/resources/auth";
 
 export default function LoginPage() {
-  const handleLoginWithGoogle = () => {
-    loginWithGoogle();
+  const handleLoginWithGoogle = async () => {
+    const url = await getGoogleAuthUrl();
+    window.location.href = url;
   };
 
   return (

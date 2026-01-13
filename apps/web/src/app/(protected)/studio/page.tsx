@@ -1,17 +1,21 @@
 "use client";
+
 import { getProfile, logout, User } from "@/resources/auth";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function StudioPage() {
   const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    getProfile()
-      .then(setUser)
-      .catch(() => {
-        // notificar que pode criar uma conta (toast)
-      });
+    getProfile().then(setUser);
   }, []);
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/login");
+  };
 
   return (
     <div>
@@ -23,7 +27,7 @@ export default function StudioPage() {
           <p>{user.name}</p>
           <p>{user.email}</p>
           <p>{user.createdAt}</p>
-          <button onClick={() => logout()}>Logout</button>
+          <button onClick={handleLogout}>Logout</button>
         </div>
       )}
     </div>

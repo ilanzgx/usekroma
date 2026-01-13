@@ -1,20 +1,53 @@
-import { api } from "@/lib/api/client";
+"use server";
+
+import { cookies } from "next/headers";
 import { User } from "./auth.types";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export async function getProfile() {
-  const response = await api.get<User>("/users/me");
-  return response.data;
+export async function getGoogleAuthUrl(): Promise<string> {
+  return `${API_URL}/auth/google`;
 }
 
-export async function loginWithGoogle() {
-  window.location.href = `${API_BASE_URL}/auth/google`;
-}
+export async function getProfile(): Promise<User | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
 
-export async function logout() {
+  if (!token) {
+    return null;
+  }
+
   try {
-    await api.post("/auth/logout");
-  } catch {}
-  window.location.href = "/login";
+    const response = await fetch(`${API_URL}/users/me`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function getToken(): Promise<string | null> {
+  const cookieStore = await cookies();
+  return cookieStore.get("token")?.value ?? null;
+}
+
+export async function isAuthenticated(): Promise<boolean> {
+  const token = await getToken();
+  return !!token;
+}
+
+export async function logout(): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.delete("token");
 }
