@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
   if (!token) {
     return NextResponse.redirect(
-      new URL("/login?error=Token não encontrado", request.url)
+      new URL("/login?error=invalid_token", request.url)
     );
   }
 

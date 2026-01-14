@@ -1,8 +1,21 @@
 """
 Operações de efeitos visuais.
-Inclui: blur, grayscale, sepia, emboss, contour
+Inclui: blur, remove_background
 """
 from PIL import Image, ImageFilter
+from rembg import remove
+
+def remove_background(image: Image.Image) -> Image.Image:
+    """
+    Remove o fundo de uma imagem usando IA (modelo U2-Net).
+
+    Retorna uma imagem RGBA com fundo transparente.
+    """
+    # converte para RGBA se necessário para suportar transparência
+    if image.mode != "RGBA":
+        image = image.convert("RGBA")
+
+    return remove(image)
 
 def apply_blur(image: Image.Image, radius: float = 8) -> Image.Image:
     """

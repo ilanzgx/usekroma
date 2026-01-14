@@ -1,4 +1,4 @@
-from app.processor import apply_sharpen, apply_blur, apply_upscale
+from app.processor import apply_sharpen, apply_blur, apply_upscale, remove_background
 from PIL import Image
 
 def process_image(image: Image.Image, operation: str) -> Image.Image:
@@ -8,6 +8,7 @@ def process_image(image: Image.Image, operation: str) -> Image.Image:
         "sharpen": apply_sharpen,
         "blur": apply_blur,
         "upscale": apply_upscale,
+        "remove_background": remove_background,
     }
 
     if operation not in operations:

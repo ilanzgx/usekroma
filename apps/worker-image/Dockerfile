@@ -1,30 +1,38 @@
 # ---------- builder ----------
-FROM python:3.13-slim AS builder
+FROM python:3.11-slim AS builder
 
 WORKDIR /app
 
-# install native dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
  && rm -rf /var/lib/apt/lists/*
 
-# create separated venv
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# install dependencies
 COPY pyproject.toml ./
+
 RUN pip install --no-cache-dir uv \
  && uv pip install --no-cache .
 
+RUN python -c "from rembg import new_session; new_session('u2net')"
+
 # ---------- runner ----------
-FROM python:3.13-slim AS runner
+FROM python:3.11-slim AS runner
 
 WORKDIR /app
+
 RUN useradd -m appuser
 
-COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
+ENV HOME="/home/appuser"
+ENV ONNX_NUM_THREADS=1
+ENV OMP_NUM_THREADS=1
+
+COPY --from=builder /opt/venv /opt/venv
+COPY --from=builder /root/.u2net /home/appuser/.u2net
+
+RUN chown -R appuser:appuser /home/appuser
 
 COPY --chown=appuser:appuser app ./app
 
