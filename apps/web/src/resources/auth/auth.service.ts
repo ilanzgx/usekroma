@@ -3,22 +3,26 @@
 import { cookies } from "next/headers";
 import { User } from "./auth.types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+
+export async function getToken(): Promise<string | null> {
+  const cookieStore = await cookies();
+  return cookieStore.get("token")?.value ?? null;
+}
 
 export async function getGoogleAuthUrl(): Promise<string> {
-  return `${API_URL}/auth/google`;
+  return `${BASE_URL}/auth/google`;
 }
 
 export async function getProfile(): Promise<User | null> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
+  const token = await getToken();
 
   if (!token) {
     return null;
   }
 
   try {
-    const response = await fetch(`${API_URL}/users/me`, {
+    const response = await fetch(`${BASE_URL}/users/me`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -37,14 +41,9 @@ export async function getProfile(): Promise<User | null> {
   }
 }
 
-export async function getToken(): Promise<string | null> {
-  const cookieStore = await cookies();
-  return cookieStore.get("token")?.value ?? null;
-}
-
-export async function isAuthenticated(): Promise<boolean> {
-  const token = await getToken();
-  return !!token;
+export async function validateToken(): Promise<boolean> {
+  const user = await getProfile();
+  return user !== null;
 }
 
 export async function logout(): Promise<void> {
