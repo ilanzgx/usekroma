@@ -2,8 +2,10 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  avatarUrl?: string;
+  googleId: string;
+  picture?: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface LoginWithGoogleResponse {

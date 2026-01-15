@@ -10,7 +10,7 @@ export default function Home() {
       <header className="border-b">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="size-8 bg-gradient-to-br from-primary to-primary/60 rounded-lg flex items-center justify-center">
+            <div className="size-8 bg-linear-to-br from-primary to-primary/60 rounded-lg flex items-center justify-center">
               <ImageIcon className="size-5 text-primary-foreground" />
             </div>
             <span className="font-semibold text-lg">ImageSaaS</span>
