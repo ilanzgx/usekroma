@@ -1,20 +1,38 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { User } from "./auth.types";
+import { User } from "@/resources/user/user.types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+/**
+ * getToken
+ * get token from cookie
+ * @export
+ * @return {*}  {(Promise<string | null>)}
+ */
 export async function getToken(): Promise<string | null> {
   const cookieStore = await cookies();
   return cookieStore.get("token")?.value ?? null;
 }
 
+/**
+ * getGoogleAuthUrl
+ * get google auth url
+ * @export
+ * @return {*}  {Promise<string>}
+ */
 export async function getGoogleAuthUrl(): Promise<string> {
   return `${API_URL}/auth/google`;
 }
 
+/**
+ * GetProfile
+ * get user profile from API using token
+ * @export
+ * @return {*}  {(Promise<User | null>)}
+ */
 export async function getProfile(): Promise<User | null> {
   const token = await getToken();
 
@@ -42,11 +60,23 @@ export async function getProfile(): Promise<User | null> {
   }
 }
 
+/**
+ * validateToken
+ * validate token from cookie
+ * @export
+ * @return {*}  {Promise<boolean>}
+ */
 export async function validateToken(): Promise<boolean> {
   const user = await getProfile();
   return user !== null;
 }
 
+/**
+ * logout
+ * logout user and delete token from cookie
+ * @export
+ * @return {*}  {Promise<void>}
+ */
 export async function logout(): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.delete("token");

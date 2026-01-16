@@ -1,25 +1,49 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Upload, Image as ImageIcon, Download, X } from "lucide-react";
+import { Upload, Image as ImageIcon, Download, X, Loader2 } from "lucide-react";
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
+import { processImageService } from "@/resources/image";
 
 export default function EditorSection() {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [processedUrl, setProcessedUrl] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string>("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
       const file = acceptedFiles[0];
+      setSelectedFile(file);
       setFileName(file.name);
+      setError(null);
+
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
-      // Simulate processing
-      setTimeout(() => {
-        setProcessedUrl(url);
-      }, 1500);
+
+      setIsProcessing(true);
+      setProcessedUrl(null);
+
+      try {
+        const result = await processImageService({
+          file,
+          operation: "remove_background",
+        });
+
+        if (result?.processedImage) {
+          setProcessedUrl(result.processedImage);
+        } else {
+          setError("Failed to process image. Please try again.");
+        }
+      } catch (err) {
+        setError("An error occurred while processing the image.");
+        console.error("Processing error:", err);
+      } finally {
+        setIsProcessing(false);
+      }
     }
   }, []);
 
@@ -33,14 +57,17 @@ export default function EditorSection() {
   });
 
   const handleClear = () => {
+    setSelectedFile(null);
     setPreviewUrl(null);
     setProcessedUrl(null);
     setFileName("");
+    setError(null);
+    setIsProcessing(false);
   };
 
   return (
     <div className="flex-1 p-6 border rounded-md mt-4">
-      <h2 className="text-xl font-bold">Image Editor</h2>
+      <h2 className="text-xl font-bold">Editor</h2>
 
       <div className="mb-6">
         <p className="text-sm text-muted-foreground">
@@ -110,7 +137,33 @@ export default function EditorSection() {
         <div className="flex flex-col">
           <h3 className="text-lg font-semibold mb-3">Processed Result</h3>
           <div className="flex-1 border-2 border-gray-300 rounded-lg bg-gray-50">
-            {processedUrl ? (
+            {isProcessing ? (
+              <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+                <Loader2 className="size-12 text-primary animate-spin mb-4" />
+                <h4 className="text-base font-semibold mb-1">Processing...</h4>
+                <p className="text-sm text-muted-foreground">
+                  This may take a few moments
+                </p>
+              </div>
+            ) : error ? (
+              <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+                <div className="size-16 rounded-full bg-red-100 flex items-center justify-center mb-3">
+                  <X className="size-8 text-red-500" />
+                </div>
+                <h4 className="text-base font-semibold mb-1 text-red-600">
+                  Error
+                </h4>
+                <p className="text-sm text-muted-foreground">{error}</p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-4"
+                  onClick={() => selectedFile && onDrop([selectedFile])}
+                >
+                  Try Again
+                </Button>
+              </div>
+            ) : processedUrl ? (
               <div className="h-full p-4 flex flex-col min-h-0">
                 <div className="flex-1 relative rounded-lg overflow-hidden bg-white border min-h-0">
                   <img
@@ -123,7 +176,15 @@ export default function EditorSection() {
                   <p className="text-sm text-muted-foreground">
                     ✓ Processing complete
                   </p>
-                  <Button size="sm">
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      const link = document.createElement("a");
+                      link.href = processedUrl;
+                      link.download = `processed_${fileName}`;
+                      link.click();
+                    }}
+                  >
                     <Download className="mr-2 size-4" />
                     Download
                   </Button>
