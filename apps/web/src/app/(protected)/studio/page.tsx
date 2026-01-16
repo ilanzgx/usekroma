@@ -1,6 +1,7 @@
 "use client";
 
-import { getProfile, logout, User } from "@/resources/auth";
+import { getProfile, logout } from "@/resources/auth";
+import { User } from "@/resources/user";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import StudioHeader from "./_components/header";

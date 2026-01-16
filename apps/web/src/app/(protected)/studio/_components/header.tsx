@@ -10,7 +10,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getProfile, User as UserType, logout } from "@/resources/auth";
+import { getProfile, logout } from "@/resources/auth";
+import { User as UserType } from "@/resources/user";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
