@@ -24,3 +24,10 @@ pip-log.txt
 
 # Assets
 app/images
+
+# Tooling
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/

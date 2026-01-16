@@ -1,0 +1,8 @@
+{
+  "python.defaultInterpreterPath": "apps/worker-image/.venv/Scripts/python.exe",
+  "python.languageServer": "Pylance",
+  "python.analysis.extraPaths": ["./apps/worker-image"],
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.indexing": true,
+  "python.analysis.typeCheckingMode": "basic"
+}
