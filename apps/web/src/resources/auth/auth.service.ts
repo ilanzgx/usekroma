@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { User } from "./auth.types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function getToken(): Promise<string | null> {
   const cookieStore = await cookies();
@@ -11,7 +12,7 @@ export async function getToken(): Promise<string | null> {
 }
 
 export async function getGoogleAuthUrl(): Promise<string> {
-  return `${BASE_URL}/auth/google`;
+  return `${API_URL}/auth/google`;
 }
 
 export async function getProfile(): Promise<User | null> {

@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import StudioHeader from "./_components/header";
 import StudioSidebar from "./_components/sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import ToolsSection from "./_components/tools-section";
+import EditorSection from "./_components/editor-section";
 
 export default function StudioPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -30,29 +32,9 @@ export default function StudioPage() {
         <div className="flex flex-1 overflow-hidden">
           <StudioSidebar />
           <SidebarInset className="h-full">
-            <main className="h-full overflow-auto p-6">
-              <h1 className="text-3xl font-bold mb-6">Studio</h1>
-              {user && (
-                <div className="space-y-2">
-                  <img
-                    src={user.picture}
-                    alt={user.name}
-                    className="size-20 rounded-full"
-                  />
-                  <p>ID: {user.id}</p>
-                  <p>Name: {user.name}</p>
-                  <p>Email: {user.email}</p>
-                  <p>
-                    Created: {new Date(user.createdAt).toLocaleDateString()}
-                  </p>
-                  <button
-                    onClick={handleLogout}
-                    className="mt-4 rounded-md bg-red-500 px-4 py-2 text-white hover:bg-red-600"
-                  >
-                    Logout
-                  </button>
-                </div>
-              )}
+            <main className="h-full overflow-auto p-6 pb-24">
+              <ToolsSection />
+              <EditorSection />
             </main>
           </SidebarInset>
         </div>
