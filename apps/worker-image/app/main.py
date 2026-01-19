@@ -4,12 +4,8 @@ from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.responses import Response
 from app.utils.image_loader import load_image_from_bytes
 from app.services.image_service import process_image
-from rembg import new_session
 
 app = FastAPI()
-
-# Inicializa a sessão globalmente
-session = new_session("u2net")
 
 # Worker limitado a processar apenas uma imagem por vez.
 processing_lock = asyncio.Semaphore(1)

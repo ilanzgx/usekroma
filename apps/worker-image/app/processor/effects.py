@@ -3,8 +3,10 @@ Operações de efeitos visuais.
 Inclui: blur, remove_background
 """
 from PIL import Image, ImageFilter
-from rembg import remove
-from app.processor.session import session
+from rembg import remove, new_session
+
+# Inicializa a sessão globalmente
+session = new_session("u2net")
 
 def remove_background(image: Image.Image) -> Image.Image:
     """
