@@ -65,10 +65,19 @@ export default function EditorSection({ selectedTool }: EditorSectionProps) {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
+    onDropRejected: (fileRejections) => {
+      const rejection = fileRejections[0];
+      if (rejection?.errors?.some((e) => e.code === "file-too-large")) {
+        setError("File is too large. Maximum size is 5MB.");
+      } else {
+        setError("Invalid file. Please upload a valid image.");
+      }
+    },
     accept: {
       "image/*": [".png", ".jpg", ".jpeg", ".webp"],
     },
     maxFiles: 1,
+    maxSize: 5 * 1024 * 1024, // 5MB
     multiple: false,
   });
 
@@ -148,7 +157,7 @@ export default function EditorSection({ selectedTool }: EditorSectionProps) {
                   Select Image
                 </Button>
                 <p className="text-xs text-muted-foreground mt-3">
-                  PNG, JPG, WebP (max 10MB)
+                  PNG, JPG, WebP (max 5MB)
                 </p>
               </div>
             )}
