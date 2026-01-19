@@ -4,6 +4,7 @@ Inclui: blur, remove_background
 """
 from PIL import Image, ImageFilter
 from rembg import remove
+from app.processor.session import session
 
 def remove_background(image: Image.Image) -> Image.Image:
     """
@@ -15,7 +16,7 @@ def remove_background(image: Image.Image) -> Image.Image:
     if image.mode != "RGBA":
         image = image.convert("RGBA")
 
-    return remove(image)
+    return remove(image, session=session)
 
 def apply_blur(image: Image.Image, radius: float = 8) -> Image.Image:
     """
