@@ -7,11 +7,12 @@ import { useRouter } from "next/navigation";
 import StudioHeader from "./_components/header";
 import StudioSidebar from "./_components/sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import ToolsSection from "./_components/tools-section";
+import ToolsSection, { Tool, TOOLS } from "./_components/tools-section";
 import EditorSection from "./_components/editor-section";
 
 export default function StudioPage() {
   const [user, setUser] = useState<User | null>(null);
+  const [selectedTool, setSelectedTool] = useState<Tool>(TOOLS[0]);
   const router = useRouter();
 
   useEffect(() => {
@@ -21,11 +22,6 @@ export default function StudioPage() {
     });
   }, []);
 
-  const handleLogout = async () => {
-    await logout();
-    router.push("/login");
-  };
-
   return (
     <div className="flex h-screen flex-col overflow-hidden">
       <StudioHeader />
@@ -34,8 +30,11 @@ export default function StudioPage() {
           <StudioSidebar />
           <SidebarInset className="h-full">
             <main className="h-full overflow-auto p-6 pb-24">
-              <ToolsSection />
-              <EditorSection />
+              <ToolsSection
+                selectedTool={selectedTool}
+                onSelectTool={setSelectedTool}
+              />
+              <EditorSection selectedTool={selectedTool} />
             </main>
           </SidebarInset>
         </div>

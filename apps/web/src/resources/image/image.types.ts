@@ -2,7 +2,9 @@ export type ImageProcessOperations =
   | "upscale"
   | "remove_background"
   | "blur"
-  | "sharpen";
+  | "sharpen"
+  | "grayscale"
+  | "crop";
 
 export interface ImageProcessRequest {
   file: File;

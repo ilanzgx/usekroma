@@ -5,8 +5,13 @@ import { Upload, Image as ImageIcon, Download, X, Loader2 } from "lucide-react";
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { processImageService } from "@/resources/image";
+import { Tool } from "./tools-section";
 
-export default function EditorSection() {
+interface EditorSectionProps {
+  selectedTool: Tool;
+}
+
+export default function EditorSection({ selectedTool }: EditorSectionProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [processedUrl, setProcessedUrl] = useState<string | null>(null);
@@ -14,23 +19,16 @@ export default function EditorSection() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    if (acceptedFiles.length > 0) {
-      const file = acceptedFiles[0];
-      setSelectedFile(file);
-      setFileName(file.name);
-      setError(null);
-
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
-
+  const processImage = useCallback(
+    async (file: File) => {
       setIsProcessing(true);
       setProcessedUrl(null);
+      setError(null);
 
       try {
         const result = await processImageService({
           file,
-          operation: "remove_background",
+          operation: selectedTool.operation,
         });
 
         if (result?.processedImage) {
@@ -44,8 +42,26 @@ export default function EditorSection() {
       } finally {
         setIsProcessing(false);
       }
-    }
-  }, []);
+    },
+    [selectedTool.operation],
+  );
+
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      if (acceptedFiles.length > 0) {
+        const file = acceptedFiles[0];
+        setSelectedFile(file);
+        setFileName(file.name);
+        setError(null);
+
+        const url = URL.createObjectURL(file);
+        setPreviewUrl(url);
+
+        await processImage(file);
+      }
+    },
+    [processImage],
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -65,13 +81,19 @@ export default function EditorSection() {
     setIsProcessing(false);
   };
 
+  const ToolIcon = selectedTool.icon;
+
   return (
     <div className="flex-1 p-6 border rounded-md mt-4">
       <h2 className="text-xl font-bold">Editor</h2>
 
-      <div className="mb-6">
+      <div className="mb-6 flex items-center gap-2">
+        <ToolIcon className={`size-4 ${selectedTool.color}`} />
         <p className="text-sm text-muted-foreground">
-          Selected tool: Remove Background
+          Selected tool:{" "}
+          <span className="font-medium text-foreground">
+            {selectedTool.name}
+          </span>
         </p>
       </div>
 
