@@ -1,9 +1,16 @@
 import asyncio
+import logging
 from io import BytesIO
 from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.responses import Response
 from app.utils.image_loader import load_image_from_bytes
 from app.services.image_service import process_image
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(message)s",
+    datefmt="%H:%M:%S"
+)
 
 app = FastAPI()
 
