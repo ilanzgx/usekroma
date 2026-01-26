@@ -96,10 +96,14 @@ closeWithGrace(async ({ signal, err }) => {
 
 app
   .listen({
-    port: 8080,
-    host: "0.0.0.0",
+    port: Number(process.env.SERVER_PORT),
+    host: process.env.SERVER_HOST,
   })
   .then(() => {
-    console.log("HTTP Server running on http://localhost:8080");
-    console.log("API Reference available at http://localhost:8080/docs");
+    console.log(
+      `HTTP Server running on http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}`,
+    );
+    console.log(
+      `API Reference available at http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/docs`,
+    );
   });

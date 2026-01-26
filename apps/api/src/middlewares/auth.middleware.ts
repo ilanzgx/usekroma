@@ -28,7 +28,7 @@ const PUBLIC_ROUTES = [
 
 export async function authMiddleware(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   if (request.routeOptions.config?.public) {
     return;
@@ -45,5 +45,6 @@ export async function authMiddleware(
       error: "Unauthorized",
       message: "Invalid or missing authentication token",
     });
+    return;
   }
 }

@@ -1,4 +1,4 @@
-import { UserRepository } from "@/repositories/user.repository";
+import { UserRepository, userRepository } from "@/repositories/user.repository";
 
 export class ListUsersUseCase {
   constructor(private repository: UserRepository) {}
@@ -9,5 +9,4 @@ export class ListUsersUseCase {
   }
 }
 
-const userRepository = new UserRepository();
 export const listUsersUseCase = new ListUsersUseCase(userRepository);

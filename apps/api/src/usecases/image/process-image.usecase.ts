@@ -8,7 +8,7 @@ export class ProcessImageUseCase {
   async execute(
     fileBuffer: Buffer,
     filename: string,
-    operation: string
+    operation: string,
   ): Promise<Buffer> {
     const formData = new FormData();
     const blob = new Blob([new Uint8Array(fileBuffer)]);

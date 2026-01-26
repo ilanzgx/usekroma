@@ -1,3 +1,4 @@
+import { User } from "@/models/user.model";
 import { UserRepository } from "@/repositories/user.repository";
 
 export class GoogleAuthUseCase {
@@ -16,12 +17,12 @@ export class GoogleAuthUseCase {
   }) {
     const user = await this.repository.findByEmail(email);
     if (user) {
-      await this.repository.update(user.id, {
+      const newUser: User = await this.repository.update(user.id, {
         name,
         googleId,
         picture,
       });
-      return user;
+      return newUser;
     }
 
     const newUser = await this.repository.create({

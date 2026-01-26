@@ -1,5 +1,5 @@
 import { CreateUserDto } from "@/models/user.model";
-import { UserRepository } from "@/repositories/user.repository";
+import { UserRepository, userRepository } from "@/repositories/user.repository";
 
 export class CreateUserUseCase {
   constructor(private repository: UserRepository) {}
@@ -10,5 +10,4 @@ export class CreateUserUseCase {
   }
 }
 
-const userRepository = new UserRepository();
 export const createUserUseCase = new CreateUserUseCase(userRepository);
