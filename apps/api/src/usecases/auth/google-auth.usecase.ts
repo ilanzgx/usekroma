@@ -1,5 +1,5 @@
 import { User } from "@/models/user.model";
-import { UserRepository } from "@/repositories/user.repository";
+import { UserRepository, userRepository } from "@/repositories/user.repository";
 
 export class GoogleAuthUseCase {
   constructor(private repository: UserRepository) {}
@@ -35,5 +35,5 @@ export class GoogleAuthUseCase {
     return newUser;
   }
 }
-const userRepository = new UserRepository();
+
 export const googleAuthUseCase = new GoogleAuthUseCase(userRepository);
