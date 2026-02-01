@@ -5,13 +5,20 @@ import { Upload, Image as ImageIcon, Download, X, Loader2 } from "lucide-react";
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { processImageService } from "@/resources/image";
-import { Tool } from "./tools-section";
+import { getToolBySlug } from "@/lib/tools";
+import { notFound } from "next/navigation";
 
 interface EditorSectionProps {
-  selectedTool: Tool;
+  toolId: string;
 }
 
-export default function EditorSection({ selectedTool }: EditorSectionProps) {
+export default function EditorSection({ toolId }: EditorSectionProps) {
+  const tool = getToolBySlug(toolId);
+
+  if (!tool) {
+    notFound();
+  }
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [processedUrl, setProcessedUrl] = useState<string | null>(null);
@@ -28,7 +35,7 @@ export default function EditorSection({ selectedTool }: EditorSectionProps) {
       try {
         const result = await processImageService({
           file,
-          operation: selectedTool.operation,
+          operation: tool.operation,
         });
 
         if (result?.processedImage) {
@@ -43,7 +50,7 @@ export default function EditorSection({ selectedTool }: EditorSectionProps) {
         setIsProcessing(false);
       }
     },
-    [selectedTool.operation],
+    [tool.operation],
   );
 
   const onDrop = useCallback(
@@ -90,19 +97,17 @@ export default function EditorSection({ selectedTool }: EditorSectionProps) {
     setIsProcessing(false);
   };
 
-  const ToolIcon = selectedTool.icon;
+  const ToolIcon = tool.icon;
 
   return (
     <div className="flex-1 p-6 border rounded-md mt-4">
       <h2 className="text-xl font-bold">Editor</h2>
 
       <div className="mb-6 flex items-center gap-2">
-        <ToolIcon className={`size-4 ${selectedTool.color}`} />
+        <ToolIcon className={`size-4 ${tool.color}`} />
         <p className="text-sm text-muted-foreground">
           Selected tool:{" "}
-          <span className="font-medium text-foreground">
-            {selectedTool.name}
-          </span>
+          <span className="font-medium text-foreground">{tool.name}</span>
         </p>
       </div>
 
