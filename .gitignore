@@ -1,2 +1,26 @@
+# Builds
+.next/
+dist/
+build/
+out/
+
+# Dependencies
 node_modules
-.docker
+.pnpm-store/
+
+# Environment
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Logs
+*.log
+npm-debug.log*
+
+# Docker Local
+.docker/
+
+# Agents
+.agents/

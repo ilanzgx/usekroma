@@ -9,6 +9,7 @@ import {
   Crown,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { getProfile, logout } from "@/resources/auth";
 import { User as UserType } from "@/resources/user";
@@ -59,9 +60,11 @@ export default function StudioHeader() {
               <DropdownMenuTrigger asChild>
                 <button className="size-12 cursor-pointer rounded-full overflow-hidden border-2 border-gray-200 hover:border-gray-300 transition-colors focus:outline-none">
                   {user?.picture ? (
-                    <img
+                    <Image
                       src={user.picture}
                       alt={user.name}
+                      width={48}
+                      height={48}
                       className="size-full object-cover"
                     />
                   ) : (
