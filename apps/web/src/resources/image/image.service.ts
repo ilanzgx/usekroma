@@ -13,16 +13,16 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
  * process image with API
  * @export
  * @param {ImageProcessRequest} { file, operation }
- * @return {*}  {Promise<ImageProcessResponse | null>}
+ * @return {*}  {Promise<ImageProcessResponse>}
  */
 export async function processImageService({
   file,
   operation,
-}: ImageProcessRequest): Promise<ImageProcessResponse | null> {
+}: ImageProcessRequest): Promise<ImageProcessResponse> {
   const token = await getToken();
 
   if (!token) {
-    return null;
+    return { error: "UNAUTHORIZED" };
   }
 
   try {
@@ -38,8 +38,12 @@ export async function processImageService({
       },
     });
 
+    if (response.status === 401) {
+      return { error: "UNAUTHORIZED" };
+    }
+
     if (!response.ok) {
-      throw new Error("Failed to process image");
+      return { error: "PROCESSING_FAILED" };
     }
 
     // server actions cant handle binary data,
@@ -55,6 +59,6 @@ export async function processImageService({
     };
   } catch (error) {
     console.error("Error processing image:", error);
-    return null;
+    return { error: "UNKNOWN" };
   }
 }

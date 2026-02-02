@@ -8,13 +8,13 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     return NextResponse.redirect(
-      new URL(`/login?error=${encodeURIComponent(error)}`, request.url)
+      new URL(`/login?error=${encodeURIComponent(error)}`, request.url),
     );
   }
 
   if (!token) {
     return NextResponse.redirect(
-      new URL("/login?error=invalid_token", request.url)
+      new URL("/login?error=invalid_token", request.url),
     );
   }
 

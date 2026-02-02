@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Upload, Image as ImageIcon, Download, X, Loader2 } from "lucide-react";
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
+import { useRouter } from "next/navigation";
 import { processImageService } from "@/resources/image";
 import { getToolBySlug } from "@/lib/tools";
 import { notFound } from "next/navigation";
@@ -14,6 +15,7 @@ interface EditorSectionProps {
 
 export default function EditorSection({ toolId }: EditorSectionProps) {
   const tool = getToolBySlug(toolId);
+  const router = useRouter();
 
   if (!tool) {
     notFound();
@@ -38,10 +40,19 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
           operation: tool.operation,
         });
 
-        if (result?.processedImage) {
-          setProcessedUrl(result.processedImage);
-        } else {
+        if (result.error === "UNAUTHORIZED") {
+          // Redirect to login when user is not authenticated
+          router.push("/login");
+          return;
+        }
+
+        if (result.error) {
           setError("Failed to process image. Please try again.");
+          return;
+        }
+
+        if (result.processedImage) {
+          setProcessedUrl(result.processedImage);
         }
       } catch (err) {
         setError("An error occurred while processing the image.");
@@ -50,7 +61,7 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
         setIsProcessing(false);
       }
     },
-    [tool.operation],
+    [tool.operation, router],
   );
 
   const onDrop = useCallback(

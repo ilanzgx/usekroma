@@ -12,5 +12,6 @@ export interface ImageProcessRequest {
 }
 
 export interface ImageProcessResponse {
-  processedImage: string;
+  processedImage?: string;
+  error?: "UNAUTHORIZED" | "PROCESSING_FAILED" | "UNKNOWN";
 }

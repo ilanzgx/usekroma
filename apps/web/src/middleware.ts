@@ -8,29 +8,21 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isAuthRoute = pathname === "/login";
-  const isProtectedRoute = pathname.startsWith("/studio");
+  const isStudioRoute = pathname.startsWith("/studio");
 
   if (token && isAuthRoute) {
     const isValid = await validateToken();
     if (isValid) {
       return NextResponse.redirect(new URL("/studio", request.url));
     }
+
     const response = NextResponse.next();
     response.cookies.delete("token");
     return response;
   }
 
-  if (isProtectedRoute) {
-    if (!token) {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
-
-    const isValid = await validateToken();
-    if (!isValid) {
-      const response = NextResponse.redirect(new URL("/", request.url));
-      response.cookies.delete("token");
-      return response;
-    }
+  if (isStudioRoute) {
+    return NextResponse.next();
   }
 
   return NextResponse.next();
