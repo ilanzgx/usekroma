@@ -8,7 +8,7 @@ import Link from "next/link";
 export default function ToolsSection() {
   return (
     <div className="border rounded-md p-4">
-      <h1 className="text-xl font-bold mb-4">Tools Library</h1>
+      <h1 className="text-xl font-bold mb-4">Galeria de Ferramentas</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {TOOLS.map((tool) => (
@@ -18,7 +18,7 @@ export default function ToolsSection() {
             asChild
             className="group h-auto py-2 justify-start text-left transition-all hover:bg-gray-100"
           >
-            <Link href={`/studio/${tool.id}`}>
+            <Link href={`/studio/${tool.slugs[1] || tool.slugs[0]}`}>
               <div className="flex items-center">
                 <div className="border rounded-md p-3 transition-colors">
                   <tool.icon

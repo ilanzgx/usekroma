@@ -42,12 +42,14 @@ export default function StudioHeader() {
   return (
     <header className="border-b py-2">
       <div className="w-full px-6 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="size-8 bg-linear-to-br from-primary to-primary/60 rounded-lg flex items-center justify-center">
-            <ImageIcon className="size-5 text-primary-foreground" />
+        <Link href="/studio">
+          <div className="flex items-center gap-2">
+            <div className="size-8 bg-linear-to-br from-primary to-primary/60 rounded-lg flex items-center justify-center">
+              <ImageIcon className="size-5 text-primary-foreground" />
+            </div>
+            <span className="font-semibold text-lg">ImageSaaS</span>
           </div>
-          <span className="font-semibold text-lg">ImageSaaS</span>
-        </div>
+        </Link>
 
         <div className="flex items-center gap-3">
           {loading ? (
@@ -84,26 +86,26 @@ export default function StudioHeader() {
                 <DropdownMenuItem asChild>
                   <Link href="/pricing" className="cursor-pointer">
                     <Crown className="text-yellow-500" />
-                    <span className="font-medium">Upgrade Plan</span>
+                    <span className="font-medium">Fazer Upgrade</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link href="/profile" className="cursor-pointer">
                     <User />
-                    Profile
+                    Perfil
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/settings" className="cursor-pointer">
                     <Settings />
-                    Settings
+                    Configurações
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/help" className="cursor-pointer">
                     <HelpCircle />
-                    Help
+                    Ajuda
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -113,7 +115,7 @@ export default function StudioHeader() {
                   variant="destructive"
                 >
                   <LogOut />
-                  Logout
+                  Sair
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

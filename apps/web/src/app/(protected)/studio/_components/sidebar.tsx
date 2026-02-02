@@ -18,14 +18,14 @@ export default function StudioSidebar() {
     <Sidebar collapsible="none" className="border-r">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Workspace</SidebarGroupLabel>
+          <SidebarGroupLabel>Área de Trabalho</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <Link href="/studio">
                     <LayoutGridIcon />
-                    <span>Projects</span>
+                    <span>Ferramentas</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -33,7 +33,7 @@ export default function StudioSidebar() {
                 <SidebarMenuButton asChild>
                   <Link href="/studio/images">
                     <ImageIcon />
-                    <span>Images</span>
+                    <span>Imagens</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -42,14 +42,14 @@ export default function StudioSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Settings</SidebarGroupLabel>
+          <SidebarGroupLabel>Configurações</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <Link href="/studio/settings">
                     <SettingsIcon />
-                    <span>Preferences</span>
+                    <span>Preferências</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

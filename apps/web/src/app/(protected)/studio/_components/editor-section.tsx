@@ -47,7 +47,7 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
         }
 
         if (result.error) {
-          setError("Failed to process image. Please try again.");
+          setError("Falha ao processar a imagem. Por favor, tente novamente.");
           return;
         }
 
@@ -55,7 +55,7 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
           setProcessedUrl(result.processedImage);
         }
       } catch (err) {
-        setError("An error occurred while processing the image.");
+        setError("Ocorreu um erro ao processar a imagem.");
         console.error("Processing error:", err);
       } finally {
         setIsProcessing(false);
@@ -86,9 +86,9 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
     onDropRejected: (fileRejections) => {
       const rejection = fileRejections[0];
       if (rejection?.errors?.some((e) => e.code === "file-too-large")) {
-        setError("File is too large. Maximum size is 5MB.");
+        setError("Arquivo muito grande. O tamanho máximo é 5MB.");
       } else {
-        setError("Invalid file. Please upload a valid image.");
+        setError("Arquivo inválido. Por favor, envie uma imagem válida.");
       }
     },
     accept: {
@@ -117,7 +117,7 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
       <div className="mb-6 flex items-center gap-2">
         <ToolIcon className={`size-4 ${tool.color}`} />
         <p className="text-sm text-muted-foreground">
-          Selected tool:{" "}
+          Ferramenta selecionada:{" "}
           <span className="font-medium text-foreground">{tool.name}</span>
         </p>
       </div>
@@ -125,7 +125,7 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(50vh-100px)]">
         {/* Upload Area - Left Side */}
         <div className="flex flex-col">
-          <h3 className="text-lg font-semibold mb-3">Upload Image</h3>
+          <h3 className="text-lg font-semibold mb-3">Carregar Imagem</h3>
           <div
             {...getRootProps()}
             className={`flex-1 border-2 border-dashed rounded-lg transition-all cursor-pointer ${
@@ -163,17 +163,19 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
                   <Upload className="size-8 text-gray-400" />
                 </div>
                 <h4 className="text-base font-semibold mb-1">
-                  {isDragActive ? "Drop here!" : "Drop your image here"}
+                  {isDragActive
+                    ? "Solte aqui!"
+                    : "Arraste e solte sua imagem aqui"}
                 </h4>
                 <p className="text-sm text-muted-foreground mb-3">
-                  or click to browse
+                  ou clique para selecionar
                 </p>
                 <Button size="sm">
                   <ImageIcon className="mr-2 size-4" />
-                  Select Image
+                  Selecionar Imagem
                 </Button>
                 <p className="text-xs text-muted-foreground mt-3">
-                  PNG, JPG, WebP (max 5MB)
+                  PNG, JPG, WebP (máx 5MB)
                 </p>
               </div>
             )}
@@ -182,14 +184,14 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
 
         {/* Preview Area - Right Side */}
         <div className="flex flex-col">
-          <h3 className="text-lg font-semibold mb-3">Processed Result</h3>
+          <h3 className="text-lg font-semibold mb-3">Resultado Processado</h3>
           <div className="flex-1 border-2 border-gray-300 rounded-lg bg-gray-50">
             {isProcessing ? (
               <div className="h-full flex flex-col items-center justify-center p-6 text-center">
                 <Loader2 className="size-12 text-primary animate-spin mb-4" />
-                <h4 className="text-base font-semibold mb-1">Processing...</h4>
+                <h4 className="text-base font-semibold mb-1">Processando...</h4>
                 <p className="text-sm text-muted-foreground">
-                  This may take a few moments
+                  Isso pode levar alguns instantes
                 </p>
               </div>
             ) : error ? (
@@ -198,7 +200,7 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
                   <X className="size-8 text-red-500" />
                 </div>
                 <h4 className="text-base font-semibold mb-1 text-red-600">
-                  Error
+                  Erro
                 </h4>
                 <p className="text-sm text-muted-foreground">{error}</p>
                 <Button
@@ -207,7 +209,7 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
                   className="mt-4"
                   onClick={() => selectedFile && onDrop([selectedFile])}
                 >
-                  Try Again
+                  Tentar Novamente
                 </Button>
               </div>
             ) : processedUrl ? (
@@ -221,7 +223,7 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
                 </div>
                 <div className="mt-3 flex justify-between items-center shrink-0">
                   <p className="text-sm text-muted-foreground">
-                    ✓ Processing complete
+                    ✓ Processamento concluído
                   </p>
                   <Button
                     size="sm"
@@ -233,7 +235,7 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
                     }}
                   >
                     <Download className="mr-2 size-4" />
-                    Download
+                    Baixar
                   </Button>
                 </div>
               </div>
@@ -242,9 +244,11 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
                 <div className="size-16 rounded-full bg-gray-200 flex items-center justify-center mb-3">
                   <ImageIcon className="size-8 text-gray-400" />
                 </div>
-                <h4 className="text-base font-semibold mb-1">No image yet</h4>
+                <h4 className="text-base font-semibold mb-1">
+                  Nenhuma imagem ainda
+                </h4>
                 <p className="text-sm text-muted-foreground">
-                  Upload an image to see the result
+                  Faça upload de uma imagem para ver o resultado
                 </p>
               </div>
             )}

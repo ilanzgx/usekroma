@@ -27,15 +27,15 @@ export const TOOLS: Tool[] = [
   {
     id: "remove-background",
     slugs: ["remove-background", "remover-fundo"],
-    name: "Remove Background",
-    description: "Remove the background from your images.",
+    name: "Remover Fundo",
+    description: "Remova o fundo de suas imagens.",
     icon: Wand2,
     color: "text-purple-500",
     operation: "remove_background",
     seo: {
-      title: "Remove Background from Images - Free AI Tool",
+      title: "Remover Fundo de Imagens - Ferramenta IA Grátis",
       description:
-        "Automatically remove backgrounds from your images using AI. Free online tool that works with PNG, JPG, and WebP files.",
+        "Remova fundos de imagens automaticamente usando IA. Ferramenta online grátis que funciona com arquivos PNG, JPG e WebP.",
       keywords: [
         "remove background",
         "background remover",
@@ -49,15 +49,15 @@ export const TOOLS: Tool[] = [
   {
     id: "sharpen",
     slugs: ["sharpen", "nitidez"],
-    name: "Sharpen",
-    description: "Sharpen your images.",
+    name: "Nitidez",
+    description: "Melhore a nitidez de suas imagens.",
     icon: Focus,
     color: "text-yellow-500",
     operation: "sharpen",
     seo: {
-      title: "Sharpen Images Online - Free Image Enhancement Tool",
+      title: "Melhorar Nitidez de Imagens Online - Ferramenta Grátis",
       description:
-        "Enhance image clarity and sharpness instantly. Free online tool to make your photos look crisp and professional.",
+        "Melhore a clareza e nitidez da imagem instantaneamente. Ferramenta online grátis para deixar suas fotos nítidas e profissionais.",
       keywords: [
         "sharpen image",
         "image enhancement",
@@ -71,15 +71,15 @@ export const TOOLS: Tool[] = [
   {
     id: "grayscale",
     slugs: ["grayscale", "preto-e-branco"],
-    name: "Black and White",
-    description: "Convert your images to black and white.",
+    name: "Preto e Branco",
+    description: "Converta suas imagens para preto e branco.",
     icon: Palette,
     color: "text-gray-500",
     operation: "grayscale",
     seo: {
-      title: "Convert Images to Black and White - Free Grayscale Tool",
+      title: "Converter Imagens para Preto e Branco - Ferramenta Grátis",
       description:
-        "Transform your color photos into stunning black and white images. Free online grayscale converter.",
+        "Transforme suas fotos coloridas em impressionantes imagens em preto e branco. Conversor grayscale online grátis.",
       keywords: [
         "black and white",
         "grayscale",
@@ -94,15 +94,15 @@ export const TOOLS: Tool[] = [
   {
     id: "crop",
     slugs: ["crop", "cortar-imagem"],
-    name: "Crop Image",
-    description: "Crop your images.",
+    name: "Cortar Imagem",
+    description: "Corte suas imagens.",
     icon: Crop,
     color: "text-green-500",
     operation: "crop",
     seo: {
-      title: "Crop Images Online - Free Image Cropping Tool",
+      title: "Cortar Imagens Online - Ferramenta de Corte Grátis",
       description:
-        "Easily crop and resize your images online. Free tool to trim photos to any size or aspect ratio.",
+        "Corte e redimensione suas imagens online facilmente. Ferramenta grátis para ajustar fotos para qualquer tamanho ou proporção.",
       keywords: [
         "crop image",
         "image cropper",
@@ -117,15 +117,15 @@ export const TOOLS: Tool[] = [
   {
     id: "blur",
     slugs: ["blur", "desfocar"],
-    name: "Blur",
-    description: "Blur your images.",
+    name: "Desfocar",
+    description: "Desfoque suas imagens.",
     icon: CircleDashed,
     color: "text-blue-500",
     operation: "blur",
     seo: {
-      title: "Blur Images Online - Free Image Blur Tool",
+      title: "Desfocar Imagens Online - Ferramenta de Desfoque Grátis",
       description:
-        "Add blur effects to your images instantly. Free online tool for creating bokeh, privacy blur, and artistic effects.",
+        "Adicione efeitos de desfoque às suas imagens instantaneamente. Ferramenta online grátis para criar bokeh, desfoque de privacidade e efeitos artísticos.",
       keywords: [
         "blur image",
         "photo blur",
