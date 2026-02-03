@@ -31,7 +31,7 @@ export default function LoginPage() {
             className="w-full py-6 text-base gap-3"
             variant="outline"
           >
-            <Image src="/google.png" alt="Google" width={20} height={20} />
+            <Image src="/google-icon.svg" alt="Google" width={24} height={24} />
             Entrar com o Google
           </Button>
 

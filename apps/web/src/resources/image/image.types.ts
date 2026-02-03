@@ -4,7 +4,12 @@ export type ImageProcessOperations =
   | "blur"
   | "sharpen"
   | "grayscale"
-  | "crop";
+  | "crop"
+  | "saturate"
+  | "flip_horizontal"
+  | "flip_vertical"
+  | "sepia"
+  | "vignette";
 
 export interface ImageProcessRequest {
   file: File;

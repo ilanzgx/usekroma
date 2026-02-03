@@ -6,6 +6,11 @@ import {
   Crop,
   CircleDashed,
   LucideIcon,
+  Droplets,
+  FlipHorizontal,
+  FlipVertical,
+  Sun,
+  Circle,
 } from "lucide-react";
 
 export interface Tool {
@@ -134,6 +139,109 @@ export const TOOLS: Tool[] = [
         "image effects",
         "desfocar imagem",
         "efeito blur",
+      ],
+    },
+  },
+  {
+    id: "saturate",
+    slugs: ["saturate", "saturacao"],
+    name: "Saturação",
+    description: "Ajuste a saturação de cores.",
+    icon: Droplets,
+    color: "text-cyan-500",
+    operation: "saturate",
+    seo: {
+      title: "Ajustar Saturação de Imagens - Ferramenta Grátis",
+      description:
+        "Intensifique ou reduza as cores de suas imagens. Ferramenta online grátis para ajustar saturação.",
+      keywords: [
+        "saturation",
+        "color saturation",
+        "vibrance",
+        "saturação",
+        "cores vibrantes",
+      ],
+    },
+  },
+  {
+    id: "flip-horizontal",
+    slugs: ["flip-horizontal", "espelhar"],
+    name: "Espelhar",
+    description: "Espelhe suas imagens horizontalmente.",
+    icon: FlipHorizontal,
+    color: "text-indigo-500",
+    operation: "flip_horizontal",
+    seo: {
+      title: "Espelhar Imagens Online - Ferramenta Grátis",
+      description:
+        "Espelhe suas imagens horizontalmente de forma instantânea. Ferramenta online grátis para flip horizontal.",
+      keywords: [
+        "flip horizontal",
+        "mirror image",
+        "espelhar imagem",
+        "inverter horizontal",
+      ],
+    },
+  },
+  {
+    id: "flip-vertical",
+    slugs: ["flip-vertical", "inverter"],
+    name: "Inverter",
+    description: "Inverta suas imagens verticalmente.",
+    icon: FlipVertical,
+    color: "text-teal-500",
+    operation: "flip_vertical",
+    seo: {
+      title: "Inverter Imagens Online - Ferramenta Grátis",
+      description:
+        "Inverta suas imagens verticalmente de forma instantânea. Ferramenta online grátis para flip vertical.",
+      keywords: [
+        "flip vertical",
+        "upside down",
+        "inverter imagem",
+        "virar imagem",
+      ],
+    },
+  },
+  {
+    id: "sepia",
+    slugs: ["sepia"],
+    name: "Sépia",
+    description: "Aplique efeito sépia vintage.",
+    icon: Sun,
+    color: "text-amber-600",
+    operation: "sepia",
+    seo: {
+      title: "Efeito Sépia em Imagens - Ferramenta Grátis",
+      description:
+        "Transforme suas fotos com o clássico efeito sépia vintage. Ferramenta online grátis.",
+      keywords: [
+        "sepia filter",
+        "vintage effect",
+        "old photo",
+        "efeito sépia",
+        "foto antiga",
+      ],
+    },
+  },
+  {
+    id: "vignette",
+    slugs: ["vignette", "vinheta"],
+    name: "Vinheta",
+    description: "Adicione efeito de vinheta.",
+    icon: Circle,
+    color: "text-slate-600",
+    operation: "vignette",
+    seo: {
+      title: "Efeito Vinheta em Imagens - Ferramenta Grátis",
+      description:
+        "Adicione um elegante efeito de vinheta às suas fotos. Ferramenta online grátis.",
+      keywords: [
+        "vignette effect",
+        "photo vignette",
+        "dark edges",
+        "efeito vinheta",
+        "bordas escuras",
       ],
     },
   },

@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { TOOLS } from "@/lib/tools";
 import Link from "next/link";
@@ -8,35 +7,28 @@ import Link from "next/link";
 export default function ToolsSection() {
   return (
     <div className="border rounded-md p-4">
-      <h1 className="text-xl font-bold mb-4">Galeria de Ferramentas</h1>
+      <h1 className="text-xl font-bold mb-4">Ferramentas</h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-2">
         {TOOLS.map((tool) => (
-          <Button
+          <Link
             key={tool.id}
-            variant="ghost"
-            asChild
-            className="group h-auto py-2 justify-start text-left transition-all hover:bg-gray-100"
+            href={`/studio/${tool.slugs[1] || tool.slugs[0]}`}
+            className="group flex flex-col items-center gap-1 px-3 py-3 border rounded-md hover:bg-gray-50 transition-colors"
           >
-            <Link href={`/studio/${tool.slugs[1] || tool.slugs[0]}`}>
-              <div className="flex items-center">
-                <div className="border rounded-md p-3 transition-colors">
-                  <tool.icon
-                    className={cn(
-                      "size-5 transition-transform duration-200 group-hover:scale-110",
-                      tool.color,
-                    )}
-                  />
-                </div>
-                <div className="ml-2">
-                  <p className="text-sm font-semibold">{tool.name}</p>
-                  <p className="text-xs text-muted-foreground whitespace-normal">
-                    {tool.description}
-                  </p>
-                </div>
-              </div>
-            </Link>
-          </Button>
+            <tool.icon
+              className={cn(
+                "size-5 transition-transform duration-200 group-hover:scale-110",
+                tool.color
+              )}
+            />
+            <span className="text-sm font-semibold text-center">
+              {tool.name}
+            </span>
+            <span className="text-xs text-muted-foreground text-center">
+              {tool.description}
+            </span>
+          </Link>
         ))}
       </div>
     </div>
