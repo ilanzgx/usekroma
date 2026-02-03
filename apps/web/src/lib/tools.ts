@@ -21,6 +21,7 @@ export interface Tool {
   icon: LucideIcon;
   color: string;
   operation: ImageProcessOperations;
+  isAI?: boolean;
   seo: {
     title: string;
     description: string;
@@ -37,6 +38,7 @@ export const TOOLS: Tool[] = [
     icon: Wand2,
     color: "text-purple-500",
     operation: "remove_background",
+    isAI: true,
     seo: {
       title: "Remover Fundo de Imagens - Ferramenta IA Grátis",
       description:
