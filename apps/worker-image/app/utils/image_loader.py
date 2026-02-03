@@ -9,7 +9,6 @@ def load_image_from_bytes(data: bytes):
     if image.format not in IMAGES_FORMATS:
         raise ValueError("Invalid image format")
 
-    if image.mode != "RGB":
-        image = image.convert("RGB")
-
+    # Preserva o modo original da imagem (RGB, RGBA, etc.)
+    # A conversão para RGB/RGBA será feita conforme necessário em cada operação
     return image

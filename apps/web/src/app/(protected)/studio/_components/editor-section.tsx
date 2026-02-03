@@ -230,7 +230,9 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
                     onClick={() => {
                       const link = document.createElement("a");
                       link.href = processedUrl;
-                      link.download = `processed_${fileName}`;
+                      // Remove extensão original e adiciona .png
+                      const baseName = fileName.replace(/\.[^/.]+$/, "");
+                      link.download = `processed_${baseName}.png`;
                       link.click();
                     }}
                   >
