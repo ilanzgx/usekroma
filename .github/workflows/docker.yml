@@ -46,11 +46,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-        working-directory: ./apps/api
 
       - name: Run migrations
-        run: pnpm db:migrate
-        working-directory: ./apps/api
+        run: pnpm --filter @saas-image/api db:migrate
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 

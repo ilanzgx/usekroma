@@ -4,6 +4,9 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  turbopack: {
+    root: "../..",
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: "10mb",
@@ -48,7 +51,8 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+            value:
+              "camera=(), microphone=(), geolocation=(), interest-cohort=()",
           },
         ],
       },
