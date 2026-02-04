@@ -18,12 +18,12 @@ export default function ToolsSection() {
             className={cn(
               "group relative flex flex-col items-center gap-1 px-3 py-3 rounded-md transition-all",
               tool.isAI
-                ? "bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 hover:border-purple-400 hover:shadow-md"
+                ? "bg-linear-to-br from-purple-50 to-pink-50 border-2 border-purple-200 hover:border-purple-400 hover:shadow-md"
                 : "border hover:bg-gray-50",
             )}
           >
             {tool.isAI && (
-              <div className="absolute -top-2 -right-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
+              <div className="absolute -top-2 -right-2 bg-linear-to-r from-purple-500 to-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
                 <Sparkles className="size-3" />
                 IA
               </div>
