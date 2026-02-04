@@ -32,19 +32,26 @@ COPY --from=prune /app/out/full/ .
 # Build the project
 RUN pnpm turbo run build --filter=@saas-image/api
 
+# Deploy: creates a self-contained folder with real node_modules (no symlinks)
+RUN pnpm deploy --filter=@saas-image/api --prod --legacy /app/deploy
+
 # ---------- runner ----------
-FROM base AS runner
+FROM node:24-alpine AS runner
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
+
+ENV NODE_ENV=production
 
 # Don't run as root
 RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nestjs
-USER nestjs
+RUN adduser --system --uid 1001 appuser
 
-COPY --from=installer /app/apps/api/package.json .
-COPY --from=installer /app/apps/api/dist ./dist
-COPY --from=installer /app/node_modules ./node_modules
-COPY --from=installer /app/apps/api/node_modules ./apps/api/node_modules
+# Copy the deployed app (includes node_modules with real files, not symlinks)
+COPY --from=installer --chown=appuser:nodejs /app/deploy ./
+# Copy build artifacts (pnpm deploy doesn't include dist)
+COPY --from=installer --chown=appuser:nodejs /app/apps/api/dist ./dist
+
+USER appuser
 
 EXPOSE 8080
 CMD ["node", "dist/server.js"]

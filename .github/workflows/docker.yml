@@ -62,7 +62,7 @@ jobs:
       - name: Build and push api
         uses: docker/build-push-action@v5
         with:
-          context: ./apps/api
+          context: .
           file: ./apps/api/Dockerfile
           push: true
           tags: |
@@ -87,7 +87,7 @@ jobs:
       - name: Build and push worker-image
         uses: docker/build-push-action@v5
         with:
-          context: ./apps/worker-image
+          context: .
           file: ./apps/worker-image/Dockerfile
           push: true
           tags: |
