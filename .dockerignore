@@ -1,0 +1,15 @@
+.git
+.gitignore
+.turbo
+.agents
+node_modules
+npm-debug.log
+Dockerfile*
+docker-compose*
+.env*
+README.md
+dist
+.next
+build
+out
+.vercel
