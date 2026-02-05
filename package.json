@@ -4,18 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "test": "turbo run test",
-    "lint": "turbo run lint",
-    "clean": "turbo run clean && rm -rf node_modules",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "dev": "concurrently -k -n \"WORKER,API,WEB\" -c \"magenta,blue,cyan\" \"pnpm run start:worker-image\" \"pnpm run start:api\" \"pnpm run start:web\"",
+    "start:api": "cd apps/api && pnpm run dev",
+    "start:drizzle-studio": "cd apps/api && pnpm run db:studio",
+    "start:worker-image": "cd apps/worker-image && uv run uvicorn app.main:app --reload",
+    "start:web": "cd apps/web && pnpm run dev"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.24.0",
-  "devDependencies": {
-    "turbo": "^2.4.0"
+  "dependencies": {
+    "concurrently": "^9.2.1"
   }
 }

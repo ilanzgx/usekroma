@@ -1,8 +1,8 @@
 services:
   api:
     build:
-      context: .
-      dockerfile: ./apps/api/Dockerfile
+      context: ./apps/api
+      dockerfile: Dockerfile
     ports:
       - "18080:8080"
     env_file:
@@ -18,8 +18,8 @@ services:
 
   worker-image:
     build:
-      context: .
-      dockerfile: ./apps/worker-image/Dockerfile
+      context: ./apps/worker-image
+      dockerfile: Dockerfile
     ports:
       - "18000:8000"
     networks:
@@ -27,8 +27,8 @@ services:
 
   web:
     build:
-      context: .
-      dockerfile: ./apps/web/Dockerfile
+      context: ./apps/web
+      dockerfile: Dockerfile
     ports:
       - "13000:3000"
     networks:

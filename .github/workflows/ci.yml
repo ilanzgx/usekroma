@@ -36,6 +36,9 @@ jobs:
     needs: changes
     if: needs.changes.outputs.api == 'true'
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./apps/api
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -56,21 +59,24 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-pnpm-api-${{ hashFiles('apps/api/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-pnpm-
+            ${{ runner.os }}-pnpm-api-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build API
-        run: pnpm turbo run build --filter=@saas-image/api
+      - name: Build
+        run: pnpm build
 
   # Frontend (Next.js)
   ci-web:
     needs: changes
     if: needs.changes.outputs.web == 'true'
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./apps/web
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -91,15 +97,15 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-pnpm-web-${{ hashFiles('apps/web/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-pnpm-
+            ${{ runner.os }}-pnpm-web-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build Web
-        run: pnpm turbo run build --filter=@saas-image/web
+      - name: Build
+        run: pnpm build
 
   # Worker Image (Python + FastAPI)
   ci-worker-image:

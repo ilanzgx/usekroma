@@ -46,9 +46,11 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+        working-directory: ./apps/api
 
       - name: Run migrations
-        run: pnpm --filter @saas-image/api db:migrate
+        run: pnpm db:migrate
+        working-directory: ./apps/api
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
@@ -62,7 +64,7 @@ jobs:
       - name: Build and push api
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./apps/api
           file: ./apps/api/Dockerfile
           push: true
           tags: |
@@ -87,7 +89,7 @@ jobs:
       - name: Build and push worker-image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./apps/worker-image
           file: ./apps/worker-image/Dockerfile
           push: true
           tags: |

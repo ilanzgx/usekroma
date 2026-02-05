@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-COPY apps/worker-image/pyproject.toml ./
+COPY pyproject.toml ./
 
 RUN pip install --no-cache-dir uv \
  && uv pip install --no-cache .
@@ -34,7 +34,7 @@ COPY --from=builder /root/.u2net /home/appuser/.u2net
 
 RUN chown -R appuser:appuser /home/appuser
 
-COPY --chown=appuser:appuser apps/worker-image/app ./app
+COPY --chown=appuser:appuser app ./app
 
 USER appuser
 
