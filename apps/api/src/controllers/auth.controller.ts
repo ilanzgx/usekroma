@@ -3,9 +3,10 @@ import { OAuth2Namespace } from "@fastify/oauth2";
 import { JWT } from "@fastify/jwt";
 import { googleAuthUseCase } from "@/usecases/auth/google-auth.usecase";
 import { GoogleUserInfo } from "@/models/auth.model";
+import { envConfig } from "@/config/env.config";
 
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
-const IS_PRODUCTION = process.env.NODE_ENV === "production";
+const FRONTEND_URL = envConfig.FRONTEND_URL;
+const IS_PRODUCTION = envConfig.NODE_ENV === "production";
 
 export const authController = (fastify: FastifyInstance) => {
   fastify.get(
@@ -16,7 +17,7 @@ export const authController = (fastify: FastifyInstance) => {
         // get access token from Google OAuth2
         const { token } =
           await fastify.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(
-            req
+            req,
           );
 
         // get user info from Google
@@ -26,7 +27,7 @@ export const authController = (fastify: FastifyInstance) => {
             headers: {
               Authorization: `Bearer ${token.access_token}`,
             },
-          }
+          },
         );
 
         if (!response.ok) {
@@ -51,7 +52,7 @@ export const authController = (fastify: FastifyInstance) => {
 
         // redirect to frontend API route with token (frontend will set HttpOnly cookie)
         return reply.redirect(
-          `${FRONTEND_URL}/api/auth/callback?token=${jwtToken}`
+          `${FRONTEND_URL}/api/auth/callback?token=${jwtToken}`,
         );
       } catch (error) {
         req.log.error(error);
@@ -59,10 +60,10 @@ export const authController = (fastify: FastifyInstance) => {
         const errorMessage =
           error instanceof Error ? error.message : "Authentication failed";
         return reply.redirect(
-          `${FRONTEND_URL}/login?error=${encodeURIComponent(errorMessage)}`
+          `${FRONTEND_URL}/login?error=${encodeURIComponent(errorMessage)}`,
         );
       }
-    }
+    },
   );
 
   fastify.post(
@@ -73,6 +74,6 @@ export const authController = (fastify: FastifyInstance) => {
         path: "/",
       });
       return { success: true };
-    }
+    },
   );
 };

@@ -17,30 +17,31 @@ import { jwtConfig } from "@/config/jwt.config";
 import { multipartConfig } from "@/config/multipart.config";
 import { swaggerConfig } from "@/config/swagger.config";
 import { corsConfig } from "@/config/cors.config";
+import { envConfig } from "@/config/env.config";
 import ScalarApiReference from "@scalar/fastify-api-reference";
 import closeWithGrace from "close-with-grace";
 
 // ********************************************
 // Fastify instance
 // ********************************************
-const isDev = process.env.NODE_ENV !== "production";
 
 const app = fastify({
   trustProxy: true,
-  logger: isDev
-    ? {
-        level: process.env.LOG_LEVEL || "info",
-        transport: {
-          target: "pino-pretty",
-          options: {
-            translateTime: "HH:MM:ss Z",
-            ignore: "pid,hostname",
+  logger:
+    envConfig.NODE_ENV !== "production"
+      ? {
+          level: envConfig.LOG_LEVEL,
+          transport: {
+            target: "pino-pretty",
+            options: {
+              translateTime: "HH:MM:ss Z",
+              ignore: "pid,hostname",
+            },
           },
+        }
+      : {
+          level: envConfig.LOG_LEVEL,
         },
-      }
-    : {
-        level: process.env.LOG_LEVEL || "info",
-      },
 }).withTypeProvider<ZodTypeProvider>();
 
 app.setValidatorCompiler(validatorCompiler);
@@ -96,14 +97,14 @@ closeWithGrace(async ({ signal, err }) => {
 
 app
   .listen({
-    port: Number(process.env.SERVER_PORT),
-    host: process.env.SERVER_HOST,
+    port: Number(envConfig.SERVER_PORT),
+    host: envConfig.SERVER_HOST,
   })
   .then(() => {
     console.log(
-      `HTTP Server running on http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}`,
+      `HTTP Server running on http://${envConfig.SERVER_HOST}:${envConfig.SERVER_PORT}`,
     );
     console.log(
-      `API Reference available at http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/docs`,
+      `API Reference available at http://${envConfig.SERVER_HOST}:${envConfig.SERVER_PORT}/docs`,
     );
   });

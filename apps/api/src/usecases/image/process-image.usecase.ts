@@ -1,8 +1,10 @@
+import { envConfig } from "@/config/env.config";
+
 export class ProcessImageUseCase {
   private readonly workerUrl: string;
 
   constructor() {
-    this.workerUrl = process.env.WORKER_IMAGE_URL || "http://localhost:8000";
+    this.workerUrl = envConfig.WORKER_IMAGE_URL;
   }
 
   async execute(

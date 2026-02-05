@@ -1,7 +1,8 @@
 import { FastifyJWTOptions } from "@fastify/jwt";
+import { envConfig } from "@/config/env.config";
 
 export const jwtConfig: FastifyJWTOptions = {
-  secret: process.env.JWT_SECRET!,
+  secret: envConfig.JWT_SECRET,
   sign: {
     expiresIn: "7d",
   },

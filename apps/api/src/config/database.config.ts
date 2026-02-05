@@ -1,4 +1,5 @@
 import type { Options } from "postgres";
+import { envConfig } from "@/config/env.config";
 
 export const databaseConfig: Options<{}> = {
   max: 10, // max connections
@@ -6,4 +7,4 @@ export const databaseConfig: Options<{}> = {
   connect_timeout: 10, // seconds for connection timeout
 };
 
-export const DATABASE_URL = process.env.DATABASE_URL!;
+export const DATABASE_URL = envConfig.DATABASE_URL;
