@@ -19,6 +19,7 @@ declare module "fastify" {
 }
 
 const PUBLIC_ROUTES = [
+  "/health",
   "/docs",
   "/docs/openapi.json",
   "/v1/auth/google",

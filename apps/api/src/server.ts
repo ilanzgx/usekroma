@@ -51,35 +51,21 @@ app.setSerializerCompiler(serializerCompiler);
 // Plugins
 // ********************************************
 
-// Cors plugin
-app.register(fastifyCors, corsConfig);
-
-// Cookie plugin
-app.register(fastifyCookie);
-
-// Swagger plugin
-app.register(fastifySwagger, swaggerConfig);
-
-// Scalar API Reference plugin
+app.register(fastifyCors, corsConfig); // Cors plugin
+app.register(fastifyCookie); // Cookie plugin
+app.register(fastifySwagger, swaggerConfig); // Swagger plugin
 app.register(ScalarApiReference, {
   routePrefix: "/docs",
-});
-
-// OAuth2 plugin
-app.register(fastifyOauth2, googleOAuthConfig);
-
-// JWT plugin
-app.register(fastifyJwt, jwtConfig);
-
-// Multipart plugin
-app.register(fastifyMultipart, multipartConfig);
-
-// Routes plugin
-app.register(routes);
+}); // Scalar API Reference plugin
+app.register(fastifyOauth2, googleOAuthConfig); // OAuth2 plugin
+app.register(fastifyJwt, jwtConfig); // JWT plugin
+app.register(fastifyMultipart, multipartConfig); // Multipart plugin
+app.register(routes); // Routes
 
 // ********************************************
 // Global Auth Middleware
 // ********************************************
+
 app.addHook("preHandler", authMiddleware);
 
 // ********************************************
