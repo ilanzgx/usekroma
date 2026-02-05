@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { OAuth2Namespace } from "@fastify/oauth2";
 import { JWT } from "@fastify/jwt";
-import { authController } from "@/controllers/auth.controller";
+import { AuthController } from "@/controllers/auth.controller";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -10,6 +10,12 @@ declare module "fastify" {
   }
 }
 
-export async function authRoutes(fastify: FastifyInstance) {
-  authController(fastify);
+export async function authRoutes(app: FastifyInstance) {
+  const authController = new AuthController();
+
+  app.get(
+    "/google/callback",
+    authController.googleCallback.bind(authController),
+  );
+  app.post("/logout", authController.logout.bind(authController));
 }

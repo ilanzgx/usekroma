@@ -1,8 +1,8 @@
-import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import { FastifyRequest, FastifyReply } from "fastify";
 import { processImageUseCase } from "@/usecases/image/process-image.usecase";
 
-export const imageController = (fastify: FastifyInstance) => {
-  fastify.post("/process", async (req: FastifyRequest, reply: FastifyReply) => {
+export class ImageController {
+  async uploadImage(req: FastifyRequest, reply: FastifyReply) {
     const data = await req.file();
 
     if (!data) {
@@ -19,10 +19,11 @@ export const imageController = (fastify: FastifyInstance) => {
       const processedImage = await processImageUseCase.execute(
         buffer,
         data.filename,
-        operation
+        operation,
       );
 
       return reply
+        .status(200)
         .header("Content-Type", "image/png")
         .header("Content-Disposition", `attachment; filename="processed.png"`)
         .send(processedImage);
@@ -33,5 +34,5 @@ export const imageController = (fastify: FastifyInstance) => {
         message: error instanceof Error ? error.message : "Unknown error",
       });
     }
-  });
-};
+  }
+}

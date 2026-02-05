@@ -1,15 +1,15 @@
-import { FastifyRequest, type FastifyInstance } from "fastify";
+import { FastifyReply, FastifyRequest, type FastifyInstance } from "fastify";
 import { listUsersUseCase } from "@/usecases/user/list-users.usecase";
 import { getUserByEmailUseCase } from "@/usecases/user/get-user-by-email.usecase";
 
-export const userController = (fastify: FastifyInstance) => {
-  fastify.get("/", async () => {
+export class UserController {
+  async listUsers(req: FastifyRequest, reply: FastifyReply) {
     const users = await listUsersUseCase.execute();
-    return users;
-  });
+    return reply.status(200).send(users);
+  }
 
-  fastify.get("/me", async (req: FastifyRequest) => {
+  async getUserByEmail(req: FastifyRequest, reply: FastifyReply) {
     const user = await getUserByEmailUseCase.execute(req.user.email);
-    return user;
-  });
-};
+    return reply.status(200).send(user);
+  }
+}

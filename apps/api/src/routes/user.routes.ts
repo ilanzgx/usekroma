@@ -1,6 +1,9 @@
 import { FastifyInstance } from "fastify";
-import { userController } from "@/controllers/user.controller";
+import { UserController } from "@/controllers/user.controller";
 
-export async function userRoutes(fastify: FastifyInstance) {
-  userController(fastify);
+export async function userRoutes(app: FastifyInstance) {
+  const userController = new UserController();
+
+  app.get("/", userController.listUsers.bind(userController));
+  app.get("/me", userController.getUserByEmail.bind(userController));
 }
