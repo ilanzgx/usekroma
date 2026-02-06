@@ -1,8 +1,8 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { SOCIAL_FORMATS, getAllPlatforms } from "@/lib/socials";
 import Link from "next/link";
+import Image from "next/image";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,8 +21,7 @@ export default function SocialMediaSection() {
       <div className="flex flex-wrap gap-2">
         {platforms.map((platform) => {
           const formats = SOCIAL_FORMATS.filter((f) => f.platform === platform);
-          const PlatformIcon = formats[0].platformIcon;
-          const platformColor = formats[0].platformColor;
+          const platformIcon = formats[0].platformIcon;
 
           // Se tiver apenas 1 opção, mostra direto o link com as dimensões
           if (formats.length === 1) {
@@ -33,7 +32,13 @@ export default function SocialMediaSection() {
                 href={`/studio/social/${format.slugs[1] || format.slugs[0]}`}
                 className="group flex items-center gap-2 px-3 py-2 border rounded-md hover:bg-gray-50 transition-colors"
               >
-                <PlatformIcon className={cn("size-4", platformColor)} />
+                <Image
+                  src={platformIcon}
+                  alt={platform}
+                  width={16}
+                  height={16}
+                  className="size-4"
+                />
                 <span className="text-sm font-medium">{platform}</span>
                 <span className="text-xs text-muted-foreground">
                   {format.width}x{format.height}
@@ -46,7 +51,13 @@ export default function SocialMediaSection() {
           return (
             <DropdownMenu key={platform}>
               <DropdownMenuTrigger className="group flex items-center gap-2 px-3 py-2 border rounded-md hover:bg-gray-50 transition-colors outline-none">
-                <PlatformIcon className={cn("size-4", platformColor)} />
+                <Image
+                  src={platformIcon}
+                  alt={platform}
+                  width={16}
+                  height={16}
+                  className="size-4"
+                />
                 <span className="text-sm font-medium">{platform}</span>
                 <span className="text-xs text-muted-foreground">
                   {formats.length} opções
