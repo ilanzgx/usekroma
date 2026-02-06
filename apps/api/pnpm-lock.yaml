@@ -33,14 +33,14 @@ importers:
         specifier: ^9.6.1
         version: 9.6.1
       '@scalar/fastify-api-reference':
-        specifier: ^1.40.9
-        version: 1.44.12
+        specifier: ^1.44.14
+        version: 1.44.14
       close-with-grace:
         specifier: ^2.4.0
         version: 2.4.0
       dotenv:
-        specifier: ^17.2.3
-        version: 17.2.3
+        specifier: ^17.2.4
+        version: 17.2.4
       drizzle-orm:
         specifier: ^0.45.1
         version: 0.45.1(postgres@3.4.8)
@@ -58,8 +58,8 @@ importers:
         version: 4.3.6
     devDependencies:
       '@types/node':
-        specifier: ^25.0.3
-        version: 25.2.0
+        specifier: ^25.2.1
+        version: 25.2.1
       '@vitest/coverage-v8':
         specifier: ^4.0.18
         version: 4.0.18(vitest@4.0.18)
@@ -83,7 +83,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^4.0.18
-        version: 4.0.18(@types/node@25.2.0)(@vitest/ui@4.0.18)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@types/node@25.2.1)(@vitest/ui@4.0.18)(tsx@4.21.0)(yaml@2.8.2)
 
 packages:
 
@@ -790,20 +790,20 @@ packages:
     resolution: {integrity: sha512-cQWMHsGD9jCiYHi91acR3tOsj+qGk+dRQ2W+N5+au1NZ/GkUNT5TUEufekn/sj1S8af+lOnn3y0xXoTI34jCog==}
     engines: {node: '>=20'}
 
-  '@scalar/fastify-api-reference@1.44.12':
-    resolution: {integrity: sha512-JZ2mjPn6bnEyD8pcEBrK5VMd/jCoW0dPjasaKdwEKk9TNoPuG9ta7A9kxXzO+0fqeOMNLkVQW8JWYY1b6xYr/g==}
+  '@scalar/fastify-api-reference@1.44.14':
+    resolution: {integrity: sha512-1Gmfh7z9hcvC7dhq4jhIruaaSGZDSdEBk6OLO6LpQklNpzi0PQGBVDFetEbvA4fPLcMfw/j8sXv9lTnVfUc5+w==}
     engines: {node: '>=20'}
 
   '@scalar/helpers@0.2.11':
     resolution: {integrity: sha512-Y7DLt1bIZF9dvHzJwSJTcC1lpSr1Tbf4VBhHOCRIHu23Rr7/lhQnddRxFmPV1tZXwEQKz7F7yRrubwCfKPCucw==}
     engines: {node: '>=20'}
 
-  '@scalar/json-magic@0.9.6':
-    resolution: {integrity: sha512-2TKoqkAophHti1nH+rvQlR4lhD6X9tqQpuNeAE0cytHSX/yndkSOE0yA7cep5T9tFjGN4Km0gMnelvY3LgWs4A==}
+  '@scalar/json-magic@0.10.0':
+    resolution: {integrity: sha512-7QCaKjhPCNBe5vieI0zZcxOupI+kk2PoWL/tuxB7ROLbDOIdmeZ8x1FrZqdtamDPi+zsQGx+kc/cvTDz7GdTKw==}
     engines: {node: '>=20'}
 
-  '@scalar/openapi-parser@0.24.7':
-    resolution: {integrity: sha512-vfByQw8fbuh/PO5sowMmEfe65/WPX7MCiEzo2z2/qObK3nsdPrbXOZDYRjD7nvG5VTec8Tv2QpTJZTm7+i/Qng==}
+  '@scalar/openapi-parser@0.24.8':
+    resolution: {integrity: sha512-1ZFC/nNbH/e/rriDgfsXCcr23WphvqHVxX8V90qhR8c9QWXNb0cyNXl3hNjvtTB7Lg7O9aS22BUZ14gabCWvRQ==}
     engines: {node: '>=20'}
 
   '@scalar/openapi-types@0.5.3':
@@ -839,8 +839,8 @@ packages:
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
 
-  '@types/node@25.2.0':
-    resolution: {integrity: sha512-DZ8VwRFUNzuqJ5khrvwMXHmvPe+zGayJhr2CDNiKB1WBE1ST8Djl00D0IC4vvNmHMdj6DlbYRIaFE7WHjlDl5w==}
+  '@types/node@25.2.1':
+    resolution: {integrity: sha512-CPrnr8voK8vC6eEtyRzvMpgp3VyVRhgclonE7qYi6P9sXwYb59ucfrnmFBTaP0yUi8Gk4yZg/LlTJULGxvTNsg==}
 
   '@vitest/coverage-v8@4.0.18':
     resolution: {integrity: sha512-7i+N2i0+ME+2JFZhfuz7Tg/FqKtilHjGyGvoHYQ6iLV0zahbsJ9sljC9OcFcPDbhYKCet+sG8SsVqlyGvPflZg==}
@@ -988,8 +988,8 @@ packages:
     resolution: {integrity: sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==}
     engines: {node: '>=8'}
 
-  dotenv@17.2.3:
-    resolution: {integrity: sha512-JVUnt+DUIzu87TABbhPmNfVdBDt18BLOWjMUFJMSi/Qqg7NTYtabbvSNJGOJ7afbRuv9D/lngizHtP7QyLQ+9w==}
+  dotenv@17.2.4:
+    resolution: {integrity: sha512-mudtfb4zRB4bVvdj0xRo+e6duH1csJRM8IukBqfTRvHotn9+LBXB8ynAidP9zHqoRC/fsllXgk4kCKlR21fIhw==}
     engines: {node: '>=12'}
 
   drizzle-kit@0.31.8:
@@ -2153,25 +2153,25 @@ snapshots:
     dependencies:
       '@scalar/types': 0.6.2
 
-  '@scalar/fastify-api-reference@1.44.12':
+  '@scalar/fastify-api-reference@1.44.14':
     dependencies:
       '@scalar/core': 0.3.37
-      '@scalar/openapi-parser': 0.24.7
+      '@scalar/openapi-parser': 0.24.8
       '@scalar/openapi-types': 0.5.3
       fastify-plugin: 4.5.1
       github-slugger: 2.0.0
 
   '@scalar/helpers@0.2.11': {}
 
-  '@scalar/json-magic@0.9.6':
+  '@scalar/json-magic@0.10.0':
     dependencies:
       '@scalar/helpers': 0.2.11
       yaml: 2.8.2
 
-  '@scalar/openapi-parser@0.24.7':
+  '@scalar/openapi-parser@0.24.8':
     dependencies:
       '@scalar/helpers': 0.2.11
-      '@scalar/json-magic': 0.9.6
+      '@scalar/json-magic': 0.10.0
       '@scalar/openapi-types': 0.5.3
       '@scalar/openapi-upgrader': 0.1.8
       ajv: 8.17.1
@@ -2215,7 +2215,7 @@ snapshots:
 
   '@types/estree@1.0.8': {}
 
-  '@types/node@25.2.0':
+  '@types/node@25.2.1':
     dependencies:
       undici-types: 7.16.0
 
@@ -2231,7 +2231,7 @@ snapshots:
       obug: 2.1.1
       std-env: 3.10.0
       tinyrainbow: 3.0.3
-      vitest: 4.0.18(@types/node@25.2.0)(@vitest/ui@4.0.18)(tsx@4.21.0)(yaml@2.8.2)
+      vitest: 4.0.18(@types/node@25.2.1)(@vitest/ui@4.0.18)(tsx@4.21.0)(yaml@2.8.2)
 
   '@vitest/expect@4.0.18':
     dependencies:
@@ -2242,13 +2242,13 @@ snapshots:
       chai: 6.2.2
       tinyrainbow: 3.0.3
 
-  '@vitest/mocker@4.0.18(vite@7.3.1(@types/node@25.2.0)(tsx@4.21.0)(yaml@2.8.2))':
+  '@vitest/mocker@4.0.18(vite@7.3.1(@types/node@25.2.1)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
       '@vitest/spy': 4.0.18
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 7.3.1(@types/node@25.2.0)(tsx@4.21.0)(yaml@2.8.2)
+      vite: 7.3.1(@types/node@25.2.1)(tsx@4.21.0)(yaml@2.8.2)
 
   '@vitest/pretty-format@4.0.18':
     dependencies:
@@ -2276,7 +2276,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vitest: 4.0.18(@types/node@25.2.0)(@vitest/ui@4.0.18)(tsx@4.21.0)(yaml@2.8.2)
+      vitest: 4.0.18(@types/node@25.2.1)(@vitest/ui@4.0.18)(tsx@4.21.0)(yaml@2.8.2)
 
   '@vitest/utils@4.0.18':
     dependencies:
@@ -2373,7 +2373,7 @@ snapshots:
     dependencies:
       path-type: 4.0.0
 
-  dotenv@17.2.3: {}
+  dotenv@17.2.4: {}
 
   drizzle-kit@0.31.8:
     dependencies:
@@ -2988,7 +2988,7 @@ snapshots:
 
   undici-types@7.16.0: {}
 
-  vite@7.3.1(@types/node@25.2.0)(tsx@4.21.0)(yaml@2.8.2):
+  vite@7.3.1(@types/node@25.2.1)(tsx@4.21.0)(yaml@2.8.2):
     dependencies:
       esbuild: 0.27.2
       fdir: 6.5.0(picomatch@4.0.3)
@@ -2997,15 +2997,15 @@ snapshots:
       rollup: 4.57.1
       tinyglobby: 0.2.15
     optionalDependencies:
-      '@types/node': 25.2.0
+      '@types/node': 25.2.1
       fsevents: 2.3.3
       tsx: 4.21.0
       yaml: 2.8.2
 
-  vitest@4.0.18(@types/node@25.2.0)(@vitest/ui@4.0.18)(tsx@4.21.0)(yaml@2.8.2):
+  vitest@4.0.18(@types/node@25.2.1)(@vitest/ui@4.0.18)(tsx@4.21.0)(yaml@2.8.2):
     dependencies:
       '@vitest/expect': 4.0.18
-      '@vitest/mocker': 4.0.18(vite@7.3.1(@types/node@25.2.0)(tsx@4.21.0)(yaml@2.8.2))
+      '@vitest/mocker': 4.0.18(vite@7.3.1(@types/node@25.2.1)(tsx@4.21.0)(yaml@2.8.2))
       '@vitest/pretty-format': 4.0.18
       '@vitest/runner': 4.0.18
       '@vitest/snapshot': 4.0.18
@@ -3022,10 +3022,10 @@ snapshots:
       tinyexec: 1.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vite: 7.3.1(@types/node@25.2.0)(tsx@4.21.0)(yaml@2.8.2)
+      vite: 7.3.1(@types/node@25.2.1)(tsx@4.21.0)(yaml@2.8.2)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 25.2.0
+      '@types/node': 25.2.1
       '@vitest/ui': 4.0.18(vitest@4.0.18)
     transitivePeerDependencies:
       - jiti
