@@ -8,6 +8,12 @@ export async function imageRoutes(app: FastifyInstance) {
   app.post(
     "/process",
     {
+      config: {
+        rateLimit: {
+          max: 5,
+          timeWindow: "1 minute",
+        },
+      },
       schema: {
         response: {
           200: zod.string().describe("Processed image as binary"),

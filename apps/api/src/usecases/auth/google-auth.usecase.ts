@@ -30,6 +30,7 @@ export class GoogleAuthUseCase {
       name,
       googleId,
       picture,
+      credits: 50,
     });
 
     return newUser;

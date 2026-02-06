@@ -10,6 +10,7 @@ import { fastifySwagger } from "@fastify/swagger";
 import { fastifyOauth2 } from "@fastify/oauth2";
 import { fastifyJwt } from "@fastify/jwt";
 import { fastifyMultipart } from "@fastify/multipart";
+import { fastifyRateLimit } from "@fastify/rate-limit";
 import { routes } from "@/routes";
 import { authMiddleware } from "@/middlewares/auth.middleware";
 import { googleOAuthConfig } from "@/config/oauth.config";
@@ -17,6 +18,7 @@ import { jwtConfig } from "@/config/jwt.config";
 import { multipartConfig } from "@/config/multipart.config";
 import { swaggerConfig } from "@/config/swagger.config";
 import { corsConfig } from "@/config/cors.config";
+import { rateLimitConfig } from "@/config/rate-limit.config";
 import { envConfig } from "@/config/env.config";
 import ScalarApiReference from "@scalar/fastify-api-reference";
 import closeWithGrace from "close-with-grace";
@@ -60,6 +62,7 @@ app.register(ScalarApiReference, {
 app.register(fastifyOauth2, googleOAuthConfig); // OAuth2 plugin
 app.register(fastifyJwt, jwtConfig); // JWT plugin
 app.register(fastifyMultipart, multipartConfig); // Multipart plugin
+app.register(fastifyRateLimit, rateLimitConfig); // Rate limit plugin
 app.register(routes); // Routes
 
 // ********************************************
