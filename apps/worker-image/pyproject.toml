@@ -12,6 +12,7 @@ dependencies = [
     "rembg[cpu]>=2.0.0",
     "llvmlite>=0.43.0",
     "numba>=0.59.0",
+    "opencv-contrib-python-headless>=4.9.0",
 ]
 
 [dependency-groups]
