@@ -96,7 +96,7 @@ def _unload_lapsrn():
         logger.info("[LapSRN] ================================================")
 
 
-def apply_ai_upscale(image: Image.Image, scale: int = 2, unload_after: bool = True) -> Image.Image:
+def apply_ai_upscale(image: Image.Image, scale: int = 4, unload_after: bool = True) -> Image.Image:
     """
     Aumenta a resolução da imagem usando IA (modelo LapSRN).
 
@@ -111,23 +111,29 @@ def apply_ai_upscale(image: Image.Image, scale: int = 2, unload_after: bool = Tr
     if scale not in LAPSRN_MODELS:
         raise ValueError(f"Escala inválida: {scale}. Use 2 ou 4.")
 
-    # Converte PIL para OpenCV (BGR)
-    img_rgb = image.convert("RGB")
-    img_array = np.array(img_rgb)
-    img_bgr = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
+    try:
+        # Converte PIL para OpenCV (BGR)
+        img_rgb = image.convert("RGB")
+        img_array = np.array(img_rgb)
+        img_bgr = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
 
-    # Carrega o modelo e aplica upscale
-    sr = _load_lapsrn(scale)
-    result_bgr = sr.upsample(img_bgr)
+        # Carrega o modelo e aplica upscale
+        sr = _load_lapsrn(scale)
+        result_bgr = sr.upsample(img_bgr)
 
-    # Converte de volta para PIL (RGB)
-    result_rgb = cv2.cvtColor(result_bgr, cv2.COLOR_BGR2RGB)
-    result_image = Image.fromarray(result_rgb)
+        # Converte de volta para PIL (RGB)
+        result_rgb = cv2.cvtColor(result_bgr, cv2.COLOR_BGR2RGB)
+        result_image = Image.fromarray(result_rgb)
 
-    if unload_after:
-        _unload_lapsrn()
+        return result_image
 
-    return result_image
+    except Exception as e:
+        logger.error(f"[LapSRN] Erro durante upscale: {e}")
+        raise
+
+    finally:
+        if unload_after:
+            _unload_lapsrn()
 
 
 def get_available_scales() -> list[int]:

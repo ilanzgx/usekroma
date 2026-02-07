@@ -58,16 +58,21 @@ def remove_background(image: Image.Image, unload_after: bool = True) -> Image.Im
 
     Retorna uma imagem RGBA com fundo transparente.
     """
-    # converte para RGBA se necessário para suportar transparência
-    if image.mode != "RGBA":
-        image = image.convert("RGBA")
+    try:
+        # converte para RGBA se necessário para suportar transparência
+        if image.mode != "RGBA":
+            image = image.convert("RGBA")
 
-    result = remove(image, session=_get_session())
+        result = remove(image, session=_get_session())
+        return result
 
-    if unload_after:
-        _unload_session()
+    except Exception as e:
+        logger.error(f"[U2-NET] Erro durante remoção de fundo: {e}")
+        raise
 
-    return result
+    finally:
+        if unload_after:
+            _unload_session()
 
 def apply_blur(image: Image.Image, radius: float = 8) -> Image.Image:
     """
