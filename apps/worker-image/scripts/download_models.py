@@ -3,7 +3,6 @@
 Script para baixar os modelos LapSRN necessários para super-resolução.
 Os modelos são baixados do repositório oficial do OpenCV.
 """
-import os
 import urllib.request
 from pathlib import Path
 

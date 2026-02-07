@@ -1,4 +1,16 @@
-from app.processor import apply_sharpen, apply_blur, apply_upscale, remove_background, apply_ai_upscale
+from app.processor import (
+    apply_sharpen,
+    apply_blur,
+    apply_upscale,
+    remove_background,
+    apply_ai_upscale,
+    apply_grayscale,
+    apply_sepia,
+    apply_vignette,
+    apply_flip_horizontal,
+    apply_flip_vertical,
+    apply_saturate,
+)
 from PIL import Image
 
 def process_image(image: Image.Image, operation: str) -> Image.Image:
@@ -8,11 +20,18 @@ def process_image(image: Image.Image, operation: str) -> Image.Image:
         "sharpen": apply_sharpen,
         "blur": apply_blur,
         "upscale": apply_upscale,
-        "remove_background": remove_background, # rembg
-        "ai_upscale": apply_ai_upscale, # lapsrn
+        "remove_background": remove_background,
+        "ai_upscale": apply_ai_upscale,
+        "grayscale": apply_grayscale,
+        "sepia": apply_sepia,
+        "vignette": apply_vignette,
+        "flip_horizontal": apply_flip_horizontal,
+        "flip_vertical": apply_flip_vertical,
+        "saturate": apply_saturate,
     }
 
     if operation not in operations:
         raise ValueError(f"Operação inválida: {operation}. Disponíveis: {list(operations.keys())}")
 
     return operations[operation](image)
+

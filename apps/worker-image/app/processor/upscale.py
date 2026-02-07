@@ -96,7 +96,7 @@ def _unload_lapsrn():
         logger.info("[LapSRN] ================================================")
 
 
-def apply_ai_upscale(image: Image.Image, scale: int = 4, unload_after: bool = True) -> Image.Image:
+def apply_ai_upscale(image: Image.Image, scale: int = 2, unload_after: bool = True) -> Image.Image:
     """
     Aumenta a resolução da imagem usando IA (modelo LapSRN).
 

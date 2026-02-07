@@ -57,7 +57,7 @@ export const TOOLS: Tool[] = [
     id: "ai-upscale",
     slugs: ["ai-upscale", "aumentar-resolucao"],
     name: "Aumentar Resolução",
-    description: "Aumente a resolução em até 4x com IA.",
+    description: "Aumente a resolução em até 2x com IA.",
     icon: Maximize2,
     color: "text-emerald-500",
     operation: "ai_upscale",
@@ -65,13 +65,13 @@ export const TOOLS: Tool[] = [
     seo: {
       title: "Aumentar Resolução de Imagens com IA - Ferramenta Grátis",
       description:
-        "Aumente a resolução das suas imagens em até 4x usando inteligência artificial. Upscale sem perder qualidade.",
+        "Aumente a resolução das suas imagens em até 2x usando inteligência artificial. Upscale sem perder qualidade.",
       keywords: [
         "upscale image",
         "increase resolution",
         "AI upscale",
         "image enhancer",
-        "4x upscale",
+        "2x upscale",
         "aumentar resolução",
         "melhorar qualidade",
         "super resolução",
