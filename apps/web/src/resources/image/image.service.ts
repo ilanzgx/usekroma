@@ -7,7 +7,7 @@ import {
 } from "@/resources/image/image.types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-const REQUEST_TIMEOUT_MS = 90000;
+const REQUEST_TIMEOUT_MS = 150000; // 2.5 minutos (inclui cold start)
 const MAX_RETRIES = 1;
 const RETRY_DELAY_MS = 2000;
 

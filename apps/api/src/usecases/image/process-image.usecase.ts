@@ -1,6 +1,6 @@
 import { envConfig } from "@/config/env.config";
 
-const WORKER_TIMEOUT_MS = 60000; // 1 minuto
+const WORKER_TIMEOUT_MS = 120000; // 2 minutes (includes container cold start + processing time)
 
 export class ProcessImageUseCase {
   private readonly workerUrl: string;
