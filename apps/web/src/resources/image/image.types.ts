@@ -1,10 +1,10 @@
 export type ImageProcessOperations =
   | "upscale"
+  | "ai_upscale"
   | "remove_background"
   | "blur"
   | "sharpen"
   | "grayscale"
-  | "crop"
   | "saturate"
   | "flip_horizontal"
   | "flip_vertical"
