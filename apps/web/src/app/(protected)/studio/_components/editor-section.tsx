@@ -1,8 +1,17 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Upload, Image as ImageIcon, Download, X, Loader2 } from "lucide-react";
-import { useState, useCallback } from "react";
+import {
+  Upload,
+  Image as ImageIcon,
+  Download,
+  X,
+  Loader2,
+  Clock,
+  Sparkles,
+  CheckCircle2,
+} from "lucide-react";
+import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { useRouter } from "next/navigation";
 import { processImageService } from "@/resources/image";
@@ -12,6 +21,32 @@ import { notFound } from "next/navigation";
 interface EditorSectionProps {
   toolId: string;
 }
+
+type ProcessingStatus =
+  | "idle"
+  | "uploading"
+  | "processing"
+  | "finishing"
+  | "done"
+  | "error";
+
+const PROCESSING_MESSAGES: Record<
+  ProcessingStatus,
+  { title: string; description: string }
+> = {
+  idle: { title: "", description: "" },
+  uploading: {
+    title: "Enviando imagem...",
+    description: "Preparando para processamento",
+  },
+  processing: {
+    title: "Processando...",
+    description: "Isso pode levar alguns segundos",
+  },
+  finishing: { title: "Finalizando...", description: "Quase lá!" },
+  done: { title: "Concluído!", description: "Sua imagem está pronta" },
+  error: { title: "Erro", description: "Algo deu errado" },
+};
 
 export default function EditorSection({ toolId }: EditorSectionProps) {
   const tool = getToolBySlug(toolId);
@@ -27,35 +62,71 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
   const [fileName, setFileName] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [processingStatus, setProcessingStatus] =
+    useState<ProcessingStatus>("idle");
+  const [elapsedTime, setElapsedTime] = useState(0);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+
+    if (isProcessing) {
+      setElapsedTime(0);
+      interval = setInterval(() => {
+        setElapsedTime((prev) => prev + 1);
+      }, 1000);
+    }
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [isProcessing]);
 
   const processImage = useCallback(
     async (file: File) => {
       setIsProcessing(true);
       setProcessedUrl(null);
       setError(null);
+      setProcessingStatus("uploading");
+      setElapsedTime(0);
 
       try {
+        // Simula um pequeno delay para mostrar "uploading"
+        await new Promise((r) => setTimeout(r, 500));
+        setProcessingStatus("processing");
+
         const result = await processImageService({
           file,
           operation: tool.operation,
         });
 
         if (result.error === "UNAUTHORIZED") {
-          // Redirect to login when user is not authenticated
           router.push("/login");
           return;
         }
 
         if (result.error) {
-          setError("Falha ao processar a imagem. Por favor, tente novamente.");
+          setProcessingStatus("error");
+          if (result.error === "PROCESSING_FAILED") {
+            setError(
+              "Falha ao processar a imagem. O servidor pode estar ocupado. Tente novamente.",
+            );
+          } else {
+            setError("Ocorreu um erro ao processar a imagem.");
+          }
           return;
         }
 
         if (result.processedImage) {
+          setProcessingStatus("finishing");
+          await new Promise((r) => setTimeout(r, 300));
           setProcessedUrl(result.processedImage);
+          setProcessingStatus("done");
         }
       } catch (err) {
-        setError("Ocorreu um erro ao processar a imagem.");
+        setProcessingStatus("error");
+        setError("Ocorreu um erro inesperado. Tente novamente.");
         console.error("Processing error:", err);
       } finally {
         setIsProcessing(false);
@@ -106,6 +177,8 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
     setFileName("");
     setError(null);
     setIsProcessing(false);
+    setProcessingStatus("idle");
+    setElapsedTime(0);
   };
 
   const ToolIcon = tool.icon;
@@ -188,11 +261,48 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
           <div className="flex-1 border-2 border-gray-300 rounded-lg bg-gray-50">
             {isProcessing ? (
               <div className="h-full flex flex-col items-center justify-center p-6 text-center">
-                <Loader2 className="size-12 text-primary animate-spin mb-4" />
-                <h4 className="text-base font-semibold mb-1">Processando...</h4>
-                <p className="text-sm text-muted-foreground">
-                  Isso pode levar alguns instantes
+                {/* Ícone dinâmico baseado no status */}
+                <div className="relative mb-4">
+                  {processingStatus === "uploading" ? (
+                    <Upload className="size-12 text-primary animate-pulse" />
+                  ) : processingStatus === "finishing" ? (
+                    <Sparkles className="size-12 text-emerald-500 animate-pulse" />
+                  ) : (
+                    <Loader2 className="size-12 text-primary animate-spin" />
+                  )}
+                </div>
+
+                {/* Título e descrição dinâmicos */}
+                <h4 className="text-base font-semibold mb-1">
+                  {PROCESSING_MESSAGES[processingStatus].title}
+                </h4>
+                <p className="text-sm text-muted-foreground mb-3">
+                  {PROCESSING_MESSAGES[processingStatus].description}
                 </p>
+
+                {/* Tempo decorrido */}
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Clock className="size-3" />
+                  <span>{elapsedTime}s</span>
+                </div>
+
+                {/* Barra de progresso animada */}
+                <div className="w-48 h-1 bg-gray-200 rounded-full mt-4 overflow-hidden">
+                  <div
+                    className="h-full bg-primary rounded-full animate-pulse"
+                    style={{
+                      width:
+                        processingStatus === "uploading"
+                          ? "30%"
+                          : processingStatus === "processing"
+                            ? "60%"
+                            : processingStatus === "finishing"
+                              ? "90%"
+                              : "100%",
+                      transition: "width 0.5s ease-out",
+                    }}
+                  />
+                </div>
               </div>
             ) : error ? (
               <div className="h-full flex flex-col items-center justify-center p-6 text-center">

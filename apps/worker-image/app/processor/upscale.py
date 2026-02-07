@@ -96,7 +96,7 @@ def _unload_lapsrn():
         logger.info("[LapSRN] ================================================")
 
 
-def apply_ai_upscale(image: Image.Image, scale: int = 4, unload_after: bool = True) -> Image.Image:
+def apply_ai_upscale(image: Image.Image, scale: int = 2, unload_after: bool = True) -> Image.Image:
     """
     Aumenta a resolução da imagem usando IA (modelo LapSRN).
 
@@ -111,7 +111,19 @@ def apply_ai_upscale(image: Image.Image, scale: int = 4, unload_after: bool = Tr
     if scale not in LAPSRN_MODELS:
         raise ValueError(f"Escala inválida: {scale}. Use 2 ou 4.")
 
+    # Limite máximo de pixels na entrada para evitar timeout
+    MAX_INPUT_SIZE = 1024
+
     try:
+        # Redimensiona imagem se for muito grande
+        width, height = image.size
+        if max(width, height) > MAX_INPUT_SIZE:
+            ratio = MAX_INPUT_SIZE / max(width, height)
+            new_width = int(width * ratio)
+            new_height = int(height * ratio)
+            logger.info(f"[LapSRN] Redimensionando entrada: {width}x{height} -> {new_width}x{new_height}")
+            image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+
         # Converte PIL para OpenCV (BGR)
         img_rgb = image.convert("RGB")
         img_array = np.array(img_rgb)

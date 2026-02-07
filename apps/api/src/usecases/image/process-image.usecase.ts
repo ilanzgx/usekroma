@@ -1,5 +1,7 @@
 import { envConfig } from "@/config/env.config";
 
+const WORKER_TIMEOUT_MS = 60000; // 1 minuto
+
 export class ProcessImageUseCase {
   private readonly workerUrl: string;
 
@@ -17,17 +19,32 @@ export class ProcessImageUseCase {
     formData.append("file", blob, filename);
     formData.append("operation", operation);
 
-    const response = await fetch(`${this.workerUrl}/process`, {
-      method: "POST",
-      body: formData,
-    });
+    const controller = new AbortController(); // AbortController for timeout
+    const timeoutId = setTimeout(() => controller.abort(), WORKER_TIMEOUT_MS);
 
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Worker error: ${error}`);
+    try {
+      const response = await fetch(`${this.workerUrl}/process`, {
+        method: "POST",
+        body: formData,
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`Worker error: ${error}`);
+      }
+
+      return Buffer.from(await response.arrayBuffer());
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        throw new Error(
+          "Tempo limite excedido. O processamento demorou muito.",
+        );
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeoutId);
     }
-
-    return Buffer.from(await response.arrayBuffer());
   }
 }
 
