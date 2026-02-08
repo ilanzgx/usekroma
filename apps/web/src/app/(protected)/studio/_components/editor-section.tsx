@@ -9,9 +9,8 @@ import {
   Loader2,
   Clock,
   Sparkles,
-  CheckCircle2,
 } from "lucide-react";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useDropzone } from "react-dropzone";
 import { useRouter } from "next/navigation";
 import { processImageService } from "@/resources/image";
@@ -20,6 +19,14 @@ import { notFound } from "next/navigation";
 
 interface EditorSectionProps {
   toolId: string;
+}
+
+interface ImageDetails {
+  width: number;
+  height: number;
+  size: number;
+  type: string;
+  aspectRatio: string;
 }
 
 type ProcessingStatus =
@@ -48,6 +55,48 @@ const PROCESSING_MESSAGES: Record<
   error: { title: "Erro", description: "Algo deu errado" },
 };
 
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+}
+
+function calculateAspectRatio(width: number, height: number): string {
+  const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
+  const divisor = gcd(width, height);
+  return `${width / divisor}:${height / divisor}`;
+}
+
+function ImageDetailsPanel({
+  details,
+  processingTime,
+}: {
+  details: ImageDetails | null;
+  processingTime?: number;
+}) {
+  if (!details) return null;
+
+  return (
+    <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
+      <span>
+        {details.width}x{details.height}
+      </span>
+      <span>•</span>
+      <span>{formatFileSize(details.size)}</span>
+      <span>•</span>
+      <span>{details.type.split("/")[1]?.toUpperCase()}</span>
+      {processingTime !== undefined && (
+        <>
+          <span>•</span>
+          <span>{processingTime}s</span>
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function EditorSection({ toolId }: EditorSectionProps) {
   const tool = getToolBySlug(toolId);
   const router = useRouter();
@@ -65,14 +114,22 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
   const [processingStatus, setProcessingStatus] =
     useState<ProcessingStatus>("idle");
   const [elapsedTime, setElapsedTime] = useState(0);
+  const elapsedTimeRef = useRef(0);
+  const [finalTime, setFinalTime] = useState<number | null>(null);
+  const [inputDetails, setInputDetails] = useState<ImageDetails | null>(null);
+  const [outputDetails, setOutputDetails] = useState<ImageDetails | null>(null);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
 
     if (isProcessing) {
       setElapsedTime(0);
+      elapsedTimeRef.current = 0;
       interval = setInterval(() => {
-        setElapsedTime((prev) => prev + 1);
+        setElapsedTime((prev) => {
+          elapsedTimeRef.current = prev + 1;
+          return prev + 1;
+        });
       }, 1000);
     }
 
@@ -83,6 +140,54 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
     };
   }, [isProcessing]);
 
+  const extractImageDetails = useCallback(
+    (file: File): Promise<ImageDetails> => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          resolve({
+            width: img.naturalWidth,
+            height: img.naturalHeight,
+            size: file.size,
+            type: file.type,
+            aspectRatio: calculateAspectRatio(
+              img.naturalWidth,
+              img.naturalHeight,
+            ),
+          });
+        };
+        img.src = URL.createObjectURL(file);
+      });
+    },
+    [],
+  );
+
+  const extractOutputDetails = useCallback(
+    async (dataUrl: string): Promise<ImageDetails> => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          // Estimate size from base64
+          const base64Length = dataUrl.split(",")[1]?.length || 0;
+          const estimatedSize = Math.round((base64Length * 3) / 4);
+
+          resolve({
+            width: img.naturalWidth,
+            height: img.naturalHeight,
+            size: estimatedSize,
+            type: "image/png",
+            aspectRatio: calculateAspectRatio(
+              img.naturalWidth,
+              img.naturalHeight,
+            ),
+          });
+        };
+        img.src = dataUrl;
+      });
+    },
+    [],
+  );
+
   const processImage = useCallback(
     async (file: File) => {
       setIsProcessing(true);
@@ -90,6 +195,8 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
       setError(null);
       setProcessingStatus("uploading");
       setElapsedTime(0);
+      setFinalTime(null);
+      setOutputDetails(null);
 
       try {
         // Simula um pequeno delay para mostrar "uploading"
@@ -123,6 +230,11 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
           await new Promise((r) => setTimeout(r, 300));
           setProcessedUrl(result.processedImage);
           setProcessingStatus("done");
+          setFinalTime(elapsedTimeRef.current);
+
+          // Extract output image details
+          const outDetails = await extractOutputDetails(result.processedImage);
+          setOutputDetails(outDetails);
         }
       } catch (err) {
         setProcessingStatus("error");
@@ -132,7 +244,7 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
         setIsProcessing(false);
       }
     },
-    [tool.operation, router],
+    [tool.operation, router, extractOutputDetails],
   );
 
   const onDrop = useCallback(
@@ -146,10 +258,14 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
         const url = URL.createObjectURL(file);
         setPreviewUrl(url);
 
+        // Extract input image details
+        const details = await extractImageDetails(file);
+        setInputDetails(details);
+
         await processImage(file);
       }
     },
-    [processImage],
+    [processImage, extractImageDetails],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -179,6 +295,8 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
     setIsProcessing(false);
     setProcessingStatus("idle");
     setElapsedTime(0);
+    setInputDetails(null);
+    setOutputDetails(null);
   };
 
   const ToolIcon = tool.icon;
@@ -195,10 +313,10 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(50vh-100px)]">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(70vh-100px)]">
         {/* Upload Area - Left Side */}
         <div className="flex flex-col">
-          <h3 className="text-lg font-semibold mb-3">Carregar Imagem</h3>
+          <h3 className="text-lg font-semibold mb-3">Selecione uma imagem</h3>
           <div
             {...getRootProps()}
             className={`flex-1 border-2 border-dashed rounded-lg transition-all cursor-pointer ${
@@ -229,6 +347,7 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
                 <p className="mt-3 text-sm text-muted-foreground truncate shrink-0">
                   {fileName}
                 </p>
+                <ImageDetailsPanel details={inputDetails} />
               </div>
             ) : (
               <div className="h-full flex flex-col items-center justify-center p-6 text-center">
@@ -257,7 +376,7 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
 
         {/* Preview Area - Right Side */}
         <div className="flex flex-col">
-          <h3 className="text-lg font-semibold mb-3">Resultado Processado</h3>
+          <h3 className="text-lg font-semibold mb-3">Resultado</h3>
           <div className="flex-1 border-2 border-gray-300 rounded-lg bg-gray-50">
             {isProcessing ? (
               <div className="h-full flex flex-col items-center justify-center p-6 text-center">
@@ -350,6 +469,10 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
                     Baixar
                   </Button>
                 </div>
+                <ImageDetailsPanel
+                  details={outputDetails}
+                  processingTime={finalTime ?? undefined}
+                />
               </div>
             ) : (
               <div className="h-full flex flex-col items-center justify-center p-6 text-center">
