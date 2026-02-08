@@ -18,7 +18,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md space-y-8">
           <div className="space-y-3">
             <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-              Entre na ImageSaaS e comece a editar suas imagens
+              Entre na Kroma e comece a editar suas imagens
             </h1>
             <p className="text-slate-500">
               Não perca tempo e dinheiro, entre com sua conta Google para

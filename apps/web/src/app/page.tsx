@@ -13,7 +13,7 @@ export default function Home() {
             <div className="size-8 bg-linear-to-br from-primary to-primary/60 rounded-lg flex items-center justify-center">
               <ImageIcon className="size-5 text-primary-foreground" />
             </div>
-            <span className="font-semibold text-lg">ImageSaaS</span>
+            <span className="font-semibold text-lg">Kroma</span>
           </div>
 
           <div className="flex items-center gap-3">

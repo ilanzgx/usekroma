@@ -1,6 +1,6 @@
-# Image Converter SaaS
+# Kroma
 
-Plataforma SaaS para manipulação de imagens.
+Plataforma SaaS para edição de imagens com IA.
 
 ## Stack
 
