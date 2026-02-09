@@ -10,6 +10,7 @@ from app.processor import (
     apply_flip_horizontal,
     apply_flip_vertical,
     apply_saturate,
+    apply_cartoon,
 )
 from PIL import Image
 
@@ -28,6 +29,7 @@ def process_image(image: Image.Image, operation: str) -> Image.Image:
         "flip_horizontal": apply_flip_horizontal,
         "flip_vertical": apply_flip_vertical,
         "saturate": apply_saturate,
+        "cartoon": apply_cartoon,
     }
 
     if operation not in operations:
