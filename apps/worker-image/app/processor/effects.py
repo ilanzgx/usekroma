@@ -287,6 +287,91 @@ def apply_pencil_sketch(image: Image.Image) -> Image.Image:
     return Image.fromarray(sketch_rgb)
 
 
+def apply_oil_painting(image: Image.Image) -> Image.Image:
+    """
+    Aplica efeito realista de pintura a óleo (oil painting clássico).
+
+    Pipeline:
+    1. Suavização leve (preserva variação tonal)
+    2. Oil Painting filter real (mistura local)
+    3. Pinceladas direcionais sutis
+    4. Contraste pictórico (não fotográfico)
+    5. Compressão de highlights (peso de tinta)
+    6. Sharpen mínimo
+    """
+
+    import cv2
+    import numpy as np
+    from PIL import Image
+
+    # PIL -> OpenCV
+    if image.mode == "RGBA":
+        image = image.convert("RGB")
+
+    img = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+
+    # 1. Suavização leve (base pictórica)
+    base = cv2.GaussianBlur(img, (0, 0), sigmaX=1.2)
+
+    # 2. Oil Painting real (mistura local de cores)
+    oil = cv2.xphoto.oilPainting(
+        base,
+        size=7,       # espessura do pincel
+        dynRatio=1    # variação tonal natural
+    )
+
+    # 3. Pinceladas direcionais sutis (anisotropic feel)
+    stroke = oil.astype(np.float32)
+
+    for theta in (0, 45, 90, 135):
+        kernel = cv2.getGaborKernel(
+            ksize=(15, 15),
+            sigma=4.0,
+            theta=np.deg2rad(theta),
+            lambd=10.0,
+            gamma=0.6,
+            psi=0
+        )
+        kernel /= kernel.sum() if kernel.sum() != 0 else 1
+        stroke += cv2.filter2D(oil.astype(np.float32), -1, kernel) * 0.12
+
+    stroke = np.clip(stroke, 0, 255).astype(np.uint8)
+
+    # 4. Contraste pictórico (LAB)
+    lab = cv2.cvtColor(stroke, cv2.COLOR_BGR2LAB)
+    l, a, b = cv2.split(lab)
+
+    clahe = cv2.createCLAHE(
+        clipLimit=1.2,      # MAIS SUTIL
+        tileGridSize=(12, 12)
+    )
+    l = clahe.apply(l)
+
+    # 5. Compressão de médios e highlights (peso de óleo)
+    l = np.clip(l * 0.88, 0, 255).astype(np.uint8)
+
+    oil_lab = cv2.merge((l, a, b))
+    oil_bgr = cv2.cvtColor(oil_lab, cv2.COLOR_LAB2BGR)
+
+    # Compressão de tons claros (remove "lavado")
+    oil_float = oil_bgr.astype(np.float32) / 255.0
+    oil_float = np.power(oil_float, 1.15)
+    oil_bgr = np.clip(oil_float * 255, 0, 255).astype(np.uint8)
+
+    # 6. Sharpen mínimo (realça pinceladas, não bordas)
+    kernel_sharp = np.array([
+        [0, -0.25, 0],
+        [-0.25, 2.0, -0.25],
+        [0, -0.25, 0]
+    ])
+    oil_bgr = cv2.filter2D(oil_bgr, -1, kernel_sharp)
+    oil_bgr = np.clip(oil_bgr, 0, 255).astype(np.uint8)
+
+    # OpenCV -> PIL
+    oil_rgb = cv2.cvtColor(oil_bgr, cv2.COLOR_BGR2RGB)
+    return Image.fromarray(oil_rgb)
+
+
 def apply_grayscale(image: Image.Image) -> Image.Image:
     """
     Converte a imagem para escala de cinza (preto e branco).

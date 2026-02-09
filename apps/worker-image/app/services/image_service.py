@@ -12,6 +12,7 @@ from app.processor import (
     apply_saturate,
     apply_cartoon,
     apply_pencil_sketch,
+    apply_oil_painting,
 )
 from PIL import Image
 
@@ -32,6 +33,7 @@ def process_image(image: Image.Image, operation: str) -> Image.Image:
         "saturate": apply_saturate,
         "cartoon": apply_cartoon,
         "pencil_sketch": apply_pencil_sketch,
+        "oil_painting": apply_oil_painting,
     }
 
     if operation not in operations:
