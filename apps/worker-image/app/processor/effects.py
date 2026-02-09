@@ -168,6 +168,125 @@ def apply_cartoon(image: Image.Image) -> Image.Image:
 
     return Image.fromarray(cartoon_rgb)
 
+
+def apply_pencil_sketch(image: Image.Image) -> Image.Image:
+    """
+    Aplica efeito de desenho a lápis na imagem.
+
+    Técnica avançada que simula desenho feito à mão:
+    1. Color dodge blend para base do sketch
+    2. Múltiplas camadas de hachura em ângulos diferentes
+    3. Textura de papel para realismo
+    4. Variações sutis simulando traços humanos
+
+    Args:
+        image: Imagem de entrada
+
+    Returns:
+        Imagem com efeito de desenho a lápis realista
+    """
+    # Converte PIL para OpenCV (BGR)
+    if image.mode == "RGBA":
+        image = image.convert("RGB")
+
+    img_array = np.array(image)
+    img_bgr = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
+    h, w = img_bgr.shape[:2]
+
+    # 1. Converte para escala de cinza
+    gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
+
+    # 2. Color Dodge Blend para base do sketch
+    inverted = cv2.bitwise_not(gray)
+    blurred = cv2.GaussianBlur(inverted, (21, 21), sigmaX=0, sigmaY=0)
+    blurred_inv = cv2.bitwise_not(blurred)
+    sketch = cv2.divide(gray, blurred_inv, scale=256.0)
+
+    # 3. Melhora o contraste
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    sketch = clahe.apply(sketch)
+
+    # 4. Cria múltiplas camadas de RABISCOS FINOS e delicados
+    # Pequenos traços em várias direções, como um artista fazendo hachuras suaves
+
+    def create_fine_strokes(h, w, angle_degrees, stroke_length=3):
+        """Cria camada de rabiscos finos e curtos em um ângulo"""
+        # Ruído base mais fino
+        noise = np.random.rand(h, w).astype(np.float32)
+
+        # Kernel de traço curto e fino
+        kernel = np.zeros((stroke_length, stroke_length), dtype=np.float32)
+        angle_rad = np.radians(angle_degrees)
+        center = stroke_length // 2
+
+        for i in range(stroke_length):
+            offset = i - center
+            x = int(center + offset * np.cos(angle_rad) + 0.5)
+            y = int(center + offset * np.sin(angle_rad) + 0.5)
+            x = max(0, min(stroke_length - 1, x))
+            y = max(0, min(stroke_length - 1, y))
+            kernel[y, x] = 1
+
+        kernel = kernel / max(kernel.sum(), 1)
+        strokes = cv2.filter2D(noise, -1, kernel)
+        return strokes
+
+    # Cria 5 camadas de rabiscos finos em diferentes ângulos
+    # Kernels pequenos (3-5px) para traços delicados
+    strokes1 = create_fine_strokes(h, w, 30, 3)    # Leve diagonal
+    strokes2 = create_fine_strokes(h, w, 60, 4)    # Diagonal média
+    strokes3 = create_fine_strokes(h, w, 120, 3)   # Diagonal oposta
+    strokes4 = create_fine_strokes(h, w, 150, 4)   # Quase horizontal
+    strokes5 = create_fine_strokes(h, w, 80, 5)    # Quase vertical
+
+    # Combina os rabiscos com pesos variados para naturalidade
+    combined_strokes = (
+        strokes1 * 0.22 +
+        strokes2 * 0.20 +
+        strokes3 * 0.22 +
+        strokes4 * 0.18 +
+        strokes5 * 0.18
+    )
+
+    # Normaliza para variação muito sutil (95-100%)
+    combined_strokes = cv2.normalize(combined_strokes, None, 0.93, 1.0, cv2.NORM_MINMAX)
+
+    # 5. Adiciona micro-textura de grafite (ruído bem fino)
+    graphite = np.random.rand(h, w).astype(np.float32)
+    graphite = cv2.GaussianBlur(graphite, (3, 3), 0)
+    graphite = cv2.normalize(graphite, None, 0.96, 1.0, cv2.NORM_MINMAX)
+
+    # 6. Textura de papel sutil
+    paper = np.random.rand(h, w).astype(np.float32)
+    paper = cv2.GaussianBlur(paper, (7, 7), 0)
+    paper = cv2.normalize(paper, None, 0.95, 1.0, cv2.NORM_MINMAX)
+
+    # 7. Variação nas áreas escuras (pressão do lápis)
+    sketch_float = sketch.astype(np.float32)
+    dark_mask = (sketch_float < 128).astype(np.float32)
+    sketch_blurred = cv2.GaussianBlur(sketch_float, (3, 3), 0)
+    sketch_float = sketch_float * (1 - dark_mask * 0.2) + sketch_blurred * (dark_mask * 0.2)
+
+    # 8. Combina tudo de forma sutil
+    sketch_normalized = sketch_float / 255.0
+    sketch_textured = sketch_normalized * combined_strokes * graphite * paper
+
+    # Ajusta contraste final
+    sketch_final = np.clip(sketch_textured * 255, 0, 255).astype(np.uint8)
+
+    # Sharpening muito suave para manter delicadeza
+    kernel_sharp = np.array([[0, -0.3, 0],
+                             [-0.3, 2.2, -0.3],
+                             [0, -0.3, 0]])
+    sketch_final = cv2.filter2D(sketch_final, -1, kernel_sharp)
+    sketch_final = np.clip(sketch_final, 0, 255).astype(np.uint8)
+
+    # Converte para RGB
+    sketch_rgb = cv2.cvtColor(sketch_final, cv2.COLOR_GRAY2RGB)
+
+    return Image.fromarray(sketch_rgb)
+
+
 def apply_grayscale(image: Image.Image) -> Image.Image:
     """
     Converte a imagem para escala de cinza (preto e branco).

@@ -11,6 +11,7 @@ from app.processor import (
     apply_flip_vertical,
     apply_saturate,
     apply_cartoon,
+    apply_pencil_sketch,
 )
 from PIL import Image
 
@@ -30,6 +31,7 @@ def process_image(image: Image.Image, operation: str) -> Image.Image:
         "flip_vertical": apply_flip_vertical,
         "saturate": apply_saturate,
         "cartoon": apply_cartoon,
+        "pencil_sketch": apply_pencil_sketch,
     }
 
     if operation not in operations:
