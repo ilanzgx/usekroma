@@ -9,7 +9,10 @@ export type ImageProcessOperations =
   | "flip_horizontal"
   | "flip_vertical"
   | "sepia"
-  | "vignette";
+  | "vignette"
+  | "cartoon"
+  | "pencil_sketch"
+  | "oil_painting";
 
 export interface ImageProcessRequest {
   file: File;

@@ -11,6 +11,9 @@ import {
   FlipVertical,
   Sun,
   Circle,
+  Drama,
+  Pencil,
+  Paintbrush,
 } from "lucide-react";
 
 export interface Tool {
@@ -246,6 +249,73 @@ export const TOOLS: Tool[] = [
         "dark edges",
         "efeito vinheta",
         "bordas escuras",
+      ],
+    },
+  },
+  {
+    id: "cartoon",
+    slugs: ["cartoon", "desenho-animado"],
+    name: "Cartoon",
+    description: "Transforme fotos em desenho animado.",
+    icon: Drama,
+    color: "text-pink-500",
+    operation: "cartoon",
+    seo: {
+      title: "Efeito Cartoon em Imagens - Transforme Fotos em Desenho",
+      description:
+        "Transforme suas fotos em desenhos animados com estilo cartoon. Efeito artístico com quantização de cores e contornos.",
+      keywords: [
+        "cartoon effect",
+        "cartoonize photo",
+        "comic effect",
+        "desenho animado",
+        "efeito cartoon",
+        "transformar foto em desenho",
+      ],
+    },
+  },
+  {
+    id: "pencil-sketch",
+    slugs: ["pencil-sketch", "desenho-a-lapis"],
+    name: "Desenho a Lápis",
+    description: "Simule um desenho feito à mão.",
+    icon: Pencil,
+    color: "text-stone-500",
+    operation: "pencil_sketch",
+    seo: {
+      title: "Efeito Desenho a Lápis - Transforme Fotos em Sketch",
+      description:
+        "Transforme suas fotos em desenhos a lápis realistas com traços artísticos. Efeito pencil sketch online grátis.",
+      keywords: [
+        "pencil sketch",
+        "drawing effect",
+        "sketch filter",
+        "pencil drawing",
+        "desenho a lápis",
+        "efeito sketch",
+        "foto para desenho",
+      ],
+    },
+  },
+  {
+    id: "oil-painting",
+    slugs: ["oil-painting", "pintura-a-oleo"],
+    name: "Pintura a Óleo",
+    description: "Aplique efeito de pintura a óleo.",
+    icon: Paintbrush,
+    color: "text-orange-500",
+    operation: "oil_painting",
+    seo: {
+      title: "Efeito Pintura a Óleo em Imagens - Ferramenta Grátis",
+      description:
+        "Transforme suas fotos em pinturas a óleo com cores vibrantes e pinceladas artísticas. Efeito oil painting online.",
+      keywords: [
+        "oil painting effect",
+        "painting filter",
+        "artistic effect",
+        "pintura a óleo",
+        "efeito pintura",
+        "foto para pintura",
       ],
     },
   },

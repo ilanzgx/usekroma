@@ -339,18 +339,18 @@ def apply_oil_painting(image: Image.Image) -> Image.Image:
 
     # 4. Contraste pictórico (LAB)
     lab = cv2.cvtColor(stroke, cv2.COLOR_BGR2LAB)
-    l, a, b = cv2.split(lab)
+    l_chan, a, b = cv2.split(lab)
 
     clahe = cv2.createCLAHE(
         clipLimit=1.2,      # MAIS SUTIL
         tileGridSize=(12, 12)
     )
-    l = clahe.apply(l)
+    l_chan = clahe.apply(l_chan)
 
     # 5. Compressão de médios e highlights (peso de óleo)
-    l = np.clip(l * 0.88, 0, 255).astype(np.uint8)
+    l_chan = np.clip(l_chan * 0.88, 0, 255).astype(np.uint8)
 
-    oil_lab = cv2.merge((l, a, b))
+    oil_lab = cv2.merge((l_chan, a, b))
     oil_bgr = cv2.cvtColor(oil_lab, cv2.COLOR_LAB2BGR)
 
     # Compressão de tons claros (remove "lavado")
