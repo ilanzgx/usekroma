@@ -1,12 +1,10 @@
-import { UserRepository, userRepository } from "@/repositories/user.repository";
+import { IUserRepository } from "@/repositories/user.repository.interface";
 
 export class ListUsersUseCase {
-  constructor(private repository: UserRepository) {}
+  constructor(private readonly repository: IUserRepository) {}
 
   async execute() {
     const users = await this.repository.findAll();
     return users;
   }
 }
-
-export const listUsersUseCase = new ListUsersUseCase(userRepository);

@@ -1,7 +1,9 @@
 import { FastifyRequest, FastifyReply } from "fastify";
-import { processImageUseCase } from "@/usecases/image/process-image.usecase";
+import { ProcessImageUseCase } from "@/usecases/image/process-image.usecase";
 
 export class ImageController {
+  constructor(private readonly processImageUseCase: ProcessImageUseCase) {}
+
   async uploadImage(req: FastifyRequest, reply: FastifyReply) {
     const data = await req.file();
 
@@ -16,7 +18,7 @@ export class ImageController {
     const operation = operationField?.value || "upscale";
 
     try {
-      const processedImage = await processImageUseCase.execute(
+      const processedImage = await this.processImageUseCase.execute(
         buffer,
         data.filename,
         operation,

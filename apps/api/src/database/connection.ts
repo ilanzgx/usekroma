@@ -8,3 +8,4 @@ const client = postgres(DATABASE_URL, databaseConfig);
 export const db = drizzle(client, {
   schema,
 });
+export type Database = typeof db;

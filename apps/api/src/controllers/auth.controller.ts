@@ -1,11 +1,13 @@
 import { FastifyRequest, FastifyReply } from "fastify";
-import { googleAuthUseCase } from "@/usecases/auth/google-auth.usecase";
+import { GoogleAuthUseCase } from "@/usecases/auth/google-auth.usecase";
 import { GoogleUserInfo } from "@/models/auth.model";
 import { envConfig } from "@/config/env.config";
 
 const FRONTEND_URL = envConfig.FRONTEND_URL;
 
 export class AuthController {
+  constructor(private readonly googleAuthUseCase: GoogleAuthUseCase) {}
+
   async googleCallback(req: FastifyRequest, reply: FastifyReply) {
     try {
       // get access token from Google OAuth2
@@ -31,7 +33,7 @@ export class AuthController {
       const googleUser = (await response.json()) as GoogleUserInfo;
 
       // create or get existing user from database
-      const user = await googleAuthUseCase.execute({
+      const user = await this.googleAuthUseCase.execute({
         email: googleUser.email,
         name: googleUser.name,
         googleId: googleUser.id,

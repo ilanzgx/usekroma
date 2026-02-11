@@ -47,5 +47,3 @@ export class ProcessImageUseCase {
     }
   }
 }
-
-export const processImageUseCase = new ProcessImageUseCase();

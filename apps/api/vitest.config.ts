@@ -28,6 +28,7 @@ export default defineConfig({
     ],
     globals: true,
     environment: "node",
+    setupFiles: ["./vitest.setup.ts"],
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],

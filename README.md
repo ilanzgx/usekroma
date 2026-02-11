@@ -128,8 +128,7 @@ Processamento de imagem em Node.js bloqueia o Event Loop. Em Python, temos acess
 Evitamos complexidade. Apenas Tabelas SQL simples.
 
 - `users`: Autenticação e Créditos.
-- `sessions`: Controle de login.
-  Futuramente: `transactions` para histórico de uso.
+  Futuramente: `sessions` Controle de login.
 
 ---
 

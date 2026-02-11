@@ -1,9 +1,9 @@
 import { FastifyInstance } from "fastify";
-import { ImageController } from "@/controllers/image.controller";
 import { z as zod } from "zod";
+import { makeImageController } from "@/factories/image.factory";
 
 export async function imageRoutes(app: FastifyInstance) {
-  const imageController = new ImageController();
+  const controller = makeImageController();
 
   app.post(
     "/process",
@@ -29,6 +29,6 @@ export async function imageRoutes(app: FastifyInstance) {
         },
       },
     },
-    imageController.uploadImage.bind(imageController),
+    controller.uploadImage.bind(controller),
   );
 }

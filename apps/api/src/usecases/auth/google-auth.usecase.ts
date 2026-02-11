@@ -1,8 +1,8 @@
 import { User } from "@/models/user.model";
-import { UserRepository, userRepository } from "@/repositories/user.repository";
+import { IUserRepository } from "@/repositories/user.repository.interface";
 
 export class GoogleAuthUseCase {
-  constructor(private repository: UserRepository) {}
+  constructor(private repository: IUserRepository) {}
 
   async execute({
     email,
@@ -36,5 +36,3 @@ export class GoogleAuthUseCase {
     return newUser;
   }
 }
-
-export const googleAuthUseCase = new GoogleAuthUseCase(userRepository);
