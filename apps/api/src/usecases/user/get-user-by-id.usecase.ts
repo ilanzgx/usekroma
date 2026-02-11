@@ -1,12 +1,13 @@
-import { UserRepository, userRepository } from "@/repositories/user.repository";
+import { IUserRepository } from "@/repositories/user.repository.interface";
 
 export class GetUserByIdUseCase {
-  constructor(private repository: UserRepository) {}
+  constructor(private repository: IUserRepository) {}
 
   async execute(id: string) {
     const user = await this.repository.findById(id);
+    if (!user) {
+      throw new Error("User not found");
+    }
     return user;
   }
 }
-
-export const getUserByIdUseCase = new GetUserByIdUseCase(userRepository);

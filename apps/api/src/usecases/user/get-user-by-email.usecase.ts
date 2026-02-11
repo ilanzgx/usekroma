@@ -1,12 +1,13 @@
-import { UserRepository, userRepository } from "@/repositories/user.repository";
+import { IUserRepository } from "@/repositories/user.repository.interface";
 
 export class GetUserByEmailUseCase {
-  constructor(private repository: UserRepository) {}
+  constructor(private repository: IUserRepository) {}
 
   async execute(email: string) {
     const user = await this.repository.findByEmail(email);
+    if (!user) {
+      throw new Error("User not found");
+    }
     return user;
   }
 }
-
-export const getUserByEmailUseCase = new GetUserByEmailUseCase(userRepository);
