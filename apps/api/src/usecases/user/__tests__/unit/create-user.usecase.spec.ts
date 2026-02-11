@@ -38,7 +38,6 @@ describe("CreateUserUseCase unit tests", () => {
 
     // Act
     const result = await sut.execute(input);
-    console.log(result);
 
     // Assert
     expect(result).toBeDefined();

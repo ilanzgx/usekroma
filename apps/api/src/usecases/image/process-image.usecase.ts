@@ -3,11 +3,7 @@ import { envConfig } from "@/config/env.config";
 const WORKER_TIMEOUT_MS = 120000; // 2 minutes (includes container cold start + processing time)
 
 export class ProcessImageUseCase {
-  private readonly workerUrl: string;
-
-  constructor() {
-    this.workerUrl = envConfig.WORKER_IMAGE_URL;
-  }
+  constructor(private readonly workerUrl: string) {}
 
   async execute(
     fileBuffer: Buffer,
