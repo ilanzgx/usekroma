@@ -46,10 +46,14 @@ export default function LoginPage() {
       </div>
 
       {/* Right Side */}
-      <div className="hidden lg:flex flex-1 bg-primary items-center justify-center p-12">
-        <div className="max-w-md space-y-6 text-white">
-          <h1>Imagem</h1>
-        </div>
+      <div className="hidden lg:block relative flex-1">
+        <Image
+          src="/images/sky.jpg"
+          alt="Sky Background"
+          fill
+          className="object-cover"
+          priority
+        />
       </div>
     </div>
   );
