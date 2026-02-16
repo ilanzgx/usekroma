@@ -23,7 +23,6 @@ export default function ResizeSection() {
               )}
             />
             <span className="text-sm font-semibold">{resize.aspectRatio}</span>
-            <span className="text-xs text-muted-foreground">{resize.name}</span>
           </Link>
         ))}
       </div>

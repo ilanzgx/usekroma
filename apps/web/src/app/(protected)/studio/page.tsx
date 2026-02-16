@@ -26,9 +26,9 @@ export default function StudioPage() {
           O que você deseja criar hoje?
         </p>
       </div>
+      <SocialMediaSection />
       <ResizeSection />
       <ToolsSection />
-      <SocialMediaSection />
     </div>
   );
 }

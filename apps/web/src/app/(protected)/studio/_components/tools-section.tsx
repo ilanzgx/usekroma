@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { TOOLS } from "@/lib/tools";
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Coins } from "lucide-react";
 
 export default function ToolsSection() {
   return (
@@ -49,6 +49,17 @@ export default function ToolsSection() {
               )}
             >
               {tool.description}
+            </span>
+            <span
+              className={cn(
+                "mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                tool.isAI
+                  ? "bg-purple-100 text-purple-700"
+                  : "bg-gray-100 text-gray-600",
+              )}
+            >
+              <Coins className="size-3" />
+              {tool.credits} {tool.credits === 1 ? "crédito" : "créditos"}
             </span>
           </Link>
         ))}

@@ -25,6 +25,7 @@ export interface Tool {
   color: string;
   operation: ImageProcessOperations;
   isAI?: boolean;
+  credits: number;
   seo: {
     title: string;
     description: string;
@@ -42,6 +43,7 @@ export const TOOLS: Tool[] = [
     color: "text-purple-500",
     operation: "remove_background",
     isAI: true,
+    credits: 10,
     seo: {
       title: "Remover Fundo de Imagens - Ferramenta IA Grátis",
       description:
@@ -65,6 +67,7 @@ export const TOOLS: Tool[] = [
     color: "text-emerald-500",
     operation: "ai_upscale",
     isAI: true,
+    credits: 5,
     seo: {
       title: "Aumentar Resolução de Imagens com IA - Ferramenta Grátis",
       description:
@@ -89,6 +92,7 @@ export const TOOLS: Tool[] = [
     icon: Drama,
     color: "text-pink-500",
     operation: "cartoon",
+    credits: 2,
     seo: {
       title: "Efeito Cartoon em Imagens - Transforme Fotos em Desenho",
       description:
@@ -111,6 +115,7 @@ export const TOOLS: Tool[] = [
     icon: Pencil,
     color: "text-stone-500",
     operation: "pencil_sketch",
+    credits: 2,
     seo: {
       title: "Efeito Desenho a Lápis - Transforme Fotos em Sketch",
       description:
@@ -134,6 +139,7 @@ export const TOOLS: Tool[] = [
     icon: Paintbrush,
     color: "text-orange-500",
     operation: "oil_painting",
+    credits: 2,
     seo: {
       title: "Efeito Pintura a Óleo em Imagens - Ferramenta Grátis",
       description:
@@ -156,6 +162,7 @@ export const TOOLS: Tool[] = [
     icon: Focus,
     color: "text-yellow-500",
     operation: "sharpen",
+    credits: 1,
     seo: {
       title: "Melhorar Nitidez de Imagens Online - Ferramenta Grátis",
       description:
@@ -178,6 +185,7 @@ export const TOOLS: Tool[] = [
     icon: Palette,
     color: "text-gray-500",
     operation: "grayscale",
+    credits: 1,
     seo: {
       title: "Converter Imagens para Preto e Branco - Ferramenta Grátis",
       description:
@@ -201,6 +209,7 @@ export const TOOLS: Tool[] = [
     icon: CircleDashed,
     color: "text-blue-500",
     operation: "blur",
+    credits: 1,
     seo: {
       title: "Desfocar Imagens Online - Ferramenta de Desfoque Grátis",
       description:
@@ -224,6 +233,7 @@ export const TOOLS: Tool[] = [
     icon: Droplets,
     color: "text-cyan-500",
     operation: "saturate",
+    credits: 1,
     seo: {
       title: "Ajustar Saturação de Imagens - Ferramenta Grátis",
       description:
@@ -245,6 +255,7 @@ export const TOOLS: Tool[] = [
     icon: FlipHorizontal,
     color: "text-indigo-500",
     operation: "flip_horizontal",
+    credits: 1,
     seo: {
       title: "Espelhar Imagens Online - Ferramenta Grátis",
       description:
@@ -265,6 +276,7 @@ export const TOOLS: Tool[] = [
     icon: FlipVertical,
     color: "text-teal-500",
     operation: "flip_vertical",
+    credits: 1,
     seo: {
       title: "Inverter Imagens Online - Ferramenta Grátis",
       description:
@@ -285,6 +297,7 @@ export const TOOLS: Tool[] = [
     icon: Sun,
     color: "text-amber-600",
     operation: "sepia",
+    credits: 1,
     seo: {
       title: "Efeito Sépia em Imagens - Ferramenta Grátis",
       description:
@@ -306,6 +319,7 @@ export const TOOLS: Tool[] = [
     icon: Circle,
     color: "text-slate-600",
     operation: "vignette",
+    credits: 1,
     seo: {
       title: "Efeito Vinheta em Imagens - Ferramenta Grátis",
       description:
