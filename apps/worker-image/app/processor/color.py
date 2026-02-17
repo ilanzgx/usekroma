@@ -17,9 +17,20 @@ def apply_saturate(image: Image.Image, factor: float = 1.5) -> Image.Image:
     Returns:
         Imagem com saturação ajustada
     """
+    # Preserva canal alpha se existir
+    alpha_channel = None
+    if image.mode == "RGBA":
+        alpha_channel = image.split()[3]
+    
     # Converte para RGB se necessário
     if image.mode != "RGB":
         image = image.convert("RGB")
 
     enhancer = ImageEnhance.Color(image)
-    return enhancer.enhance(factor)
+    result = enhancer.enhance(factor)
+    
+    # Restaura canal alpha se existia
+    if alpha_channel is not None:
+        result.putalpha(alpha_channel)
+    
+    return result

@@ -105,8 +105,10 @@ def apply_cartoon(image: Image.Image) -> Image.Image:
     """
     from scipy.spatial import cKDTree
 
-    # Converte PIL para OpenCV (BGR)
+    # Preserva canal alpha se existir
+    alpha_channel = None
     if image.mode == "RGBA":
+        alpha_channel = image.split()[3]
         image = image.convert("RGB")
 
     img_array = np.array(image)
@@ -165,8 +167,13 @@ def apply_cartoon(image: Image.Image) -> Image.Image:
 
     # Converte de volta para RGB
     cartoon_rgb = cv2.cvtColor(cartoon_bgr, cv2.COLOR_BGR2RGB)
+    result = Image.fromarray(cartoon_rgb)
 
-    return Image.fromarray(cartoon_rgb)
+    # Restaura canal alpha se existia
+    if alpha_channel is not None:
+        result.putalpha(alpha_channel)
+
+    return result
 
 
 def apply_pencil_sketch(image: Image.Image) -> Image.Image:
@@ -185,8 +192,10 @@ def apply_pencil_sketch(image: Image.Image) -> Image.Image:
     Returns:
         Imagem com efeito de desenho a lápis realista
     """
-    # Converte PIL para OpenCV (BGR)
+    # Preserva canal alpha se existir
+    alpha_channel = None
     if image.mode == "RGBA":
+        alpha_channel = image.split()[3]
         image = image.convert("RGB")
 
     img_array = np.array(image)
@@ -283,8 +292,13 @@ def apply_pencil_sketch(image: Image.Image) -> Image.Image:
 
     # Converte para RGB
     sketch_rgb = cv2.cvtColor(sketch_final, cv2.COLOR_GRAY2RGB)
+    result = Image.fromarray(sketch_rgb)
 
-    return Image.fromarray(sketch_rgb)
+    # Restaura canal alpha se existia
+    if alpha_channel is not None:
+        result.putalpha(alpha_channel)
+
+    return result
 
 
 def apply_oil_painting(image: Image.Image) -> Image.Image:
@@ -304,8 +318,10 @@ def apply_oil_painting(image: Image.Image) -> Image.Image:
     import numpy as np
     from PIL import Image
 
-    # PIL -> OpenCV
+    # Preserva canal alpha se existir
+    alpha_channel = None
     if image.mode == "RGBA":
+        alpha_channel = image.split()[3]
         image = image.convert("RGB")
 
     img = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
@@ -369,7 +385,13 @@ def apply_oil_painting(image: Image.Image) -> Image.Image:
 
     # OpenCV -> PIL
     oil_rgb = cv2.cvtColor(oil_bgr, cv2.COLOR_BGR2RGB)
-    return Image.fromarray(oil_rgb)
+    result = Image.fromarray(oil_rgb)
+
+    # Restaura canal alpha se existia
+    if alpha_channel is not None:
+        result.putalpha(alpha_channel)
+
+    return result
 
 
 def apply_grayscale(image: Image.Image) -> Image.Image:
@@ -382,7 +404,18 @@ def apply_grayscale(image: Image.Image) -> Image.Image:
     Returns:
         Imagem em escala de cinza (modo RGB para compatibilidade)
     """
-    return image.convert("L").convert("RGB")
+    # Preserva canal alpha se existir
+    alpha_channel = None
+    if image.mode == "RGBA":
+        alpha_channel = image.split()[3]
+    
+    result = image.convert("L").convert("RGB")
+    
+    # Restaura canal alpha se existia
+    if alpha_channel is not None:
+        result.putalpha(alpha_channel)
+    
+    return result
 
 
 def apply_sepia(image: Image.Image) -> Image.Image:
@@ -395,6 +428,11 @@ def apply_sepia(image: Image.Image) -> Image.Image:
     Returns:
         Imagem com tom sépia
     """
+    # Preserva canal alpha se existir
+    alpha_channel = None
+    if image.mode == "RGBA":
+        alpha_channel = image.split()[3]
+    
     # Converte para RGB se necessário
     if image.mode != "RGB":
         image = image.convert("RGB")
@@ -413,6 +451,10 @@ def apply_sepia(image: Image.Image) -> Image.Image:
 
             # Limita valores a 255
             pixels[x, y] = (min(255, tr), min(255, tg), min(255, tb))
+    
+    # Restaura canal alpha se existia
+    if alpha_channel is not None:
+        image.putalpha(alpha_channel)
 
     return image
 
@@ -430,6 +472,11 @@ def apply_vignette(image: Image.Image, intensity: float = 0.5) -> Image.Image:
     """
     import math
 
+    # Preserva canal alpha se existir
+    alpha_channel = None
+    if image.mode == "RGBA":
+        alpha_channel = image.split()[3]
+    
     # Converte para RGB se necessário
     if image.mode != "RGB":
         image = image.convert("RGB")
@@ -460,6 +507,10 @@ def apply_vignette(image: Image.Image, intensity: float = 0.5) -> Image.Image:
                 int(g * factor),
                 int(b * factor)
             )
+    
+    # Restaura canal alpha se existia
+    if alpha_channel is not None:
+        image.putalpha(alpha_channel)
 
     return image
 

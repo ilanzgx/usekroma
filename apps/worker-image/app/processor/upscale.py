@@ -124,6 +124,17 @@ def apply_ai_upscale(image: Image.Image, scale: int = 2, unload_after: bool = Tr
             logger.info(f"[LapSRN] Redimensionando entrada: {width}x{height} -> {new_width}x{new_height}")
             image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
 
+        # Preserva canal alpha se existir
+        alpha_channel = None
+        if image.mode == "RGBA":
+            alpha_channel = image.split()[3]
+            # Redimensiona o alpha com o mesmo fator de escala
+            alpha_width, alpha_height = alpha_channel.size
+            alpha_channel = alpha_channel.resize(
+                (alpha_width * scale, alpha_height * scale),
+                Image.Resampling.LANCZOS
+            )
+        
         # Converte PIL para OpenCV (BGR)
         img_rgb = image.convert("RGB")
         img_array = np.array(img_rgb)
@@ -136,6 +147,10 @@ def apply_ai_upscale(image: Image.Image, scale: int = 2, unload_after: bool = Tr
         # Converte de volta para PIL (RGB)
         result_rgb = cv2.cvtColor(result_bgr, cv2.COLOR_BGR2RGB)
         result_image = Image.fromarray(result_rgb)
+        
+        # Restaura canal alpha se existia
+        if alpha_channel is not None:
+            result_image.putalpha(alpha_channel)
 
         return result_image
 
