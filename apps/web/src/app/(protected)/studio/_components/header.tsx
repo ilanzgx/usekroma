@@ -24,10 +24,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
+import { PricingDialog } from "@/components/dialogs/pricing-dialog";
 
 export default function StudioHeader() {
   const [user, setUser] = useState<UserType | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isPricingOpen, setIsPricingOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -61,14 +63,14 @@ export default function StudioHeader() {
             </>
           ) : (
             <>
-              <Link
-                href="/pricing"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm border rounded-md hover:bg-gray-50 transition-colors"
+              <button
+                onClick={() => setIsPricingOpen(true)}
+                className="flex cursor-pointer items-center gap-1.5 px-3 py-1.5 text-sm border rounded-md hover:bg-gray-50 transition-colors"
               >
                 <Coins className="size-4 text-muted-foreground" />
                 <span className="font-medium">{user?.credits ?? 0}</span>
                 <span className="text-muted-foreground">créditos</span>
-              </Link>
+              </button>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -100,11 +102,12 @@ export default function StudioHeader() {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/pricing" className="cursor-pointer">
-                      <Crown className="text-yellow-500" />
-                      <span className="font-medium">Fazer Upgrade</span>
-                    </Link>
+                  <DropdownMenuItem
+                    onClick={() => setIsPricingOpen(true)}
+                    className="cursor-pointer"
+                  >
+                    <Crown className="text-yellow-500" />
+                    <span className="font-medium">Fazer Upgrade</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
@@ -140,6 +143,7 @@ export default function StudioHeader() {
           )}
         </div>
       </div>
+      <PricingDialog open={isPricingOpen} onOpenChange={setIsPricingOpen} />
     </header>
   );
 }
