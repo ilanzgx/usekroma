@@ -1,12 +1,12 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { GoogleAuthUseCase } from "@/usecases/auth/google-auth.usecase";
 import { GoogleUserInfo } from "@/models/auth.model";
-import { envConfig } from "@/config/env.config";
-
-const FRONTEND_URL = envConfig.FRONTEND_URL;
 
 export class AuthController {
-  constructor(private readonly googleAuthUseCase: GoogleAuthUseCase) {}
+  constructor(
+    private readonly googleAuthUseCase: GoogleAuthUseCase,
+    private readonly frontendUrl: string,
+  ) {}
 
   async googleCallback(req: FastifyRequest, reply: FastifyReply) {
     try {
@@ -48,7 +48,7 @@ export class AuthController {
 
       // redirect to frontend API route with token (frontend will set HttpOnly cookie)
       return reply.redirect(
-        `${FRONTEND_URL}/api/auth/callback?token=${jwtToken}`,
+        `${this.frontendUrl}/api/auth/callback?token=${jwtToken}`,
       );
     } catch (error) {
       req.log.error(error);
@@ -56,7 +56,7 @@ export class AuthController {
       const errorMessage =
         error instanceof Error ? error.message : "Authentication failed";
       return reply.redirect(
-        `${FRONTEND_URL}/login?error=${encodeURIComponent(errorMessage)}`,
+        `${this.frontendUrl}/login?error=${encodeURIComponent(errorMessage)}`,
       );
     }
   }
