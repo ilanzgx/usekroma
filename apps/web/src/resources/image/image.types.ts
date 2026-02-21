@@ -12,11 +12,14 @@ export type ImageProcessOperations =
   | "vignette"
   | "cartoon"
   | "pencil_sketch"
-  | "oil_painting";
+  | "oil_painting"
+  | "resize";
 
 export interface ImageProcessRequest {
   file: File;
   operation: ImageProcessOperations;
+  width?: number;
+  height?: number;
 }
 
 export interface ImageProcessResponse {

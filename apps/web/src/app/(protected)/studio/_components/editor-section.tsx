@@ -15,10 +15,13 @@ import { useDropzone } from "react-dropzone";
 import { useRouter } from "next/navigation";
 import { processImageService } from "@/resources/image";
 import { getToolBySlug } from "@/lib/tools";
+import { Scaling } from "lucide-react";
+import type { ImageProcessOperations } from "@/resources/image";
 import { notFound } from "next/navigation";
 
 interface EditorSectionProps {
   toolId: string;
+  resizeRatio?: string;
 }
 
 interface ImageDetails {
@@ -97,13 +100,23 @@ function ImageDetailsPanel({
   );
 }
 
-export default function EditorSection({ toolId }: EditorSectionProps) {
+export default function EditorSection({
+  toolId,
+  resizeRatio,
+}: EditorSectionProps) {
   const tool = getToolBySlug(toolId);
   const router = useRouter();
 
-  if (!tool) {
+  // Resize mode: no tool lookup needed
+  const isResizeMode = !!resizeRatio;
+
+  if (!tool && !isResizeMode) {
     notFound();
   }
+
+  const operation: ImageProcessOperations = isResizeMode
+    ? "resize"
+    : tool!.operation;
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -203,9 +216,40 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
         await new Promise((r) => setTimeout(r, 500));
         setProcessingStatus("processing");
 
+        let resizeWidth: number | undefined;
+        let resizeHeight: number | undefined;
+
+        if (isResizeMode && resizeRatio) {
+          const [rw, rh] = resizeRatio.split(":").map(Number);
+          if (rw && rh) {
+            const dims = await new Promise<{ width: number; height: number }>(
+              (resolve) => {
+                const img = new Image();
+                img.onload = () =>
+                  resolve({
+                    width: img.naturalWidth,
+                    height: img.naturalHeight,
+                  });
+                img.src = URL.createObjectURL(file);
+              },
+            );
+            const targetRatio = rw / rh;
+            const origRatio = dims.width / dims.height;
+            if (targetRatio > origRatio) {
+              resizeWidth = Math.round(dims.height * targetRatio);
+              resizeHeight = dims.height;
+            } else {
+              resizeWidth = dims.width;
+              resizeHeight = Math.round(dims.width / targetRatio);
+            }
+          }
+        }
+
         const result = await processImageService({
           file,
-          operation: tool.operation,
+          operation,
+          width: resizeWidth,
+          height: resizeHeight,
         });
 
         if (result.error === "UNAUTHORIZED") {
@@ -244,7 +288,7 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
         setIsProcessing(false);
       }
     },
-    [tool.operation, router, extractOutputDetails],
+    [operation, router, extractOutputDetails, isResizeMode, resizeRatio],
   );
 
   const onDrop = useCallback(
@@ -299,17 +343,19 @@ export default function EditorSection({ toolId }: EditorSectionProps) {
     setOutputDetails(null);
   };
 
-  const ToolIcon = tool.icon;
+  const ToolIcon = isResizeMode ? Scaling : tool!.icon;
+  const toolColor = isResizeMode ? "text-blue-500" : tool!.color;
+  const toolName = isResizeMode ? `Redimensionar (${resizeRatio})` : tool!.name;
 
   return (
     <div className="flex-1 p-6 border rounded-md mt-4">
       <h2 className="text-xl font-bold">Editor</h2>
 
       <div className="mb-6 flex items-center gap-2">
-        <ToolIcon className={`size-4 ${tool.color}`} />
+        <ToolIcon className={`size-4 ${toolColor}`} />
         <p className="text-sm text-muted-foreground">
           Ferramenta selecionada:{" "}
-          <span className="font-medium text-foreground">{tool.name}</span>
+          <span className="font-medium text-foreground">{toolName}</span>
         </p>
       </div>
 

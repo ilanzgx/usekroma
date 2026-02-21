@@ -13,7 +13,7 @@ export default function ResizeSection() {
         {RESIZES.map((resize) => (
           <Link
             key={resize.id}
-            href={`/studio/resize/${resize.slugs[1] || resize.slugs[0]}`}
+            href={`/studio/resize?ratio=${resize.aspectRatio}`}
             className="group flex flex-col items-center gap-1 px-3 py-3 border rounded-md hover:bg-gray-50 transition-colors"
           >
             <resize.icon

@@ -47,6 +47,8 @@ async function fetchWithTimeout(
 export async function processImageService({
   file,
   operation,
+  width,
+  height,
 }: ImageProcessRequest): Promise<ImageProcessResponse> {
   const token = await getToken();
 
@@ -67,6 +69,13 @@ export async function processImageService({
       const formData = new FormData();
       formData.append("file", file);
       formData.append("operation", operation);
+
+      if (width) {
+        formData.append("width", String(width));
+      }
+      if (height) {
+        formData.append("height", String(height));
+      }
 
       const response = await fetchWithTimeout(
         `${BASE_URL}/images/process`,
