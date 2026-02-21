@@ -13,10 +13,11 @@ from app.processor import (
     apply_cartoon,
     apply_pencil_sketch,
     apply_oil_painting,
+    apply_resize,
 )
 from PIL import Image
 
-def process_image(image: Image.Image, operation: str) -> Image.Image:
+def process_image(image: Image.Image, operation: str, params: dict | None = None) -> Image.Image:
     """Processa a imagem com a operação especificada."""
 
     operations = {
@@ -35,6 +36,12 @@ def process_image(image: Image.Image, operation: str) -> Image.Image:
         "pencil_sketch": apply_pencil_sketch,
         "oil_painting": apply_oil_painting,
     }
+
+    # Operações que precisam de parâmetros extras
+    if operation == "resize":
+        if not params or "width" not in params or "height" not in params:
+            raise ValueError("Operação 'resize' requer parâmetros 'width' e 'height'.")
+        return apply_resize(image, int(params["width"]), int(params["height"]))
 
     if operation not in operations:
         raise ValueError(f"Operação inválida: {operation}. Disponíveis: {list(operations.keys())}")

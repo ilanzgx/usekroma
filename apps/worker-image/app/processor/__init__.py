@@ -3,6 +3,7 @@ from app.processor.transform import apply_upscale, apply_flip_horizontal, apply_
 from app.processor.effects import apply_blur, remove_background, apply_grayscale, apply_sepia, apply_vignette, apply_cartoon, apply_pencil_sketch, apply_oil_painting
 from app.processor.upscale import apply_ai_upscale
 from app.processor.color import apply_saturate
+from app.processor.resize import apply_resize
 
 __all__ = [
     "apply_sharpen",
@@ -19,6 +20,7 @@ __all__ = [
     "apply_cartoon",
     "apply_pencil_sketch",
     "apply_oil_painting",
+    "apply_resize",
 ]
 
 

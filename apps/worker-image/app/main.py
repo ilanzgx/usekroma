@@ -32,7 +32,12 @@ async def health_check():
 
 
 @app.post("/process")
-async def process_endpoint(file: UploadFile = File(...), operation: str = Form(...)):
+async def process_endpoint(
+    file: UploadFile = File(...),
+    operation: str = Form(...),
+    width: int | None = Form(None),
+    height: int | None = Form(None),
+):
     # Tenta adquirir o semáforo com timeout
     try:
         await asyncio.wait_for(
@@ -51,10 +56,17 @@ async def process_endpoint(file: UploadFile = File(...), operation: str = Form(.
         data = await file.read()
         image = load_image_from_bytes(data)
 
+        # Monta params extras (para resize, etc.)
+        params = {}
+        if width is not None:
+            params["width"] = width
+        if height is not None:
+            params["height"] = height
+
         # Executa o processamento em thread separada com timeout
         loop = asyncio.get_event_loop()
         result_image = await asyncio.wait_for(
-            loop.run_in_executor(None, process_image, image, operation),
+            loop.run_in_executor(None, process_image, image, operation, params or None),
             timeout=PROCESSING_TIMEOUT
         )
 
