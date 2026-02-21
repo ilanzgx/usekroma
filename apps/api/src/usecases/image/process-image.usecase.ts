@@ -7,11 +7,19 @@ export class ProcessImageUseCase {
     fileBuffer: Buffer,
     filename: string,
     operation: string,
+    params?: { width?: number; height?: number },
   ): Promise<Buffer> {
     const formData = new FormData();
     const blob = new Blob([new Uint8Array(fileBuffer)]);
     formData.append("file", blob, filename);
     formData.append("operation", operation);
+
+    if (params?.width) {
+      formData.append("width", String(params.width));
+    }
+    if (params?.height) {
+      formData.append("height", String(params.height));
+    }
 
     const controller = new AbortController(); // AbortController for timeout
     const timeoutId = setTimeout(() => controller.abort(), WORKER_TIMEOUT_MS);

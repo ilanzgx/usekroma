@@ -17,11 +17,20 @@ export class ImageController {
       | undefined;
     const operation = operationField?.value || "upscale";
 
+    // Optional params for resize
+    const widthField = data.fields.width as { value: string } | undefined;
+    const heightField = data.fields.height as { value: string } | undefined;
+    const params =
+      widthField?.value && heightField?.value
+        ? { width: Number(widthField.value), height: Number(heightField.value) }
+        : undefined;
+
     try {
       const processedImage = await this.processImageUseCase.execute(
         buffer,
         data.filename,
         operation,
+        params,
       );
 
       return reply
