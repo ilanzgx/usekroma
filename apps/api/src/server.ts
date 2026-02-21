@@ -1,4 +1,4 @@
-import { fastify } from "fastify";
+import { fastify, FastifyError, FastifyRequest, FastifyReply } from "fastify";
 import {
   serializerCompiler,
   validatorCompiler,
@@ -48,6 +48,19 @@ const app = fastify({
 
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
+
+app.setErrorHandler(
+  (error: FastifyError, request: FastifyRequest, reply: FastifyReply) => {
+    request.log.error(error);
+    const statusCode = error.statusCode! >= 400 ? error.statusCode! : 500;
+    const message =
+      statusCode === 500 ? "Internal server error" : error.message;
+
+    reply
+      .status(statusCode)
+      .send({ success: false, message: message, code: statusCode });
+  },
+);
 
 // ********************************************
 // Plugins
