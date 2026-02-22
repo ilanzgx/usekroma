@@ -75,6 +75,7 @@ describe("ImageController unit tests", () => {
         Buffer.from("fake_image"),
         "photo.jpg",
         "upscale",
+        undefined,
       );
       expect(reply.status).toHaveBeenCalledWith(200);
       expect(reply.header).toHaveBeenCalledWith("Content-Type", "image/png");
@@ -104,6 +105,36 @@ describe("ImageController unit tests", () => {
         expect.any(Buffer),
         expect.any(String),
         "upscale", // fallback
+        undefined,
+      );
+    });
+
+    it("should pass width and height params when provided", async () => {
+      // Arrange
+      mockProcessImageUseCase.execute.mockResolvedValue(Buffer.from("resized"));
+
+      const file = createMultipartFile({
+        fields: {
+          operation: { value: "resize" },
+          width: { value: "800" },
+          height: { value: "600" },
+        },
+      });
+      const req = {
+        file: vi.fn().mockResolvedValue(file),
+        log: { error: vi.fn() },
+      } as unknown as FastifyRequest;
+      const reply = createMockReply();
+
+      // Act
+      await sut.uploadImage(req, reply);
+
+      // Assert
+      expect(mockProcessImageUseCase.execute).toHaveBeenCalledWith(
+        expect.any(Buffer),
+        "photo.jpg",
+        "resize",
+        { width: 800, height: 600 },
       );
     });
 
