@@ -13,7 +13,7 @@ import {
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useDropzone } from "react-dropzone";
 import { useRouter } from "next/navigation";
-import { processImageService } from "@/resources/image";
+import { processImageClient } from "@/resources/image/image.client";
 import { getToolBySlug } from "@/lib/tools";
 import { Scaling } from "lucide-react";
 import type { ImageProcessOperations } from "@/resources/image";
@@ -176,26 +176,26 @@ export default function EditorSection({
   );
 
   const extractOutputDetails = useCallback(
-    async (dataUrl: string): Promise<ImageDetails> => {
+    async (objectUrl: string): Promise<ImageDetails> => {
+      // Fetch real blob size from Object URL
+      const blobResponse = await fetch(objectUrl);
+      const blob = await blobResponse.blob();
+
       return new Promise((resolve) => {
         const img = new Image();
         img.onload = () => {
-          // Estimate size from base64
-          const base64Length = dataUrl.split(",")[1]?.length || 0;
-          const estimatedSize = Math.round((base64Length * 3) / 4);
-
           resolve({
             width: img.naturalWidth,
             height: img.naturalHeight,
-            size: estimatedSize,
-            type: "image/png",
+            size: blob.size,
+            type: blob.type || "image/png",
             aspectRatio: calculateAspectRatio(
               img.naturalWidth,
               img.naturalHeight,
             ),
           });
         };
-        img.src = dataUrl;
+        img.src = objectUrl;
       });
     },
     [],
@@ -212,8 +212,6 @@ export default function EditorSection({
       setOutputDetails(null);
 
       try {
-        // Simula um pequeno delay para mostrar "uploading"
-        await new Promise((r) => setTimeout(r, 500));
         setProcessingStatus("processing");
 
         let resizeWidth: number | undefined;
@@ -245,7 +243,7 @@ export default function EditorSection({
           }
         }
 
-        const result = await processImageService({
+        const result = await processImageClient({
           file,
           operation,
           width: resizeWidth,
@@ -271,7 +269,6 @@ export default function EditorSection({
 
         if (result.processedImage) {
           setProcessingStatus("finishing");
-          await new Promise((r) => setTimeout(r, 300));
           setProcessedUrl(result.processedImage);
           setProcessingStatus("done");
           setFinalTime(elapsedTimeRef.current);
@@ -331,6 +328,10 @@ export default function EditorSection({
   });
 
   const handleClear = () => {
+    // Revoke Object URLs to free memory
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    if (processedUrl) URL.revokeObjectURL(processedUrl);
+
     setSelectedFile(null);
     setPreviewUrl(null);
     setProcessedUrl(null);
