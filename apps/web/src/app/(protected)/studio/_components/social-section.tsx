@@ -1,5 +1,3 @@
-"use client";
-
 import { SOCIAL_FORMATS, getAllPlatforms } from "@/lib/socials";
 import Link from "next/link";
 import Image from "next/image";

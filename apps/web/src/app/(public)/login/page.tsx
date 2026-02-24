@@ -1,16 +1,8 @@
-"use client";
-
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import LoginButton from "./_components/LoginButton";
 
 export default function LoginPage() {
-  const handleLoginWithGoogle = () => {
-    window.location.href = `${API_URL}/auth/google`;
-  };
-
   return (
     <div className="min-h-screen bg-white flex">
       {/* Left Side */}
@@ -26,14 +18,7 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <Button
-            onClick={handleLoginWithGoogle}
-            className="w-full py-6 text-base gap-3"
-            variant="outline"
-          >
-            <Image src="/google-icon.svg" alt="Google" width={24} height={24} />
-            Entrar com o Google
-          </Button>
+          <LoginButton />
 
           <p className="text-center text-sm text-slate-400">
             Criando uma conta, você concorda com todos os nossos{" "}

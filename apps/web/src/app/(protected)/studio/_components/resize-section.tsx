@@ -1,5 +1,3 @@
-"use client";
-
 import { cn } from "@/lib/utils";
 import { RESIZES } from "@/lib/resizes";
 import Link from "next/link";

@@ -45,7 +45,7 @@ export default function StudioHeader() {
 
   return (
     <header className="border-b py-2">
-      <div className="w-full px-6 h-16 flex items-center justify-between">
+      <div className="w-full px-6 h-12 flex items-center justify-between">
         <Link href="/studio">
           <div className="flex items-center gap-2">
             <div className="size-8 bg-linear-to-br from-primary to-primary/60 rounded-lg flex items-center justify-center">

@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import { ImageIcon, ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
