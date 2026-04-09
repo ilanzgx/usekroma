@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import "@/app/globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const outfit = localFont({
+  src: "../../public/fonts/Outfit/Outfit-VariableFont_wght.ttf",
+  variable: "--font-outfit",
+  display: "swap",
+});
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
@@ -40,7 +44,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased`}>
+      <body className={`${outfit.className} ${outfit.variable} antialiased`}>
         {children}
         <SpeedInsights />
         <Analytics />
