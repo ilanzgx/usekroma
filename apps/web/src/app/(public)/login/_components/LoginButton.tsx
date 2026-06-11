@@ -3,11 +3,9 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export default function LoginButton() {
   const handleLoginWithGoogle = () => {
-    window.location.href = `${API_URL}/auth/google`;
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
   };
 
   return (
