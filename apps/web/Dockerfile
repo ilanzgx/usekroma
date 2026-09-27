@@ -7,18 +7,17 @@ WORKDIR /app
 # ---------- deps ----------
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
-
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY packages/shared/package.json ./packages/shared/
+COPY apps/web/package.json ./apps/web/
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --filter @kroma/web...
 
 # ---------- build ----------
-FROM base AS builder
+FROM deps AS builder
 WORKDIR /app
-
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-
-RUN npm run build
+COPY packages/shared ./packages/shared
+COPY apps/web ./apps/web
+RUN pnpm --filter @kroma/shared build && pnpm --filter @kroma/web build
 
 # ---------- runner ----------
 FROM base AS runner
@@ -29,9 +28,9 @@ ENV NODE_ENV=production
 RUN addgroup -g 1001 -S nodejs \
  && adduser -S nextjs -u 1001
 
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/public ./apps/web/public
 
 USER nextjs
 
@@ -39,4 +38,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-CMD ["node", "server.js"]
+CMD ["node", "apps/web/server.js"]
