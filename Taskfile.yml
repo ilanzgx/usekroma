@@ -1,0 +1,151 @@
+version: '3'
+
+# Para ver a lista de tarefas disponíveis, execute: task (ou task -l)
+
+tasks:
+  default:
+    desc: Lista os comandos disponíveis no projeto
+    silent: true
+    cmds:
+      - task --list
+
+  # Infraestrutura local
+  infra:up:
+    desc: Sobe os containers de infraestrutura (PostgreSQL 17)
+    cmds:
+      - docker-compose up -d database
+
+  infra:down:
+    desc: Para os containers de infraestrutura
+    cmds:
+      - docker-compose down
+
+  infra:logs:
+    desc: Exibe os logs dos containers em tempo real
+    cmds:
+      - docker-compose logs -f
+
+  # Serviços em desenvolvimento
+  dev:
+    desc: Inicia todos os serviços (Worker, API e Web) em paralelo
+    cmds:
+      - pnpm run dev
+
+  dev:web:
+    desc: Inicia apenas o frontend Next.js 16
+    cmds:
+      - pnpm --filter @kroma/web dev
+
+  dev:api:
+    desc: Inicia apenas o backend Fastify 5
+    cmds:
+      - pnpm --filter @kroma/api dev
+
+  dev:worker:
+    desc: Inicia apenas o worker de imagens em Python
+    dir: apps/worker-image
+    cmds:
+      - uv run uvicorn app.main:app --reload --port 8000
+
+  # Banco de dados e Migrações (Drizzle ORM)
+  db:migrate:
+    desc: Executa as migrações SQL pendentes no PostgreSQL
+    cmds:
+      - pnpm --filter @kroma/api db:migrate
+
+  db:generate:
+    desc: Gera novas migrações SQL baseadas nos schemas Drizzle
+    cmds:
+      - pnpm --filter @kroma/api db:generate
+
+  db:push:
+    desc: Sincroniza diretamente o schema no banco de dados local
+    cmds:
+      - pnpm --filter @kroma/api db:push
+
+  db:studio:
+    desc: Abre o Drizzle Studio para visualização interativa do banco
+    cmds:
+      - pnpm --filter @kroma/api db:studio
+
+  # Testes
+  test:
+    desc: Executa todas as suítes de teste do monorepo (alias para test:all)
+    cmds:
+      - task: test:all
+
+  test:all:
+    desc: Executa a suíte de testes de todas as aplicações (API e Worker)
+    cmds:
+      - task: test:api
+      - task: test:worker
+
+  test:api:
+    desc: "Roda os testes da API via Vitest (aceita flags via --, ex: task test:api -- --watch)"
+    cmds:
+      - pnpm --filter @kroma/api test {{.CLI_ARGS}}
+
+  test:worker:
+    desc: "Roda os testes do worker Python via pytest (aceita flags via --, ex: task test:worker -- -k health)"
+    dir: apps/worker-image
+    cmds:
+      - uv run pytest {{.CLI_ARGS}}
+
+  test:coverage:
+    desc: Gera relatório de cobertura de testes da API
+    cmds:
+      - pnpm --filter @kroma/api test:coverage
+
+  # Análise estática & Linting
+  lint:
+    desc: Executa linting no frontend e no worker
+    cmds:
+      - task: lint:web
+      - task: lint:worker
+
+  lint:web:
+    desc: Executa o ESLint no frontend Next.js
+    cmds:
+      - pnpm --filter @kroma/web lint
+
+  lint:worker:
+    desc: Executa o linter Ruff no worker Python
+    dir: apps/worker-image
+    cmds:
+      - uv run ruff check .
+
+  # Compilação e build
+  build:shared:
+    desc: Compila o pacote compartilhado @kroma/shared
+    cmds:
+      - pnpm --filter @kroma/shared build
+
+  build:web:
+    desc: Compila o frontend Next.js para produção
+    cmds:
+      - pnpm --filter @kroma/web build
+
+  build:api:
+    desc: Compila o backend Fastify para produção
+    cmds:
+      - pnpm --filter @kroma/api build
+
+  build:all:
+    desc: Compila todos os pacotes e aplicações TypeScript
+    cmds:
+      - task: build:shared
+      - task: build:api
+      - task: build:web
+
+  # Limpeza
+  clean:
+    desc: Limpa pastas de build e caches locais
+    cmds:
+      - cmd: cmd.exe /c "if exist apps\web\.next rmdir /s /q apps\web\.next"
+        platforms: [windows]
+      - cmd: rm -rf apps/web/.next
+        platforms: [linux, darwin]
+      - cmd: cmd.exe /c "if exist apps\api\dist rmdir /s /q apps\api\dist"
+        platforms: [windows]
+      - cmd: rm -rf apps/api/dist
+        platforms: [linux, darwin]
