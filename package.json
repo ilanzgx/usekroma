@@ -1,18 +1,22 @@
 {
   "name": "kroma",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
+  "description": "Kroma - AI Image Processing Platform",
   "scripts": {
     "dev": "concurrently -k -n \"WORKER,API,WEB\" -c \"magenta,blue,cyan\" \"pnpm run start:worker-image\" \"pnpm run start:api\" \"pnpm run start:web\"",
-    "start:api": "cd apps/api && pnpm run dev",
-    "start:drizzle-studio": "cd apps/api && pnpm run db:studio",
+    "start:api": "pnpm --filter @kroma/api dev",
+    "start:web": "pnpm --filter @kroma/web dev",
     "start:worker-image": "cd apps/worker-image && uv run uvicorn app.main:app --reload",
-    "start:web": "cd apps/web && pnpm run dev"
+    "start:drizzle-studio": "pnpm --filter @kroma/api db:studio",
+    "build": "pnpm --filter \"./apps/**\" --filter \"./packages/**\" build",
+    "build:api": "pnpm --filter @kroma/api build",
+    "build:web": "pnpm --filter @kroma/web build",
+    "test": "pnpm --filter @kroma/api test",
+    "test:unit": "pnpm --filter @kroma/api test:unit",
+    "test:coverage": "pnpm --filter @kroma/api test:coverage",
+    "lint": "pnpm --filter @kroma/web lint"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "packageManager": "pnpm@10.24.0",
   "dependencies": {
     "concurrently": "^9.2.1"
