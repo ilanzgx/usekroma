@@ -22,6 +22,7 @@ import { rateLimitConfig } from "@/config/rate-limit.config";
 import { envConfig } from "@/config/env.config";
 import ScalarApiReference from "@scalar/fastify-api-reference";
 import closeWithGrace from "close-with-grace";
+import { startResultsConsumer } from "@/lib/results-consumer";
 
 // ********************************************
 // Fastify instance
@@ -102,7 +103,8 @@ app
     port: Number(envConfig.SERVER_PORT),
     host: envConfig.SERVER_HOST,
   })
-  .then(() => {
+  .then(async () => {
+    await startResultsConsumer();
     console.log(
       `HTTP Server running on http://${envConfig.SERVER_HOST}:${envConfig.SERVER_PORT}`,
     );

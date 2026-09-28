@@ -13,5 +13,11 @@ export const envConfig = z
     JWT_SECRET: z.string(),
     WORKER_IMAGE_URL: z.string(),
     FRONTEND_URL: z.string(),
+    STORAGE_ENDPOINT: z.string(),
+    STORAGE_REGION: z.string().default("us-east-1"),
+    STORAGE_ACCESS_KEY: z.string(),
+    STORAGE_SECRET_KEY: z.string(),
+    STORAGE_BUCKET: z.string().default("kroma-storage"),
+    RABBITMQ_URL: z.string().default("amqp://kroma:kroma@localhost:5672"),
   })
   .parse(process.env);

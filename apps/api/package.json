@@ -23,6 +23,7 @@
   "license": "ISC",
   "packageManager": "pnpm@10.24.0",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1142.0",
     "@fastify/cookie": "^11.1.2",
     "@fastify/cors": "^11.3.0",
     "@fastify/jwt": "^10.2.0",
@@ -31,8 +32,10 @@
     "@fastify/rate-limit": "^10.3.0",
     "@fastify/session": "^11.1.2",
     "@fastify/swagger": "^9.8.1",
-    "@scalar/fastify-api-reference": "^1.62.9",
     "@kroma/shared": "workspace:*",
+    "@scalar/fastify-api-reference": "^1.62.9",
+    "amqp-connection-manager": "^5.0.0",
+    "amqplib": "^2.2.0",
     "close-with-grace": "^2.5.0",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
@@ -42,7 +45,8 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^25.6.0",
+    "@types/amqplib": "^0.10.8",
+    "@types/node": "^25.9.8",
     "@vitest/coverage-v8": "^4.1.10",
     "@vitest/ui": "4.1.10",
     "drizzle-kit": "^0.31.10",
