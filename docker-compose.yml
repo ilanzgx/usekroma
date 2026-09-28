@@ -1,5 +1,6 @@
 services:
   api:
+    container_name: kroma-api
     build:
       context: .
       dockerfile: ./apps/api/Dockerfile
@@ -17,6 +18,7 @@ services:
       - saas-image
 
   worker-image:
+    container_name: kroma-worker
     build:
       context: ./apps/worker-image
       dockerfile: Dockerfile
@@ -26,6 +28,7 @@ services:
       - saas-image
 
   web:
+    container_name: kroma-web
     build:
       context: .
       dockerfile: ./apps/web/Dockerfile
@@ -36,6 +39,7 @@ services:
 
   database:
     image: postgres:17
+    container_name: kroma-database
     ports:
       - "5432:5432"
     environment:
@@ -51,6 +55,45 @@ services:
       - .docker/postgres:/var/lib/postgresql/data
     networks:
       - saas-image
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: kroma-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=kroma # Porta do protocolo AMQP (aplicações)
+      - RABBITMQ_DEFAULT_PASS=kroma # Painel web de gerenciamento
+    volumes:
+      - .docker/rabbitmq:/var/lib/rabbitmq
+    networks:
+      - saas-image
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: pgsty/silo:latest
+    container_name: kroma-minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000" # API S3
+      - "9001:9001" # Console Web
+    environment:
+      - MINIO_ROOT_USER=kromauser
+      - MINIO_ROOT_PASSWORD=kromapassword
+    volumes:
+      - .docker/minio:/data
+    networks:
+      - saas-image
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 networks:
   saas-image:

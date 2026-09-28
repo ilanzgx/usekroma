@@ -11,9 +11,9 @@ tasks:
 
   # Infraestrutura local
   infra:up:
-    desc: Sobe os containers de infraestrutura (PostgreSQL 17)
+    desc: Sobe os containers de infraestrutura (PostgreSQL, RabbitMQ, MinIO)
     cmds:
-      - docker-compose up -d database
+      - docker-compose up -d database rabbitmq minio
 
   infra:down:
     desc: Para os containers de infraestrutura
