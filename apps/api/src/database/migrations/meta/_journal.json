@@ -15,6 +15,13 @@
       "when": 1770392254679,
       "tag": "0001_nasty_lady_ursula",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790698052041,
+      "tag": "0002_nappy_outlaw_kid",
+      "breakpoints": true
     }
   ]
 }
