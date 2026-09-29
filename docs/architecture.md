@@ -28,10 +28,9 @@ O repositório é organizado no formato monorepo utilizando **pnpm workspaces** 
 ├── .docker/                            # Armazenamento local persistente para containers de desenvolvimento
 │   └── postgres/                       # Volume local do banco PostgreSQL
 ├── .github/                            # Automação de CI/CD e governança de código
-│   ├── workflows/
-│   │   ├── ci.yml                      # Testes automatizados, linting e deploy na Vercel
-│   │   └── docker.yml                  # Build multi-stage e publicação de imagens no GHCR
-│   └── dependabot.yml                  # Monitoramento e atualização automática de dependências
+│   └── workflows/
+│       ├── ci.yml                      # Testes automatizados, linting e deploy na Vercel
+│       └── release-docker.yml          # Build e publicação de contêineres no GHCR por tags (v*)
 ├── .agents/                            # Habilidades especializadas e manuais para agentes de engenharia
 ├── apps/
 │   ├── web/                            # Aplicação Frontend & Camada BFF (Next.js 16 App Router)
@@ -562,15 +561,13 @@ A infraestrutura é orientada a contêineres imutáveis e automações via **Git
 - Utiliza `dorny/paths-filter` para isolar execuções de acordo com as pastas modificadas:
   - **Mudanças em `apps/api/**`:** Configura Node.js 22, instala pacotes com lockfile estrito (`--frozen-lockfile`), executa a suíte de testes de unidade via Vitest (`pnpm test:unit`) e compila o código TypeScript (`pnpm build`).
   - **Mudanças em `apps/web/**`:** Configura Node.js 22, instala dependências com cache otimizado de loja pnpm, valida compilação Next.js (`pnpm build`) e realiza deploy direto em ambiente de produção na Vercel (`pnpm dlx vercel --prod --yes`).
-  - **Mudanças em `apps/worker-image/**`:** Configura Python 3.11, instala `uv`, sincroniza o ambiente virtual (`uv sync`) e executa o linter de alta velocidade **Ruff** (`uv run ruff check .`).
+  - **Mudanças em `apps/worker-image/**`:** Configura Python 3.11, instala `uv`, sincroniza o ambiente virtual (`uv sync`) e executa o linter de alta velocidade **Ruff** (`uv run ruff check .`) e a suíte de testes com **Pytest** (`uv run pytest`).
 
-#### 2. Pipeline de Build e Publicação de Contêineres (`.github/workflows/docker.yml`)
-- Disparado em eventos de `push` no branch `main` quando há alterações no backend ou worker.
-- Executa migrações pendentes no banco de dados de produção antes do build das imagens.
-- Realiza autenticação no `ghcr.io` utilizando o token automático do repositório (`GITHUB_TOKEN`).
-- Constrói e publica as imagens OCI versionadas:
-  - `ghcr.io/<repo>/api:latest` e `ghcr.io/<repo>/api:<commit-sha>`
-  - `ghcr.io/<repo>/worker-image:latest` e `ghcr.io/<repo>/worker-image:<commit-sha>`
+#### 2. Pipeline de Release de Contêineres (`.github/workflows/release-docker.yml`)
+- Disparado exclusivamente na criação de tags de versão (`v*`, ex: `git tag v1.0.0`) ou sob demanda via `workflow_dispatch`.
+- Constrói em paralelo e publica no GHCR as imagens OCI versionadas:
+  - `ghcr.io/<repo>/api:<tag>` e `ghcr.io/<repo>/api:latest`
+  - `ghcr.io/<repo>/worker-image:<tag>` e `ghcr.io/<repo>/worker-image:latest`
 
 ---
 
