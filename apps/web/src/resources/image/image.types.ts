@@ -3,4 +3,7 @@ export type {
   ImageProcessRequest,
   ImageProcessResponse,
   ResizeParams,
+  JobStatus,
+  JobDTO,
+  CreateJobResponse,
 } from "@kroma/shared";

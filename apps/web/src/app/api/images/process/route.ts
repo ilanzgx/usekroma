@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-const REQUEST_TIMEOUT_MS = 150000; // 2.5 minutos
+const REQUEST_TIMEOUT_MS = 30000; // 30s timeout para enfileirar
 
 export async function POST(request: NextRequest) {
   const cookieStore = await cookies();
@@ -41,15 +41,8 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Stream the binary response directly — no base64 conversion
-      const blob = await response.blob();
-      return new NextResponse(blob, {
-        status: 200,
-        headers: {
-          "Content-Type": response.headers.get("Content-Type") || "image/png",
-          "Content-Length": String(blob.size),
-        },
-      });
+      const data = await response.json();
+      return NextResponse.json(data, { status: 202 });
     } catch (error) {
       clearTimeout(timeoutId);
       throw error;
@@ -59,7 +52,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "TIMEOUT" }, { status: 504 });
     }
 
-    console.error("Erro ao processar imagem:", error);
+    console.error("Erro ao enfileirar processamento de imagem:", error);
     return NextResponse.json({ error: "UNKNOWN" }, { status: 500 });
   }
 }

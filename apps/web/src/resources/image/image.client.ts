@@ -1,11 +1,13 @@
 import type {
   ImageProcessRequest,
   ImageProcessResponse,
+  JobDTO,
 } from "@/resources/image/image.types";
 
 const MAX_RETRIES = 1;
 const RETRY_DELAY_MS = 2000;
-const REQUEST_TIMEOUT_MS = 150000; // 2.5 minutos
+const POLL_INTERVAL_MS = 1500;
+const MAX_POLL_TIME_MS = 15 * 60 * 1000; // 15 minutos
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -13,8 +15,8 @@ function delay(ms: number): Promise<void> {
 
 /**
  * processImageClient
- * Client-side image processing via API route.
- * Returns a blob Object URL instead of base64 — much lighter on memory and bandwidth.
+ * Client-side asynchronous image processing via RabbitMQ job queue.
+ * Uploads file, polls job status, and returns a Blob Object URL — zero base64 in transport.
  */
 export async function processImageClient({
   file,
@@ -42,58 +44,75 @@ export async function processImageClient({
         formData.append("height", String(height));
       }
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(
-        () => controller.abort(),
-        REQUEST_TIMEOUT_MS,
-      );
-
-      let response: Response;
-      try {
-        response = await fetch("/api/images/process", {
-          method: "POST",
-          body: formData,
-          signal: controller.signal,
-        });
-      } finally {
-        clearTimeout(timeoutId);
-      }
+      // 1. Enfileira o job de processamento
+      const response = await fetch("/api/images/process", {
+        method: "POST",
+        body: formData,
+      });
 
       if (response.status === 401) {
         return { error: "UNAUTHORIZED" };
-      }
-
-      // Erro 503 (servidor ocupado) - pode tentar novamente
-      if (response.status === 503 && attempt < MAX_RETRIES) {
-        console.log("Servidor ocupado, tentando novamente...");
-        continue;
       }
 
       if (!response.ok) {
         return { error: "PROCESSING_FAILED" };
       }
 
-      // Create an Object URL from the blob — no base64 conversion!
-      const blob = await response.blob();
-      const objectUrl = URL.createObjectURL(blob);
+      const { jobId } = (await response.json()) as { jobId?: string };
 
-      return {
-        processedImage: objectUrl,
-      };
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error(String(error));
+      if (!jobId) {
+        return { error: "UNKNOWN" };
+      }
 
-      if (
-        lastError.name === "AbortError" ||
-        lastError.message.includes("fetch")
-      ) {
-        console.error(`Tentativa ${attempt + 1} falhou:`, lastError.message);
-        if (attempt < MAX_RETRIES) {
+      // 2. Polling até o job estar finalizado
+      const startTime = Date.now();
+
+      while (Date.now() - startTime < MAX_POLL_TIME_MS) {
+        await delay(POLL_INTERVAL_MS);
+
+        const statusResponse = await fetch(`/api/jobs/${jobId}`);
+
+        if (statusResponse.status === 401) {
+          return { error: "UNAUTHORIZED" };
+        }
+
+        if (!statusResponse.ok) {
           continue;
+        }
+
+        const job: JobDTO = await statusResponse.json();
+
+        if (job.status === "failed") {
+          console.error("Job de imagem falhou:", job.errorMessage);
+          return { error: "PROCESSING_FAILED" };
+        }
+
+        if (job.status === "done") {
+          // 3. Baixa o resultado binário diretamente e cria o Object URL
+          const resultResponse = await fetch(`/api/jobs/${jobId}/result`);
+
+          if (!resultResponse.ok) {
+            return { error: "PROCESSING_FAILED" };
+          }
+
+          const blob = await resultResponse.blob();
+          const objectUrl = URL.createObjectURL(blob);
+
+          return {
+            processedImage: objectUrl,
+          };
         }
       }
 
+      return { error: "TIMEOUT" };
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
       console.error("Erro ao processar imagem:", lastError);
+
+      if (attempt < MAX_RETRIES) {
+        continue;
+      }
+
       return { error: "UNKNOWN" };
     }
   }
