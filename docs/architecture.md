@@ -95,6 +95,15 @@ O repositório é organizado no formato monorepo utilizando **pnpm workspaces** 
 │       │   └── download_models.py      # Automação de download dos modelos pré-treinados
 │       ├── Dockerfile                  # Container otimizado com modelos pré-embarcados
 │       └── pyproject.toml              # Declaração do projeto Python gerenciado via uv
+├── packages/
+│   └── shared/                         # Contratos compartilhados (@kroma/shared)
+│       ├── src/
+│       │   ├── types/
+│       │   │   ├── user.ts             # Contratos de Usuário e DTOs
+│       │   │   ├── image.ts            # Operações de imagem e interfaces
+│       │   │   └── job.ts              # Contratos de Jobs (JobDTO, JobStatus, CreateJobResponse)
+│       │   └── index.ts                # Barrel export
+│       └── package.json
 ├── docs/                               # Documentação técnica e manuais de engenharia
 │   └── architecture.md                 # Este documento de arquitetura
 ├── AGENTS.md                           # Orientações operacionais para agentes de IA
@@ -130,69 +139,94 @@ flowchart TD
 
 ---
 
-### 3.2. C4 Model - Nível 2: Diagrama de Contêineres
+### 3.2. C4 Model - Nivel 2: Diagrama de Conteineres
 
-Detalhamento dos componentes de software que formam a arquitetura interna do Kroma, seus protocolos de comunicação e responsabilidades de execução.
+Detalhamento dos componentes de software que formam a arquitetura interna do Kroma, seus protocolos de comunicacao e responsabilidades de execucao.
 
 ```mermaid
 flowchart TB
-    Client["🌐 Navegador do Cliente\n[React 19 / Client Components]"]
+    Client["Navegador do Cliente\n[React 19 / Client Components]"]
 
-    subgraph WebBoundary ["apps/web - Camada de Apresentação & BFF (Next.js 16)"]
-        Pages["App Router (SSR & Static Pages)\n[/studio, /login, /profile]"]
+    subgraph WebBoundary ["apps/web - Camada de Apresentacao e BFF (Next.js 16)"]
+        Pages["App Router (SSR e Static Pages)\n[/studio, /login, /profile]"]
         BFFAuth["Route Handler: /api/auth/callback\n[Gerencia Cookies HttpOnly]"]
-        BFFProcess["Route Handler: /api/images/process\n[Proxy Binário com Timeout de 150s]"]
+        BFFProcess["Route Handler: /api/images/process\n[Enfileira Job - Retorna 202]"]
+        BFFJobs["Route Handlers: /api/jobs/[id]/*\n[Polling de Status e Stream de Resultado]"]
     end
 
-    subgraph APIBoundary ["apps/api - Gateway de Regras & Orquestração (Fastify 5)"]
-        AuthModule["Módulo de Autenticação\n(OAuth2 + Emissão de JWT)"]
-        UserModule["Módulo de Usuários\n(Gestão de Contas e Créditos)"]
-        ImageModule["Módulo de Orquestração de Imagens\n(Validação Multipart, Rate-Limit 5/min)"]
+    subgraph APIBoundary ["apps/api - Gateway de Regras e Orquestracao (Fastify 5)"]
+        AuthModule["Modulo de Autenticacao\n(OAuth2 + Emissao de JWT)"]
+        UserModule["Modulo de Usuarios\n(Gestao de Contas e Creditos)"]
+        ImageModule["Modulo de Imagens e Jobs\n(Upload S3, Enfileiramento RabbitMQ)"]
+        ResultsConsumer["Consumidor de Resultados\n(Atualiza status no PostgreSQL)"]
         FastifyCore["Fastify Engine\n(PreHandler AuthMiddleware, Zod Provider)"]
     end
 
-    subgraph WorkerBoundary ["apps/worker-image - Motor Científico (Python 3.11 / FastAPI)"]
-        FastAPIEndpoint["FastAPI: POST /process\n(Semaphore Concurrency Guard = 1)"]
-        ImageService["Image Dispatch Service\n(Roteamento por Tipo de Operação)"]
-        CVAlgorithms["Algoritmos de Visão Clássica\n(OpenCV, NumPy, PIL)"]
-        AIInference["Motores de Inferência Neural\n(U2-Net ONNX + LapSRN DNN)"]
+    subgraph MessageBroker ["RabbitMQ 3"]
+        QueueProcessing[("Fila: image-processing\n[Durable, Persistent]")]
+        QueueResults[("Fila: image-results\n[Durable, Persistent]")]
     end
 
-    subgraph DatabaseBoundary ["Camada de Persistência"]
-        PostgresDB[("Banco de Dados Relacional\nPostgreSQL 17\n(Schema: users)")]
+    subgraph ObjectStorage ["MinIO / S3 Storage"]
+        BucketStorage[("Bucket: kroma-storage\n[uploads/* e results/*]")]
     end
 
-    Client -->|"Navegação & UI"| Pages
+    subgraph WorkerBoundary ["apps/worker-image - Motor Cientifico (Python 3.11 / FastAPI)"]
+        QueueConsumer["Consumidor aio-pika\n(Prefetch Count = 1)"]
+        ImageService["Image Dispatch Service\n(Roteamento por Tipo de Operacao)"]
+        CVAlgorithms["Algoritmos de Visao Classica\n(OpenCV, NumPy, PIL)"]
+        AIInference["Motores de Inferencia Neural\n(U2-Net ONNX + LapSRN DNN)"]
+    end
+
+    subgraph DatabaseBoundary ["Camada de Persistencia"]
+        PostgresDB[("Banco de Dados Relacional\nPostgreSQL 17\n(Tabelas: users, jobs)")]
+    end
+
+    Client -->|"Navegacao e UI"| Pages
     Client -->|"Inicia fluxo de login"| BFFAuth
     Client -->|"Submete Multipart FormData"| BFFProcess
+    Client -->|"Polling de status e download"| BFFJobs
 
-    BFFAuth -->|"Valida código e perfil"| AuthModule
-    BFFProcess -->|"POST /v1/images/process\nBearer JWT + Multipart"| ImageModule
+    BFFAuth -->|"Valida codigo e perfil"| AuthModule
+    BFFProcess -->|"POST /v1/images/process"| ImageModule
+    BFFJobs -->|"GET /v1/jobs/:id e /result"| ImageModule
     Pages -->|"GET /v1/users/me (SSR)"| UserModule
 
     FastifyCore --- AuthModule
     FastifyCore --- UserModule
     FastifyCore --- ImageModule
+    FastifyCore --- ResultsConsumer
 
     UserModule -->|"Drizzle ORM / SQL"| PostgresDB
     AuthModule -->|"Drizzle ORM / SQL"| PostgresDB
+    ImageModule -->|"Drizzle ORM / SQL"| PostgresDB
+    ResultsConsumer -->|"Drizzle ORM / SQL"| PostgresDB
 
-    ImageModule -->|"POST http://worker:8000/process\nMultipart Payload (Timeout 120s)"| FastAPIEndpoint
-    FastAPIEndpoint -->|"Despacha via ThreadPool"| ImageService
+    ImageModule -->|"Salva imagem original (uploads/)"| BucketStorage
+    ImageModule -->|"Publica job de processamento"| QueueProcessing
+    ImageModule -->|"Download do resultado final (results/)"| BucketStorage
+
+    QueueConsumer -->|"Consome mensagens (prefetch=1)"| QueueProcessing
+    QueueConsumer -->|"Baixa imagem original"| BucketStorage
+    QueueConsumer -->|"Despacha via ThreadPool"| ImageService
     ImageService -->|"Executa"| CVAlgorithms
     ImageService -->|"Executa"| AIInference
+    QueueConsumer -->|"Salva imagem processada (results/)"| BucketStorage
+    QueueConsumer -->|"Publica status finalizado"| QueueResults
+
+    ResultsConsumer -->|"Consome status concluido/falha"| QueueResults
 ```
 
 ---
 
-### 3.3. Diagrama de Sequência: Autenticação Segura de Ponta a Ponta
+### 3.3. Diagrama de Sequencia: Autenticacao Segura de Ponta a Ponta
 
-Fluxo detalhado da autenticação via Google OAuth2, geração de sessão delegada e garantia de isolamento do token no navegador via cookie protegido.
+Fluxo detalhado da autenticacao via Google OAuth2, geracao de sessao delegada e garantia de isolamento do token no navegador via cookie protegido.
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as Usuário
+    actor User as Usuario
     participant Browser as Navegador (Cliente)
     participant Web as Web (Next.js)
     participant API as API (Fastify)
@@ -202,18 +236,18 @@ sequenceDiagram
     User->>Browser: Clica em "Continuar com o Google"
     Browser->>API: GET /v1/auth/google
     API-->>Browser: Redireciona para Accounts Google com Client ID e Escopos
-    Browser->>Google: Autentica credenciais e concede permissão
-    Google-->>Browser: Redireciona com Código de Autorização para /v1/auth/google/callback
+    Browser->>Google: Autentica credenciais e concede permissao
+    Google-->>Browser: Redireciona com Codigo de Autorizacao para /v1/auth/google/callback
     Browser->>API: GET /v1/auth/google/callback?code=...
-    API->>Google: Troca código por Access Token
+    API->>Google: Troca codigo por Access Token
     Google-->>API: Retorna Access Token
     API->>Google: GET /v2/userinfo com Bearer Token
     Google-->>API: Retorna dados do perfil (id, email, name, picture)
-    API->>DB: Busca usuário por email
-    alt Usuário já cadastrado
+    API->>DB: Busca usuario por email
+    alt Usuario ja cadastrado
         API->>DB: Atualiza nome, googleId e foto
-    else Novo Usuário
-        API->>DB: Cria novo registro com saldo inicial de 50 créditos
+    else Novo Usuario
+        API->>DB: Cria novo registro com saldo inicial de 50 creditos
     end
     API->>API: Gera JWT assinado (payload: userId, email) com validade de 7 dias
     API-->>Browser: Redirecionamento 302 para /api/auth/callback?token=JWT
@@ -221,61 +255,77 @@ sequenceDiagram
     Web->>Web: Grava cookie "token" (HttpOnly, Secure, SameSite=Lax, 7 dias)
     Web-->>Browser: Redirecionamento 302 para /studio
     Browser->>Web: GET /studio (com Cookie anexado)
-    Web->>API: GET /v1/users/me (com Authorization: Bearer JWT extraído do Cookie)
-    API->>DB: Consulta dados completos do usuário
+    Web->>API: GET /v1/users/me (com Authorization: Bearer JWT extraido do Cookie)
+    API->>DB: Consulta dados completos do usuario
     DB-->>API: Retorna dados
-    API-->>Web: Retorna DTO do usuário
-    Web-->>Browser: Renderiza Estúdio com dados de perfil e saldo de créditos
+    API-->>Web: Retorna DTO do usuario
+    Web-->>Browser: Renderiza Estudio com dados de perfil e saldo de creditos
 ```
 
 ---
 
-### 3.4. Diagrama de Sequência: Processamento e Transformação de Imagens
+### 3.4. Diagrama de Sequencia: Processamento Assincrono com RabbitMQ e MinIO
 
-Fluxo síncrono e de streaming de alto desempenho demonstrando a passagem da imagem desde o drop do usuário até o retorno do stream binário para a memória do navegador.
+Fluxo assincrono desacoplado com Storage de Objetos e Mensageria, eliminando bloqueios de conexao HTTP e mantendo integridade binaria de ponta a ponta.
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as Usuário
+    actor User as Usuario
     participant Browser as Navegador (Dropzone)
     participant BFF as Web BFF (/api/images/process)
     participant API as API Fastify (/v1/images/process)
-    participant Worker as Worker Python (/process)
-    participant ThreadPool as Python Thread Executor
+    participant Storage as MinIO (Bucket: kroma-storage)
+    participant DB as PostgreSQL (Tabela: jobs)
+    participant RMQ as RabbitMQ (Queues)
+    participant Worker as Worker Python (Consumidor)
     participant Models as Motores CV / IA
 
     User->>Browser: Solta arquivo de imagem no canvas (max 5MB)
-    Browser->>Browser: Valida extensão e tamanho via react-dropzone
+    Browser->>Browser: Valida extensao e tamanho via react-dropzone
     Browser->>Browser: Gera URL local de preview (URL.createObjectURL)
     Browser->>BFF: POST /api/images/process (Multipart: file, operation, params)
     Note over Browser,BFF: Cookie HttpOnly anexado automaticamente pelo navegador
 
-    BFF->>BFF: Extrai JWT do Cookie de sessão
+    BFF->>BFF: Extrai JWT do Cookie de sessao
     BFF->>API: POST /v1/images/process (Multipart + Authorization: Bearer JWT)
 
     API->>API: authMiddleware valida JWT
-    API->>API: Valida rate limit do usuário (max 5 req/min)
-    API->>API: ProcessImageUseCase inicia AbortController (timeout = 120s)
-    API->>Worker: POST /process (Multipart: file, operation, width, height)
+    API->>API: Valida rate limit do usuario
+    API->>Storage: Salva buffer original em uploads/{jobId}.ext
+    API->>DB: Insere job (id, userId, status='pending', operation, originalKey)
+    API->>RMQ: Publica mensagem na fila image-processing (jobId, imageKey, operation, params)
+    API-->>BFF: HTTP 202 Accepted { jobId, status: "pending" }
+    BFF-->>Browser: HTTP 202 Accepted { jobId, status: "pending" }
 
-    Worker->>Worker: Tenta adquirir Semaphore(1) com timeout de 30s
-    alt Semáforo ocupado após 30s
-        Worker-->>API: 503 Service Unavailable (Servidor ocupado)
-    else Semáforo adquirido
-        Worker->>Worker: Carrega bytes da imagem na memória via PIL
-        Worker->>ThreadPool: loop.run_in_executor(process_image, ...)
-        ThreadPool->>Models: Executa algoritmo ou inferência de modelo
-        Models-->>ThreadPool: Retorna PIL Image transformada
-        ThreadPool-->>Worker: Retorna para o event loop assíncrono
-        Worker->>Worker: Salva imagem em buffer BytesIO (formato PNG)
-        Worker->>Worker: Libera Semaphore(1)
-        Worker->>Worker: Dispara coleta de lixo forçada: gc.collect()
-        Worker-->>API: HTTP 200 OK com payload binário (image/png)
+    par Processamento no Worker em Background
+        RMQ->>Worker: Entrega mensagem (prefetch_count = 1)
+        Worker->>Storage: Baixa imagem original de uploads/{jobId}.ext
+        Worker->>Models: loop.run_in_executor (OpenCV / U2-Net / LapSRN)
+        Models-->>Worker: Retorna imagem transformada (PNG)
+        Worker->>Storage: Salva resultado em results/{jobId}.png
+        Worker->>RMQ: Publica na fila image-results (jobId, status: "done", resultKey)
+        Worker->>RMQ: Confirma processamento (ack)
+        Worker->>Worker: Coleta de lixo forcada (gc.collect)
+        RMQ->>API: Consumidor Fastify recebe image-results
+        API->>DB: Atualiza job (status='done', resultKey, completedAt)
+    and Polling no Cliente
+        loop A cada 1.5s ate conclusao ou timeout
+            Browser->>BFF: GET /api/jobs/{jobId}
+            BFF->>API: GET /v1/jobs/{jobId}
+            API->>DB: Consulta status do job
+            DB-->>API: Retorna job
+            API-->>BFF: { id, status: "pending" | "done" | "failed" }
+            BFF-->>Browser: Status atual
+        end
     end
 
-    API-->>BFF: Repassa bytes brutos com Content-Type: image/png
-    BFF-->>Browser: Stream direto do Blob binário (sem overhead de Base64)
+    Browser->>BFF: GET /api/jobs/{jobId}/result
+    BFF->>API: GET /v1/jobs/{jobId}/result
+    API->>Storage: Baixa stream binario de results/{jobId}.png
+    Storage-->>API: Stream binario
+    API-->>BFF: Resposta HTTP 200 com Content-Type: image/png
+    BFF-->>Browser: Stream direto do Blob binario (Zero Base64)
     Browser->>Browser: Converte Blob em Object URL (URL.createObjectURL)
     Browser->>Browser: Atualiza estado para "done", exibe resultado e habilita download
 ```
@@ -341,48 +391,51 @@ Implementada com **Fastify 5**, **TypeScript** e **Drizzle ORM**. O Fastify foi 
 
 ---
 
-### 4.3. Motor de Processamento Científico & IA (`apps/worker-image`)
+### 4.3. Motor de Processamento Cientifico e IA (`apps/worker-image`)
 
-Serviço desenvolvido em **Python 3.11** utilizando **FastAPI**, **Uvicorn**, **OpenCV (contrib headless)**, **Pillow (PIL)**, **rembg** e **NumPy**.
+Servico desenvolvido em **Python 3.11** utilizando **aio-pika**, **FastAPI**, **boto3**, **Uvicorn**, **OpenCV (contrib headless)**, **Pillow (PIL)**, **rembg** e **NumPy**.
 
-- **Estratégia de Concorrência Segura (OOM Prevention):**
-  - O processamento de imagens e redes neurais consome grandes matrizes tridimensionais na memória RAM (uma imagem 4K descompactada em formato float pode atingir centenas de megabytes em matrizes intermediárias).
-  - Para garantir estabilidade absoluta, o worker implementa uma trava estrita de concorrência:
+- **Estrategia de Concorrencia Orientada a Mensageria (OOM Prevention):**
+  - O processamento de imagens e redes neurais consome grandes matrizes tridimensionais na memoria RAM.
+  - Para garantir estabilidade absoluta, o worker opera como um consumidor assincrono do RabbitMQ com prefetch unitario:
     ```python
-    processing_lock = asyncio.Semaphore(1)
+    await channel.set_qos(prefetch_count=1)
     ```
-  - **Timeout de Fila:** Se uma nova requisição chegar enquanto uma imagem já estiver sendo processada, ela aguarda a liberação do semáforo por até **30 segundos** (`SEMAPHORE_TIMEOUT`). Caso o recurso não seja liberado a tempo, o worker responde com HTTP `503 Service Unavailable`, informando sobrecarga momentânea sem que o processo seja finalizado por falta de memória.
-  - **Execução Desacoplada da Thread Principal:** Como a manipulação de matrizes do OpenCV e a inferência de IA são operações que bloqueiam a CPU (*CPU-bound*), elas não são executadas no event loop assíncrono. Em vez disso, o worker delega a tarefa a um pool de threads nativo via:
+  - **Desacoplamento por Fila:** O RabbitMQ retem requisicoes excedentes na fila `image-processing`. O worker apenas puxa a proxima mensagem apos concluir o processamento da anterior e enviar o `ack()`. Isso substitui o bloqueio de conexoes HTTP e permite escalabilidade horizontal trivial (basta instanciar novos containers do worker).
+  - **Execucao Desacoplada da Thread Principal:** Como a manipulacao de matrizes do OpenCV e a inferencia de IA sao operacoes que bloqueiam a CPU (*CPU-bound*), elas nao sao executadas no event loop assincrono. O worker delega a tarefa a um pool de threads nativo via:
     ```python
-    loop = asyncio.get_event_loop()
-    result_image = await asyncio.wait_for(
-        loop.run_in_executor(None, process_image, image, operation, params or None),
-        timeout=PROCESSING_TIMEOUT # 120 segundos
+    loop = asyncio.get_running_loop()
+    output_bytes = await loop.run_in_executor(
+        None,
+        _execute_processing,
+        image_bytes,
+        operation,
+        params,
     )
     ```
-  - **Limpeza Agressiva de Memória:** Ao final de cada ciclo de processamento no bloco `finally`, invoca-se explicitamente o coletor de lixo do Python (`gc.collect()`), devolvendo blocos de memória não referenciados ao sistema operacional.
+  - **Limpeza Agressiva de Memoria:** Ao final de cada ciclo de processamento no bloco `finally`, invoca-se explicitamente o coletor de lixo do Python (`gc.collect()`), devolvendo blocos de memoria nao referenciados ao sistema operacional.
 
-- **Ciclo de Vida de Modelos (Lazy Loading & Descarregamento Dinâmico):**
-  - O modelo de remoção de plano de fundo **U2-Net** (~170MB de tensores ONNX) e os modelos de super-resolução **LapSRN** (~1MB a ~4MB) utilizam o padrão de *Carregamento Sob Demanda*.
-  - A instância do modelo só é inicializada na primeira vez em que a operação é solicitada.
-  - As rotas contam com a opção `unload_after=True`. Quando ativado, os ponteiros globais de sessão (`_session` e `_sr_instance`) são zerados e a memória é limpa imediatamente após a geração do resultado, viabilizando arquiteturas de escala zero (*Scale-to-Zero*) em ambientes de nuvem serverless/containers.
+- **Ciclo de Vida de Modelos (Lazy Loading & Descarregamento Dinamico):**
+  - O modelo de remocao de plano de fundo **U2-Net** (~170MB de tensores ONNX) e os modelos de super-resolucao **LapSRN** (~1MB a ~4MB) utilizam o padrao de *Carregamento Sob Demanda*.
+  - A instancia do modelo so e inicializada na primeira vez em que a operacao e solicitada.
+  - As rotas contam com a opcao `unload_after=True`. Quando ativado, os ponteiros globais de sessao (`_session` e `_sr_instance`) sao zerados e a memoria e limpa imediatamente apos a geracao do resultado, viabilizando arquiteturas de escala zero (*Scale-to-Zero*) em ambientes de nuvem serverless/containers.
 
-- **Destaques dos Algoritmos de Visão e Efeitos:**
-  - **Cartoon Avançado:** Combinação de filtro bilateral (`cv2.bilateralFilter`) para atenuação de textura com preservação de arestas; quantização de cores acelerada através de miniatura com **K-Means** e projeção via **KDTree** (`scipy.spatial.cKDTree`); elevação de saturação no espaço de cores HSV em 40%; e máscara de contornos por limiarização adaptativa (`cv2.adaptiveThreshold`).
-  - **Pencil Sketch (Desenho a Lápis Realista):** Aplicação da técnica clássica de fusão *Color Dodge* (inversão da escala de cinza e divisão pelo desfoque Gaussiano invertido); contraste adaptativo CLAHE; injeção de 5 camadas de hachura direcional em ângulos distintos (30°, 60°, 80°, 120°, 150°); e fusão textural de micro-ruído de grafite e granulação de papel artesanal.
-  - **Oil Painting (Pintura a Óleo):** Suavização pictórica inicial; filtro especializado `cv2.xphoto.oilPainting`; adição de pinceladas anisotrópicas direcionais através de convoluções com **filtros de Gabor**; redistribuição tonal no espaço de cores perceptual **LAB**; e compressão de realces para conferir peso de tinta óleo.
+- **Destaques dos Algoritmos de Visao e Efeitos:**
+  - **Cartoon Avancado:** Combinacao de filtro bilateral (`cv2.bilateralFilter`) para atenuacao de textura com preservacao de arestas; quantizacao de cores acelerada atraves de miniatura com **K-Means** e projecao via **KDTree** (`scipy.spatial.cKDTree`); elevacao de saturacao no espaco de cores HSV em 40%; e mascara de contornos por limiarizacao adaptativa (`cv2.adaptiveThreshold`).
+  - **Pencil Sketch (Desenho a Lapis Realista):** Aplicacao da tecnica classica de fusao *Color Dodge* (inversao da escala de cinza e divisao pelo desfoque Gaussiano invertido); contraste adaptativo CLAHE; injecao de 5 camadas de hachura direcional em angulos distintos (30°, 60°, 80°, 120°, 150°); e fusao textural de micro-ruido de grafite e granulacao de papel artesanal.
+  - **Oil Painting (Pintura a Oleo):** Suavizacao pictorica inicial; filtro especializado `cv2.xphoto.oilPainting`; adicao de pinceladas anisotropicas direcionais atraves de convolucoes com **filtros de Gabor**; redistribuicao tonal no espaco de cores perceptual **LAB**; e compressao de realces para conferir peso de tinta oleo.
 
 ---
 
-## 5. Armazenamento de Dados & Modelagem
+## 5. Armazenamento de Dados e Modelagem
 
-A persistência do ecossistema é centralizada no **PostgreSQL 17**, gerenciado através do **Drizzle ORM** com tipagem estática e suporte a migrações determinísticas.
+A persistencia do ecossistema e centralizada no **PostgreSQL 17**, gerenciado atraves do **Drizzle ORM** com tipagem estatica e suporte a migracoes deterministicas.
 
-### 5.1. Configuração do Pool de Conexões (`apps/api/src/config/database.config.ts`)
+### 5.1. Configuracao do Pool de Conexoes (`apps/api/src/config/database.config.ts`)
 - **Driver:** `postgres` (postgres-js).
-- **Tamanho Máximo do Pool (`max`):** 10 conexões simultâneas por instância de API.
-- **Tempo Limite de Ociosidade (`idle_timeout`):** 20 segundos antes do encerramento de conexão ociosa.
-- **Tempo Limite de Conexão (`connect_timeout`):** 10 segundos.
+- **Tamanho Maximo do Pool (`max`):** 10 conexoes simultaneas por instancia de API.
+- **Tempo Limite de Ociosidade (`idle_timeout`):** 20 segundos antes do encerramento de conexao ociosa.
+- **Tempo Limite de Conexao (`connect_timeout`):** 10 segundos.
 
 ---
 
@@ -390,17 +443,73 @@ A persistência do ecossistema é centralizada no **PostgreSQL 17**, gerenciado 
 
 ```mermaid
 erDiagram
+    USERS ||--o{ JOBS : "executes"
     USERS {
-        uuid id PK "Identificador único gerado por gen_random_uuid()"
-        text name "Nome completo do usuário obtido pelo Google"
-        text email UK "Endereço de e-mail único do usuário"
-        integer credits "Saldo de créditos disponíveis (Default: 50)"
-        text google_id UK "Identificador unívoco da conta Google"
+        uuid id PK "Identificador unico gerado por gen_random_uuid()"
+        text name "Nome completo do usuario obtido pelo Google"
+        text email UK "Endereco de e-mail unico do usuario"
+        integer credits "Saldo de creditos disponiveis (Default: 50)"
+        text google_id UK "Identificador univoco da conta Google"
         text picture "URL da foto de perfil fornecida pelo provedor"
-        timestamp created_at "Timestamp de criação do registro"
-        timestamp updated_at "Timestamp da última atualização do registro"
+        timestamp created_at "Timestamp de criacao do registro"
+        timestamp updated_at "Timestamp da ultima atualizacao do registro"
+    }
+
+    JOBS {
+        uuid id PK "Identificador unico gerado por gen_random_uuid()"
+        uuid user_id FK "Chave estrangeira referenciando users.id"
+        enum status "Status: pending, processing, done, failed"
+        text operation "Identificador da transformacao executada"
+        jsonb params "Parametros opcionais como width e height"
+        text original_key "Chave do arquivo de entrada no MinIO / S3"
+        text result_key "Chave do arquivo processado no MinIO / S3"
+        text error_message "Mensagem de erro em caso de falha"
+        timestamp created_at "Timestamp de submissao do job"
+        timestamp updated_at "Timestamp da ultima mudanca de estado"
+        timestamp completed_at "Timestamp de conclusao do processamento"
     }
 ```
+
+---
+
+### 5.3. Detalhamento dos Schemas
+
+#### Tabela `users` (`apps/api/src/database/schema/users.schema.ts`)
+
+| Campo | Tipo SQL | Modificadores | Descricao de Dominio |
+| :--- | :--- | :--- | :--- |
+| `id` | `uuid` | `PRIMARY KEY`, `DEFAULT gen_random_uuid()` | Chave primaria canonica |
+| `name` | `text` | `NOT NULL` | Nome completo do usuario |
+| `email` | `text` | `NOT NULL`, `UNIQUE` | E-mail corporativo ou pessoal |
+| `credits` | `integer` | `NOT NULL`, `DEFAULT 50` | Moeda interna para consumo de processamento |
+| `google_id` | `text` | `NOT NULL`, `UNIQUE` | ID estavel de autenticacao federada |
+| `picture` | `text` | `NOT NULL` | Link publico do avatar do Google |
+| `created_at` | `timestamp` | `NOT NULL`, `DEFAULT now()` | Registro de auditoria temporal |
+| `updated_at` | `timestamp` | `NOT NULL`, `DEFAULT now()` | Atualizacao de auditoria temporal |
+
+#### Tabela `jobs` (`apps/api/src/database/schema/jobs.schema.ts`)
+
+| Campo | Tipo SQL | Modificadores | Descricao de Dominio |
+| :--- | :--- | :--- | :--- |
+| `id` | `uuid` | `PRIMARY KEY`, `DEFAULT gen_random_uuid()` | Identificador unico do job assincrono |
+| `user_id` | `uuid` | `NOT NULL`, `REFERENCES users(id) ON DELETE CASCADE` | Proprietario do job |
+| `status` | `job_status` | `NOT NULL`, `DEFAULT 'pending'` | Enum: `pending`, `processing`, `done`, `failed` |
+| `operation` | `text` | `NOT NULL` | Operacao de transformacao |
+| `params` | `jsonb` | `NULLABLE` | Dimensoes e parametros adicionais |
+| `original_key` | `text` | `NOT NULL` | Caminho do objeto original no bucket S3 |
+| `result_key` | `text` | `NULLABLE` | Caminho do resultado final no bucket S3 |
+| `error_message` | `text` | `NULLABLE` | Descricao textual da falha |
+| `created_at` | `timestamp` | `NOT NULL`, `DEFAULT now()` | Momento da submissao |
+| `updated_at` | `timestamp` | `NOT NULL`, `DEFAULT now()` | Ultima alteracao de status |
+| `completed_at` | `timestamp` | `NULLABLE` | Momento da finalizacao |
+
+---
+
+### 5.4. Ciclo de Vida de Migracoes
+As migracoes sao gerenciadas pelo `drizzle-kit`:
+- `0000_worried_dazzler.sql`: Estrutura inicial da tabela `users` com restricoes de unicidade em `email` e `google_id`.
+- `0001_nasty_lady_ursula.sql`: Adicao da coluna de monetizacao/saldo `credits` com valor padrao `0`.
+- `0002_nappy_outlaw_kid.sql`: Criacao do tipo enum `job_status` e da tabela relacional `jobs` associada a `users`.
 
 ---
 
