@@ -1,106 +1,98 @@
-import { describe, it, vi, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, vi, expect, beforeEach } from "vitest";
 import { ProcessImageUseCase } from "../../process-image.usecase";
+import { storage } from "@/lib/storage";
+import { queue, QUEUES } from "@/lib/queue";
+import { db } from "@/database";
 
-const WORKER_URL = "http://mock-worker";
+vi.mock("@/lib/storage", () => ({
+  storage: {
+    upload: vi.fn().mockResolvedValue("uploads/key.png"),
+    download: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
+
+vi.mock("@/lib/queue", () => ({
+  QUEUES: {
+    IMAGE_PROCESSING: "image-processing",
+    IMAGE_RESULTS: "image-results",
+  },
+  queue: {
+    publish: vi.fn().mockResolvedValue(true),
+    consume: vi.fn(),
+  },
+}));
+
+vi.mock("@/database", () => ({
+  db: {
+    insert: vi.fn().mockReturnValue({
+      values: vi.fn().mockResolvedValue(undefined),
+    }),
+  },
+  jobs: {},
+}));
 
 describe("ProcessImageUseCase unit tests", () => {
   let sut: ProcessImageUseCase;
 
   beforeEach(() => {
-    sut = new ProcessImageUseCase(WORKER_URL);
+    vi.clearAllMocks();
+    sut = new ProcessImageUseCase();
   });
 
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
-  it("should return a buffer when worker returns a successful response", async () => {
+  it("should upload image to storage, insert job into db, and publish to queue", async () => {
     // Arrange
-    const fakeImageBytes = new Uint8Array([1, 2, 3, 4]);
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        arrayBuffer: () => Promise.resolve(fakeImageBytes.buffer),
-      }),
-    );
+    const input = {
+      userId: "user-uuid-123",
+      fileBuffer: Buffer.from("image_data"),
+      filename: "photo.jpg",
+      mimetype: "image/jpeg",
+      operation: "remove_background",
+      params: undefined,
+    };
 
     // Act
-    const result = await sut.execute(Buffer.from("test"), "test.jpg", "resize");
+    const result = await sut.execute(input);
 
     // Assert
-    expect(result).toBeInstanceOf(Buffer);
-    expect(result).toEqual(Buffer.from(fakeImageBytes));
-  });
-
-  it("should call fetch with correct url, method and body", async () => {
-    // Arrange
-    const mockFetch = vi.fn().mockResolvedValue({
-      ok: true,
-      arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
-    });
-    vi.stubGlobal("fetch", mockFetch);
-
-    // Act
-    const fileBuffer = Buffer.from("test");
-    await sut.execute(fileBuffer, "test.jpg", "resize");
-
-    const [url, options] = mockFetch.mock.calls[0];
-    const body = options.body as FormData;
-
-    // Assert
-    expect(mockFetch).toHaveBeenCalledOnce();
-    expect(url).toBe(`${WORKER_URL}/process`);
-    expect(options.method).toBe("POST");
-    expect(options).toHaveProperty("signal");
-    expect(body).toBeInstanceOf(FormData);
-    expect(body.get("file")).toBeInstanceOf(Blob);
-    expect(body.get("operation")).toBe("resize");
-  });
-
-  it("should throw an error when worker returns a non-ok response", async () => {
-    // Arrange
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: false,
-        text: () => Promise.resolve("Unsupported format"),
+    expect(result).toHaveProperty("jobId");
+    expect(result.status).toBe("pending");
+    expect(storage.upload).toHaveBeenCalledWith(
+      expect.stringContaining("uploads/"),
+      input.fileBuffer,
+      input.mimetype,
+    );
+    expect(db.insert).toHaveBeenCalled();
+    expect(queue.publish).toHaveBeenCalledWith(
+      QUEUES.IMAGE_PROCESSING,
+      expect.objectContaining({
+        jobId: result.jobId,
+        operation: "remove_background",
       }),
     );
-
-    // Act & Assert
-    await expect(
-      sut.execute(Buffer.from("test"), "test.jpg", "resize"),
-    ).rejects.toThrow("Worker error: Unsupported format");
   });
 
-  it("should throw timeout error when fetch is aborted", async () => {
+  it("should pass params when provided (e.g. for resize)", async () => {
     // Arrange
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockRejectedValue(
-        Object.assign(new Error("The operation was aborted"), {
-          name: "AbortError",
-        }),
-      ),
+    const input = {
+      userId: "user-uuid-123",
+      fileBuffer: Buffer.from("image_data"),
+      filename: "photo.png",
+      mimetype: "image/png",
+      operation: "resize",
+      params: { width: 500, height: 300 },
+    };
+
+    // Act
+    const result = await sut.execute(input);
+
+    // Assert
+    expect(result.jobId).toBeDefined();
+    expect(queue.publish).toHaveBeenCalledWith(
+      QUEUES.IMAGE_PROCESSING,
+      expect.objectContaining({
+        params: { width: 500, height: 300 },
+      }),
     );
-
-    // Act & Assert
-    await expect(
-      sut.execute(Buffer.from("test"), "test.jpg", "resize"),
-    ).rejects.toThrow("Tempo limite excedido. O processamento demorou muito.");
-  });
-
-  it("should rethrow unexpected errors as-is", async () => {
-    // Arrange
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockRejectedValue(new Error("network failure")),
-    );
-
-    // Act & Assert
-    await expect(
-      sut.execute(Buffer.from("test"), "test.jpg", "resize"),
-    ).rejects.toThrow("network failure");
   });
 });

@@ -1,51 +1,50 @@
-const WORKER_TIMEOUT_MS = 120000; // 2 minutes (includes container cold start + processing time)
+import { randomUUID } from "node:crypto";
+import path from "node:path";
+import { storage } from "@/lib/storage";
+import { queue, QUEUES } from "@/lib/queue";
+import { db, jobs } from "@/database";
+
+export interface ProcessImageInput {
+  userId: string;
+  fileBuffer: Buffer;
+  filename: string;
+  mimetype: string;
+  operation: string;
+  params?: { width?: number; height?: number };
+}
+
+export interface ProcessImageOutput {
+  jobId: string;
+  status: "pending";
+}
 
 export class ProcessImageUseCase {
-  constructor(private readonly workerUrl: string) {}
+  async execute(input: ProcessImageInput): Promise<ProcessImageOutput> {
+    const jobId = randomUUID();
+    const ext = path.extname(input.filename) || ".png";
+    const imageKey = `uploads/${jobId}${ext}`;
 
-  async execute(
-    fileBuffer: Buffer,
-    filename: string,
-    operation: string,
-    params?: { width?: number; height?: number },
-  ): Promise<Buffer> {
-    const formData = new FormData();
-    const blob = new Blob([new Uint8Array(fileBuffer)]);
-    formData.append("file", blob, filename);
-    formData.append("operation", operation);
+    await storage.upload(imageKey, input.fileBuffer, input.mimetype);
 
-    if (params?.width) {
-      formData.append("width", String(params.width));
-    }
-    if (params?.height) {
-      formData.append("height", String(params.height));
-    }
+    await db.insert(jobs).values({
+      id: jobId,
+      userId: input.userId,
+      status: "pending",
+      operation: input.operation,
+      params: input.params,
+      originalKey: imageKey,
+    });
 
-    const controller = new AbortController(); // AbortController for timeout
-    const timeoutId = setTimeout(() => controller.abort(), WORKER_TIMEOUT_MS);
+    await queue.publish(QUEUES.IMAGE_PROCESSING, {
+      jobId,
+      imageKey,
+      operation: input.operation,
+      params: input.params,
+    });
 
-    try {
-      const response = await fetch(`${this.workerUrl}/process`, {
-        method: "POST",
-        body: formData,
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        const error = await response.text();
-        throw new Error(`Worker error: ${error}`);
-      }
-
-      return Buffer.from(await response.arrayBuffer());
-    } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") {
-        throw new Error(
-          "Tempo limite excedido. O processamento demorou muito.",
-        );
-      }
-      throw error;
-    } finally {
-      clearTimeout(timeoutId);
-    }
+    return {
+      jobId,
+      status: "pending",
+    };
   }
 }

@@ -10,21 +10,26 @@ export async function imageRoutes(app: FastifyInstance) {
     {
       config: {
         rateLimit: {
-          max: 5,
+          max: 10,
           timeWindow: "1 minute",
         },
       },
       schema: {
         response: {
-          200: zod.any().describe("Processed image as base64 or binary"),
+          202: zod.object({
+            jobId: zod.string().describe("Async job ID for polling"),
+            status: zod.literal("pending").describe("Initial job status"),
+          }),
           400: zod.object({
-            message: zod.string().describe("No file uploaded"),
+            error: zod.string().describe("No file uploaded"),
           }),
           401: zod.object({
-            message: zod.string().describe("Unauthorized"),
+            error: zod.string().describe("Unauthorized"),
+            message: zod.string(),
           }),
           500: zod.object({
-            message: zod.string().describe("Internal server error"),
+            error: zod.string().describe("Internal server error"),
+            message: zod.string(),
           }),
         },
       },

@@ -17,7 +17,6 @@ export class ImageController {
       | undefined;
     const operation = operationField?.value || "upscale";
 
-    // Optional params for resize
     const widthField = data.fields.width as { value: string } | undefined;
     const heightField = data.fields.height as { value: string } | undefined;
     const params =
@@ -26,22 +25,20 @@ export class ImageController {
         : undefined;
 
     try {
-      const processedImage = await this.processImageUseCase.execute(
-        buffer,
-        data.filename,
+      const result = await this.processImageUseCase.execute({
+        userId: req.user.userId,
+        fileBuffer: buffer,
+        filename: data.filename,
+        mimetype: data.mimetype,
         operation,
         params,
-      );
+      });
 
-      return reply
-        .status(200)
-        .header("Content-Type", "image/png")
-        .header("Content-Disposition", `attachment; filename="processed.png"`)
-        .send(processedImage);
+      return reply.status(202).send(result);
     } catch (error) {
       req.log.error(error);
       return reply.status(500).send({
-        error: "Failed to process image",
+        error: "Failed to enqueue image processing",
         message: error instanceof Error ? error.message : "Unknown error",
       });
     }

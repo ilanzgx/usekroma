@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import { userRoutes } from "./user.routes";
 import { authRoutes } from "./auth.routes";
 import { imageRoutes } from "./image.routes";
+import { jobRoutes } from "./job.routes";
 
 import { db } from "@/database";
 import { sql } from "drizzle-orm";
@@ -34,5 +35,9 @@ export async function routes(fastify: FastifyInstance) {
 
   fastify.register(imageRoutes, {
     prefix: "/v1/images",
+  });
+
+  fastify.register(jobRoutes, {
+    prefix: "/v1/jobs",
   });
 }
