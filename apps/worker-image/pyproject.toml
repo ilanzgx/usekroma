@@ -13,6 +13,9 @@ dependencies = [
     "llvmlite>=0.43.0",
     "numba>=0.59.0",
     "opencv-contrib-python-headless>=4.9.0",
+    "boto3>=1.43.104",
+    "python-dotenv>=1.2.1",
+    "aio-pika>=10.1.0",
 ]
 
 [dependency-groups]

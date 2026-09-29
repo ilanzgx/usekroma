@@ -1,14 +1,15 @@
 from io import BytesIO
+from unittest.mock import patch
 from PIL import Image
-from fastapi.testclient import TestClient
-from app.main import app
+import pytest
 from app.services.image_service import process_image
+from app.consumer import process_job
 
-client = TestClient(app)
 
 def create_sample_image(width=100, height=100, mode="RGB", color=(255, 0, 0)) -> Image.Image:
     """Cria uma imagem de teste em memória."""
     return Image.new(mode, (width, height), color=color)
+
 
 def image_to_bytes(image: Image.Image) -> bytes:
     """Converte uma imagem PIL para bytes PNG."""
@@ -16,18 +17,19 @@ def image_to_bytes(image: Image.Image) -> bytes:
     image.save(buf, format="PNG")
     return buf.getvalue()
 
+
 def test_process_image_transformations():
     """Testa transformações diretas no serviço de imagem."""
     img = create_sample_image(120, 80)
-    
+
     # Teste de resize
     resized = process_image(img, "resize", {"width": 60, "height": 40})
     assert resized.size == (60, 40)
-    
+
     # Teste de grayscale
     gray = process_image(img, "grayscale")
     assert gray.size == (120, 80)
-    
+
     # Teste de flip horizontal
     flipped = process_image(img, "flip_horizontal")
     assert flipped.size == (120, 80)
@@ -36,21 +38,25 @@ def test_process_image_transformations():
     sharp = process_image(img, "sharpen")
     assert sharp.size == (120, 80)
 
-def test_process_endpoint():
-    """Testa o endpoint POST /process com upload de imagem."""
+
+@pytest.mark.anyio
+async def test_process_job():
+    """Testa a execução assíncrona do job pelo consumidor."""
     img = create_sample_image(50, 50)
     img_bytes = image_to_bytes(img)
-    
-    response = client.post(
-        "/process",
-        data={"operation": "grayscale"},
-        files={"file": ("test.png", img_bytes, "image/png")}
-    )
-    
-    assert response.status_code == 200
-    assert response.headers["content-type"] == "image/png"
-    assert len(response.content) > 0
-    
-    # Verifica se o resultado é uma imagem válida decodificável
-    result_img = Image.open(BytesIO(response.content))
-    assert result_img.size == (50, 50)
+
+    with patch("app.consumer.download_bytes", return_value=img_bytes), patch(
+        "app.consumer.upload_bytes"
+    ) as mock_upload:
+        result = await process_job(
+            {
+                "jobId": "test-job-uuid",
+                "imageKey": "uploads/test.png",
+                "operation": "grayscale",
+            }
+        )
+
+        assert result["status"] == "done"
+        assert result["jobId"] == "test-job-uuid"
+        assert result["resultKey"] == "results/test-job-uuid.png"
+        assert mock_upload.called
