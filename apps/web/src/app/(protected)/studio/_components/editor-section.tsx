@@ -129,6 +129,7 @@ export default function EditorSection({
   const [finalTime, setFinalTime] = useState<number | null>(null);
   const [inputDetails, setInputDetails] = useState<ImageDetails | null>(null);
   const [outputDetails, setOutputDetails] = useState<ImageDetails | null>(null);
+  const [queuePosition, setQueuePosition] = useState<number | null>(null);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -204,6 +205,7 @@ export default function EditorSection({
       setIsProcessing(true);
       setProcessedUrl(null);
       setError(null);
+      setQueuePosition(null);
       setProcessingStatus("uploading");
       setElapsedTime(0);
       setFinalTime(null);
@@ -246,6 +248,7 @@ export default function EditorSection({
           operation,
           width: resizeWidth,
           height: resizeHeight,
+          onQueuePositionChange: setQueuePosition,
         });
 
         if (result.error) {
@@ -437,12 +440,18 @@ export default function EditorSection({
                   )}
                 </div>
 
-                {/* Título e descrição dinâmicos */}
+                {/* Título e descrição dinâmicos com suporte a posição na fila */}
                 <h4 className="text-base font-semibold mb-1">
-                  {PROCESSING_MESSAGES[processingStatus].title}
+                  {processingStatus === "processing" && queuePosition !== null && queuePosition > 1
+                    ? "Aguardando na fila..."
+                    : PROCESSING_MESSAGES[processingStatus].title}
                 </h4>
                 <p className="text-sm text-muted-foreground mb-3">
-                  {PROCESSING_MESSAGES[processingStatus].description}
+                  {processingStatus === "processing" && queuePosition !== null && queuePosition > 1
+                    ? `Posição #${queuePosition} na fila de espera`
+                    : processingStatus === "processing"
+                      ? `Executando ${toolName} com IA...`
+                      : PROCESSING_MESSAGES[processingStatus].description}
                 </p>
 
                 {/* Tempo decorrido */}

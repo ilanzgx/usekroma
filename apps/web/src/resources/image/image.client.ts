@@ -14,6 +14,10 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+export interface ProcessImageClientOptions extends ImageProcessRequest {
+  onQueuePositionChange?: (position: number | null) => void;
+}
+
 /**
  * processImageClient
  * Client-side asynchronous image processing via RabbitMQ job queue.
@@ -25,7 +29,8 @@ export async function processImageClient({
   operation,
   width,
   height,
-}: ImageProcessRequest): Promise<ImageProcessResponse> {
+  onQueuePositionChange,
+}: ProcessImageClientOptions): Promise<ImageProcessResponse> {
   let lastError: Error | null = null;
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
@@ -82,6 +87,10 @@ export async function processImageClient({
         }
 
         const job: JobDTO = await statusResponse.json();
+
+        if (onQueuePositionChange && job.queuePosition !== undefined) {
+          onQueuePositionChange(job.queuePosition);
+        }
 
         if (job.status === "failed") {
           console.error("Job de imagem falhou:", job.errorMessage);

@@ -11,6 +11,7 @@ export interface JobDTO {
   id: string;
   status: JobStatus;
   operation: ImageProcessOperations | string;
+  queuePosition?: number | null;
   errorMessage?: string | null;
   createdAt: Date | string;
   completedAt?: Date | string | null;

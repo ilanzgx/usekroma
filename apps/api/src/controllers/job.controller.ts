@@ -1,6 +1,6 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { db, jobs } from "@/database";
-import { eq, and } from "drizzle-orm";
+import { eq, and, lt, sql } from "drizzle-orm";
 import { storage } from "@/lib/storage";
 import type { JobDTO, JobStatus } from "@kroma/shared";
 
@@ -21,10 +21,27 @@ export class JobController {
       return reply.status(404).send({ error: "Job not found" });
     }
 
+    let queuePosition: number | null = null;
+
+    if (job.status === "pending") {
+      const [positionResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(jobs)
+        .where(
+          and(
+            eq(jobs.status, "pending"),
+            lt(jobs.createdAt, job.createdAt),
+          ),
+        );
+
+      queuePosition = Number(positionResult?.count ?? 0) + 1;
+    }
+
     const response: JobDTO = {
       id: job.id,
       status: job.status as JobStatus,
       operation: job.operation,
+      queuePosition,
       errorMessage: job.errorMessage,
       createdAt: job.createdAt,
       completedAt: job.completedAt,

@@ -349,10 +349,10 @@ sequenceDiagram
         loop A cada 1.5s ate conclusao ou timeout
             Browser->>BFF: GET /api/jobs/{jobId}
             BFF->>API: GET /v1/jobs/{jobId}
-            API->>DB: Consulta status do job
-            DB-->>API: Retorna job
-            API-->>BFF: { id, status: "pending" | "done" | "failed" }
-            BFF-->>Browser: Status atual
+            API->>DB: Consulta status do job (e calcula queuePosition se status == 'pending')
+            DB-->>API: Retorna job com contagem de pendentes anteriores
+            API-->>BFF: { id, status: "pending" | "done" | "failed", queuePosition }
+            BFF-->>Browser: Status atual e posicao na fila (#1, #2, etc.)
         end
     end
 
