@@ -575,7 +575,7 @@ A infraestrutura é orientada a contêineres imutáveis e automações via **Git
 
 #### Worker Image (`apps/worker-image/Dockerfile`)
 - **Estratégia Multi-Stage:**
-  - *Stage 1 (Builder):* Base `python:3.11-slim`, instalação do compilador C/C++ (`gcc`, `g++`), uso de `uv` para resolução e compilação ultra-rápida de rodas binárias (*wheels*), remoção de caches (`.pyc`, testes, documentações) para minimizar pegada em disco.
+  - *Stage 1 (Builder):* Base python:3.11-slim, instalacao do compilador C/C++ (gcc, g++), uso de uv para resolucao e compilacao ultra-rapida de rodas binarias (*wheels*), pre-compilacao de bytecode (python -m compileall) para eliminar latencia de cold start do interpretador Python.
   - *Pré-carregamento de Modelos:* Os modelos U2-Net e LapSRN (x2 e x4) são baixados diretamente durante o build do contêiner. Isso assegura que o contêiner inicie imediatamente sem depender de conectividade externa de rede para download em runtime.
   - *Stage 2 (Runner):* Imagem limpa sem ferramentas de compilação.
 - **Configurações de Execução Otimizada:**
@@ -608,7 +608,7 @@ A arquitetura do Kroma adota o princípio de **Defesa em Profundidade (Defense i
 
 2. **Mitigação de Abuso e Negação de Serviço (DoS):**
    - Controle de fluxo em múltiplos níveis:
-     - Nível 1: Rate limiting perimetral no Fastify (15 req/min geral, 5 req/min para operações gráficas).
+     - Nível 1: Rate limiting perimetral no Fastify via @fastify/rate-limit (100 req/min global, 5 req/min para submissão gráfica, 120 req/min para polling de jobs particionado por userId ou X-Forwarded-For/IP).
      - Nível 2: Limitação física de tamanho de payload no parsing multipart (teto de 5MB).
      - Nível 3: Semáforo de controle no worker Python para contenção de uso de RAM e CPU.
 

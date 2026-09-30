@@ -232,6 +232,7 @@ O monorepo pode ser operado via **Task** (`task`) ou via scripts do **pnpm**:
 | **Iniciar apenas a API Backend** | `task dev:api` | `pnpm start:api` |
 | **Iniciar apenas o Worker Python** | `task dev:worker` | `pnpm start:worker-image` |
 | **Subir infraestrutura local (DB, Fila, S3)** | `task infra:up` | `docker compose up -d postgres rabbitmq minio` |
+| **Subir todos os containers (Apps + Infra)** | `task infra:all` | `docker compose up -d --build` |
 | **Parar infraestrutura local** | `task infra:down` | `docker compose down` |
 | **Logs da infraestrutura** | `task infra:logs` | `docker compose logs -f` |
 | **Executar todas as suites de teste** | `task test` | `pnpm test` |

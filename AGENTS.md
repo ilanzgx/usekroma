@@ -92,8 +92,9 @@ The project uses Taskfile with pnpm and uv workspaces:
 | `task dev:api` | Runs Fastify API with tsx watch |
 | `task dev:worker` | Runs FastAPI worker with uvicorn --reload |
 | `task dev:web` | Runs Next.js frontend with hot reload |
-| `task infra:up` | Boots PostgreSQL 17 container (docker compose up -d postgres) |
-| `task infra:down` | Stops PostgreSQL container (docker compose down) |
+| `task infra:up` | Boots PostgreSQL 17, RabbitMQ and MinIO containers |
+| `task infra:all` | Boots all project containers (Web, API, Worker, DB, RabbitMQ, MinIO) |
+| `task infra:down` | Stops containers (docker compose down) |
 | `task infra:logs` | Streams PostgreSQL logs (docker compose logs -f) |
 | `task test` | Runs all test suites (Vitest on API and Pytest on Worker) |
 | `task test:api` | Runs API unit tests via Vitest (pnpm --filter @kroma/api test) |
