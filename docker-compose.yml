@@ -1,20 +1,46 @@
 services:
+  web:
+    container_name: kroma-web
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: ./apps/web/Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:18080/v1}
+    ports:
+      - "${WEB_PORT:-13000}:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:18080/v1}
+      - API_URL=http://api:8080/v1
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - api
+
   api:
     container_name: kroma-api
+    restart: unless-stopped
     build:
       context: .
       dockerfile: ./apps/api/Dockerfile
     ports:
-      - "18080:8080"
-    env_file:
-      - ./apps/api/.env
+      - "${API_PORT:-18080}:8080"
     environment:
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8080
       - NODE_ENV=production
-      - GOOGLE_CALLBACK_URL=http://localhost:18080/v1/auth/google/callback
-      - FRONTEND_URL=http://localhost:13000
-      - DATABASE_URL=postgres://postgres:postgres@database:5432/postgres
-      - RABBITMQ_URL=amqp://kroma:kroma@rabbitmq:5672
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - JWT_SECRET=${JWT_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL:-http://localhost:18080/v1/auth/google/callback}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:13000}
+      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-postgres}
+      - RABBITMQ_URL=amqp://${RABBITMQ_USER:-kroma}:${RABBITMQ_PASS:-kroma}@rabbitmq:5672
       - STORAGE_ENDPOINT=http://minio:9000
+      - STORAGE_REGION=us-east-1
+      - STORAGE_ACCESS_KEY=${STORAGE_ACCESS_KEY:-kromauser}
+      - STORAGE_SECRET_KEY=${STORAGE_SECRET_KEY:-kromapassword}
+      - STORAGE_BUCKET=${STORAGE_BUCKET:-kroma-storage}
       - WORKER_IMAGE_URL=http://worker-image:8000
     depends_on:
       database:
@@ -25,22 +51,20 @@ services:
         condition: service_healthy
       worker-image:
         condition: service_healthy
-    networks:
-      - saas-image
 
   worker-image:
     container_name: kroma-worker
+    restart: unless-stopped
     build:
       context: ./apps/worker-image
       dockerfile: Dockerfile
-    ports:
-      - "18000:8000"
     environment:
-      - RABBITMQ_URL=amqp://kroma:kroma@rabbitmq:5672
+      - RABBITMQ_URL=amqp://${RABBITMQ_USER:-kroma}:${RABBITMQ_PASS:-kroma}@rabbitmq:5672
       - STORAGE_ENDPOINT=http://minio:9000
-      - STORAGE_ACCESS_KEY=kromauser
-      - STORAGE_SECRET_KEY=kromapassword
-      - STORAGE_BUCKET=kroma-storage
+      - STORAGE_REGION=us-east-1
+      - STORAGE_ACCESS_KEY=${STORAGE_ACCESS_KEY:-kromauser}
+      - STORAGE_SECRET_KEY=${STORAGE_SECRET_KEY:-kromapassword}
+      - STORAGE_BUCKET=${STORAGE_BUCKET:-kroma-storage}
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -52,84 +76,62 @@ services:
       timeout: 3s
       retries: 10
       start_period: 5s
-    networks:
-      - saas-image
-
-  web:
-    container_name: kroma-web
-    build:
-      context: .
-      dockerfile: ./apps/web/Dockerfile
-      args:
-        - NEXT_PUBLIC_API_URL=http://localhost:18080/v1
-    ports:
-      - "13000:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:18080/v1
-      - API_URL=http://api:8080/v1
-    depends_on:
-      - api
-    networks:
-      - saas-image
 
   database:
     image: postgres:17
     container_name: kroma-database
+    restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "${DB_BIND_IP:-127.0.0.1}:${DB_PORT:-5432}:5432"
     environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=${POSTGRES_DB:-postgres}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 10
     volumes:
-      - .docker/postgres:/var/lib/postgresql/data
-    networks:
-      - saas-image
+      - postgres_data:/var/lib/postgresql/data
 
   rabbitmq:
     image: rabbitmq:3-management
     container_name: kroma-rabbitmq
+    restart: unless-stopped
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "${RABBITMQ_MGMT_BIND_IP:-127.0.0.1}:${RABBITMQ_MGMT_PORT:-15672}:15672"
     environment:
-      - RABBITMQ_DEFAULT_USER=kroma # Porta do protocolo AMQP (aplicações)
-      - RABBITMQ_DEFAULT_PASS=kroma # Painel web de gerenciamento
-    volumes:
-      - .docker/rabbitmq:/var/lib/rabbitmq
-    networks:
-      - saas-image
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER:-kroma}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS:-kroma}
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
 
   minio:
     image: pgsty/silo:latest
     container_name: kroma-minio
+    restart: unless-stopped
     command: server /data --console-address ":9001"
     ports:
-      - "9000:9000" # API S3
-      - "9001:9001" # Console Web
+      - "${MINIO_API_BIND_IP:-127.0.0.1}:${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_BIND_IP:-127.0.0.1}:${MINIO_CONSOLE_PORT:-9001}:9001"
     environment:
-      - MINIO_ROOT_USER=kromauser
-      - MINIO_ROOT_PASSWORD=kromapassword
-    volumes:
-      - .docker/minio:/data
-    networks:
-      - saas-image
+      - MINIO_ROOT_USER=${STORAGE_ACCESS_KEY:-kromauser}
+      - MINIO_ROOT_PASSWORD=${STORAGE_SECRET_KEY:-kromapassword}
     healthcheck:
       test: ["CMD", "mc", "ready", "local"]
       interval: 5s
       timeout: 5s
       retries: 5
+    volumes:
+      - minio_data:/data
 
-networks:
-  saas-image:
-    driver: bridge
+volumes:
+  postgres_data:
+  rabbitmq_data:
+  minio_data:

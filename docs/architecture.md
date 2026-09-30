@@ -461,17 +461,23 @@ Servico desenvolvido em **Python 3.11** utilizando **aio-pika**, **FastAPI**, **
     await channel.set_qos(prefetch_count=1)
     ```
   - **Desacoplamento por Fila:** O RabbitMQ retem requisicoes excedentes na fila `image-processing`. O worker apenas puxa a proxima mensagem apos concluir o processamento da anterior e enviar o `ack()`. Isso substitui o bloqueio de conexoes HTTP e permite escalabilidade horizontal trivial (basta instanciar novos containers do worker).
-  - **Execucao Desacoplada da Thread Principal:** Como a manipulacao de matrizes do OpenCV e a inferencia de IA sao operacoes que bloqueiam a CPU (*CPU-bound*), elas nao sao executadas no event loop assincrono. O worker delega a tarefa a um pool de threads nativo via:
-    ```python
-    loop = asyncio.get_running_loop()
-    output_bytes = await loop.run_in_executor(
-        None,
-        _execute_processing,
-        image_bytes,
-        operation,
-        params,
-    )
-    ```
+  - **Execucao Desacoplada e Contencao de Threads (Deadlock Prevention):**
+    - Como a manipulacao de matrizes do OpenCV e a inferencia de IA sao operacoes que bloqueiam a CPU (*CPU-bound*), elas sao delegadas ao pool de threads via:
+      ```python
+      loop = asyncio.get_running_loop()
+      output_bytes = await asyncio.wait_for(
+          loop.run_in_executor(
+              None,
+              _execute_processing,
+              image_bytes,
+              operation,
+              params,
+          ),
+          timeout=PROCESSING_TIMEOUT,  # 120 segundos
+      )
+      ```
+    - **Isolamento de Threads no ONNX Runtime / rembg:** Para eliminar deadlocks e conflitos de agendamento entre o OpenMP/ONNX Runtime e o `ThreadPoolExecutor` do asyncio (especialmente no Windows e contêineres Linux restritos), define-se estritamente `OMP_NUM_THREADS=1` e `ONNX_NUM_THREADS=1` antes do carregamento dos motores, com a sessão do `rembg` explicitamente configurada com `providers=["CPUExecutionProvider"]`.
+    - **Proteção por Timeout Rígido:** A execução do job é contida pelo teto de 120 segundos (`asyncio.wait_for`). Caso uma inferência exceda o prazo, a coroutine cancela a espera, publica o resultado com `status: "failed"` e devolve uma mensagem clara ao ledger, impedindo que o consumidor fique preso indefinidamente retendo o canal do RabbitMQ (`prefetch_count=1`).
   - **Limpeza Agressiva de Memoria:** Ao final de cada ciclo de processamento no bloco `finally`, invoca-se explicitamente o coletor de lixo do Python (`gc.collect()`), devolvendo blocos de memoria nao referenciados ao sistema operacional.
 
 - **Ciclo de Vida de Modelos (Lazy Loading & Descarregamento Dinamico):**

@@ -3,11 +3,18 @@ Operações de efeitos visuais.
 Inclui: blur, remove_background, cartoon, grayscale, sepia, vignette
 """
 import gc
-import time
 import logging
+import os
+import time
+
+# Configura threads do ONNX e OpenMP para modo single-thread seguro
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+os.environ.setdefault("ONNX_NUM_THREADS", "1")
+
 import cv2
 import numpy as np
 from PIL import Image, ImageFilter
+
 # Configuração do logger
 logger = logging.getLogger(__name__)
 
@@ -18,11 +25,11 @@ def _get_session():
     if _session is None:
         from rembg import new_session
         logger.info("[U2-NET] ================================================")
-        logger.info("[U2-NET] |  LOADING MODEL...                            |")
+        logger.info("[U2-NET] |  LOADING MODEL (CPUExecutionProvider)...     |")
         logger.info("[U2-NET] ================================================")
 
         start_time = time.time()
-        _session = new_session("u2net")
+        _session = new_session("u2net", providers=["CPUExecutionProvider"])
         elapsed = time.time() - start_time
 
         logger.info("[U2-NET] ================================================")
@@ -66,11 +73,15 @@ def remove_background(image: Image.Image, unload_after: bool = True) -> Image.Im
         if image.mode != "RGBA":
             image = image.convert("RGBA")
 
+        logger.info(f"[U2-NET] Executando remoção de fundo (tamanho: {image.size})...")
+        start_time = time.time()
         result = remove(image, session=_get_session())
+        elapsed = time.time() - start_time
+        logger.info(f"[U2-NET] Remoção de fundo concluída em {elapsed:.2f}s")
         return result
 
     except Exception as e:
-        logger.error(f"[U2-NET] Erro durante remoção de fundo: {e}")
+        logger.exception(f"[U2-NET] Erro durante remoção de fundo: {e}")
         raise
 
     finally:

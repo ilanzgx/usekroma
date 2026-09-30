@@ -5,6 +5,10 @@ import logging
 import os
 from io import BytesIO
 
+# Configuração de threads do ONNX e OpenMP para evitar deadlocks com o asyncio threadpool
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+os.environ.setdefault("ONNX_NUM_THREADS", "1")
+
 import aio_pika
 from dotenv import load_dotenv
 
@@ -17,6 +21,7 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 RABBITMQ_URL = os.getenv("RABBITMQ_URL", "amqp://kroma:kroma@localhost:5672")
+PROCESSING_TIMEOUT = 120  # segundos (conforme diretriz arquitetural AGENTS.md)
 
 
 def _execute_processing(
@@ -40,23 +45,34 @@ async def process_job(payload: dict) -> dict:
     logger.info(f"[Worker] Iniciando job {job_id} ({operation})")
 
     # 1. Baixa imagem original do MinIO em thread pool (I/O)
+    logger.info(f"[Worker] Baixando imagem original {image_key}...")
     image_bytes = await asyncio.to_thread(download_bytes, image_key)
+    logger.info(
+        f"[Worker] Imagem {image_key} baixada com sucesso ({len(image_bytes)} bytes)"
+    )
 
-    # 2. Processa a imagem em thread pool (CPU-bound)
+    # 2. Processa a imagem em thread pool (CPU-bound) com timeout de 120s
+    logger.info(f"[Worker] Executando processamento ({operation})...")
     loop = asyncio.get_running_loop()
-    output_bytes = await loop.run_in_executor(
-        None,
-        _execute_processing,
-        image_bytes,
-        operation,
-        params,
+    output_bytes = await asyncio.wait_for(
+        loop.run_in_executor(
+            None,
+            _execute_processing,
+            image_bytes,
+            operation,
+            params,
+        ),
+        timeout=PROCESSING_TIMEOUT,
+    )
+    logger.info(
+        f"[Worker] Processamento concluído com sucesso ({len(output_bytes)} bytes)"
     )
 
     # 3. Salva o resultado no MinIO em results/{jobId}.png
     result_key = f"results/{job_id}.png"
     await asyncio.to_thread(upload_bytes, result_key, output_bytes, "image/png")
 
-    logger.info(f"[Worker] Job {job_id} concluído com sucesso")
+    logger.info(f"[Worker] Job {job_id} finalizado e resultado salvo em {result_key}")
     return {
         "jobId": job_id,
         "status": "done",
@@ -95,8 +111,18 @@ async def start_consumer():
 
                         try:
                             result_payload = await process_job(payload)
-                        except Exception as exc:
+                        except asyncio.TimeoutError:
+                            err_msg = f"Tempo limite de processamento excedido ({PROCESSING_TIMEOUT}s)"
                             logger.error(
+                                f"[Worker] Timeout no processamento do job {job_id}: {err_msg}"
+                            )
+                            result_payload = {
+                                "jobId": job_id,
+                                "status": "failed",
+                                "errorMessage": err_msg,
+                            }
+                        except Exception as exc:
+                            logger.exception(
                                 f"[Worker] Falha no processamento do job {job_id}: {exc}"
                             )
                             result_payload = {
