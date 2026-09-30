@@ -4,7 +4,8 @@ import { cookies } from "next/headers";
 import { User } from "@/resources/user/user.types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const rawApiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080/v1";
+const API_URL = rawApiUrl.endsWith("/v1") ? rawApiUrl : `${rawApiUrl.replace(/\/+$/, "")}/v1`;
 
 /**
  * getToken
@@ -41,7 +42,7 @@ export async function getProfile(): Promise<User | null> {
   }
 
   try {
-    const response = await fetch(`${BASE_URL}/users/me`, {
+    const response = await fetch(`${API_URL}/users/me`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

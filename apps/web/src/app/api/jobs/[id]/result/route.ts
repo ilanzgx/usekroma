@@ -1,7 +1,8 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const rawApiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://api:8080/v1";
+const API_URL = rawApiUrl.endsWith("/v1") ? rawApiUrl : `${rawApiUrl.replace(/\/+$/, "")}/v1`;
 
 export async function GET(
   _request: NextRequest,

@@ -5,7 +5,9 @@ import Image from "next/image";
 
 export default function LoginButton() {
   const handleLoginWithGoogle = () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+    const rawUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080/v1";
+    const apiUrl = rawUrl.endsWith("/v1") ? rawUrl : `${rawUrl.replace(/\/+$/, "")}/v1`;
+    window.location.href = `${apiUrl}/auth/google`;
   };
 
   return (

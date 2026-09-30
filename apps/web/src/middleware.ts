@@ -2,6 +2,15 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { validateToken } from "@/resources/auth/auth.service";
 
+function getBaseUrl(request: NextRequest): string {
+  const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
+  const proto = request.headers.get("x-forwarded-proto") || (host?.includes("localhost") ? "http" : "https");
+  if (host) {
+    return `${proto}://${host}`;
+  }
+  return "http://localhost:13000";
+}
+
 export async function middleware(request: NextRequest) {
   const token = request.cookies.get("token")?.value;
 
@@ -13,7 +22,7 @@ export async function middleware(request: NextRequest) {
   if (token && isAuthRoute) {
     const isValid = await validateToken();
     if (isValid) {
-      return NextResponse.redirect(new URL("/studio", request.url));
+      return NextResponse.redirect(new URL("/studio", getBaseUrl(request)));
     }
 
     const response = NextResponse.next();
