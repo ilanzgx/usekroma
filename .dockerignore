@@ -1,0 +1,38 @@
+# Dependency directories
+**/node_modules
+**/.pnpm-store
+
+# Build outputs
+**/dist
+**/.next
+**/.turbo
+**/build
+
+# Python virtual environments & bytecode
+**/.venv
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.pytest_cache
+**/.ruff_cache
+
+# Local containers storage & volumes
+.docker
+
+# Git & GitHub
+.git
+.github
+.agents
+
+# Documentation & logs
+docs
+*.md
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment files
+.env*
+!.env.example

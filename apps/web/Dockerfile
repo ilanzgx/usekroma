@@ -10,11 +10,13 @@ RUN apk add --no-cache libc6-compat
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY packages/shared/package.json ./packages/shared/
 COPY apps/web/package.json ./apps/web/
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --filter @kroma/web...
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --filter @kroma/shared --filter @kroma/web...
 
 # ---------- build ----------
 FROM deps AS builder
 WORKDIR /app
+ARG NEXT_PUBLIC_API_URL=http://localhost:18080/v1
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 COPY packages/shared ./packages/shared
 COPY apps/web ./apps/web
 RUN pnpm --filter @kroma/shared build && pnpm --filter @kroma/web build

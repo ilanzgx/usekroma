@@ -15,8 +15,18 @@ tasks:
     cmds:
       - docker-compose up -d database rabbitmq minio
 
+  infra:all:
+    desc: Sobe todos os containers do projeto (Apps e Infraestrutura)
+    cmds:
+      - docker-compose up -d --build {{.CLI_ARGS}}
+
+  infra:stop:
+    desc: Para todos os containers de infraestrutura
+    cmds:
+      - docker-compose stop
+
   infra:down:
-    desc: Para os containers de infraestrutura
+    desc: Deleta os containers de infraestrutura
     cmds:
       - docker-compose down
 
