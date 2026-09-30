@@ -2,7 +2,14 @@ import { FastifyRateLimitOptions } from "@fastify/rate-limit";
 import { FastifyRequest } from "fastify";
 
 export const rateLimitConfig: FastifyRateLimitOptions = {
-  max: 15,
+  max: 100,
   timeWindow: "1 minute",
-  keyGenerator: (req: FastifyRequest) => req.user?.userId || req.ip,
+  hook: "preHandler",
+  keyGenerator: (req: FastifyRequest) => {
+    return (
+      req.user?.userId ||
+      (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
+      req.ip
+    );
+  },
 };

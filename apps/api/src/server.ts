@@ -76,14 +76,14 @@ app.register(ScalarApiReference, {
 app.register(fastifyOauth2, googleOAuthConfig); // OAuth2 plugin
 app.register(fastifyJwt, jwtConfig); // JWT plugin
 app.register(fastifyMultipart, multipartConfig); // Multipart plugin
-app.register(fastifyRateLimit, rateLimitConfig); // Rate limit plugin
-app.register(routes); // Routes
-
 // ********************************************
 // Global Auth Middleware
 // ********************************************
 
 app.addHook("preHandler", authMiddleware);
+
+app.register(fastifyRateLimit, rateLimitConfig); // Rate limit plugin
+app.register(routes); // Routes
 
 // ********************************************
 // Server initialization
