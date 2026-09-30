@@ -64,42 +64,70 @@ async def process_job(payload: dict) -> dict:
     }
 
 
+is_ready = False
+
+
+def is_consumer_ready() -> bool:
+    return is_ready
+
+
 async def start_consumer():
-    connection = await aio_pika.connect_robust(RABBITMQ_URL)
-    channel = await connection.channel()
-    await channel.set_qos(prefetch_count=1)
+    global is_ready
+    while True:
+        connection = None
+        try:
+            logger.info(f"[Worker] Conectando ao RabbitMQ em {RABBITMQ_URL}...")
+            connection = await aio_pika.connect_robust(RABBITMQ_URL)
+            channel = await connection.channel()
+            await channel.set_qos(prefetch_count=1)
 
-    queue_processing = await channel.declare_queue("image-processing", durable=True)
-    await channel.declare_queue("image-results", durable=True)
+            queue_processing = await channel.declare_queue("image-processing", durable=True)
+            await channel.declare_queue("image-results", durable=True)
 
-    logger.info("[Worker] Consumidor RabbitMQ pronto e escutando 'image-processing'")
+            is_ready = True
+            logger.info("[Worker] Consumidor RabbitMQ pronto e escutando 'image-processing'")
 
-    async with queue_processing.iterator() as queue_iter:
-        async for message in queue_iter:
-            async with message.process():
-                payload = json.loads(message.body.decode())
-                job_id = payload.get("jobId")
+            async with queue_processing.iterator() as queue_iter:
+                async for message in queue_iter:
+                    async with message.process():
+                        payload = json.loads(message.body.decode())
+                        job_id = payload.get("jobId")
 
+                        try:
+                            result_payload = await process_job(payload)
+                        except Exception as exc:
+                            logger.error(
+                                f"[Worker] Falha no processamento do job {job_id}: {exc}"
+                            )
+                            result_payload = {
+                                "jobId": job_id,
+                                "status": "failed",
+                                "errorMessage": str(exc),
+                            }
+                        finally:
+                            gc.collect()
+
+                        await channel.default_exchange.publish(
+                            aio_pika.Message(
+                                body=json.dumps(result_payload).encode(),
+                                delivery_mode=aio_pika.DeliveryMode.PERSISTENT,
+                            ),
+                            routing_key="image-results",
+                        )
+        except asyncio.CancelledError:
+            is_ready = False
+            logger.info("[Worker] Consumidor RabbitMQ cancelado.")
+            if connection and not connection.is_closed:
+                await connection.close()
+            break
+        except Exception as exc:
+            is_ready = False
+            logger.error(
+                f"[Worker] Erro no consumidor RabbitMQ: {exc}. Reconectando em 3s..."
+            )
+            if connection and not connection.is_closed:
                 try:
-                    result_payload = await process_job(payload)
-                except Exception as exc:
-                    logger.error(
-                        f"[Worker] Falha no processamento do job {job_id}: {exc}"
-                    )
-                    result_payload = {
-                        "jobId": job_id,
-                        "status": "failed",
-                        "errorMessage": str(exc),
-                    }
-                finally:
-                    # Força garbage collection após cada processamento
-                    gc.collect()
-
-                # Publica resultado na fila image-results
-                await channel.default_exchange.publish(
-                    aio_pika.Message(
-                        body=json.dumps(result_payload).encode(),
-                        delivery_mode=aio_pika.DeliveryMode.PERSISTENT,
-                    ),
-                    routing_key="image-results",
-                )
+                    await connection.close()
+                except Exception:
+                    pass
+            await asyncio.sleep(3)

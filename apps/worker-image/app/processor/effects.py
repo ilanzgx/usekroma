@@ -8,8 +8,6 @@ import logging
 import cv2
 import numpy as np
 from PIL import Image, ImageFilter
-from rembg import remove, new_session
-
 # Configuração do logger
 logger = logging.getLogger(__name__)
 
@@ -18,6 +16,7 @@ _session = None
 def _get_session():
     global _session
     if _session is None:
+        from rembg import new_session
         logger.info("[U2-NET] ================================================")
         logger.info("[U2-NET] |  LOADING MODEL...                            |")
         logger.info("[U2-NET] ================================================")
@@ -61,6 +60,8 @@ def remove_background(image: Image.Image, unload_after: bool = True) -> Image.Im
     Retorna uma imagem RGBA com fundo transparente.
     """
     try:
+        from rembg import remove
+
         # converte para RGBA se necessário para suportar transparência
         if image.mode != "RGBA":
             image = image.convert("RGBA")

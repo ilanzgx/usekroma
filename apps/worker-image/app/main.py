@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
-from app.consumer import start_consumer
+from app.consumer import is_consumer_ready, start_consumer
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s | %(message)s", datefmt="%H:%M:%S"
@@ -33,5 +33,26 @@ app = FastAPI(lifespan=lifespan)
 @app.get("/health")
 async def health_check():
     return JSONResponse(
-        content={"status": "healthy", "service": "worker-image"}, status_code=200
+        content={
+            "status": "healthy",
+            "service": "worker-image",
+            "consumer": "connected" if is_consumer_ready() else "disconnected",
+        },
+        status_code=200,
+    )
+
+
+@app.get("/ready")
+async def ready_check():
+    if not is_consumer_ready():
+        return JSONResponse(
+            content={
+                "status": "not_ready",
+                "service": "worker-image",
+                "reason": "rabbitmq_disconnected",
+            },
+            status_code=503,
+        )
+    return JSONResponse(
+        content={"status": "ready", "service": "worker-image"}, status_code=200
     )
