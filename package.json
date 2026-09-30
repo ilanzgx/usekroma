@@ -15,10 +15,20 @@
     "test": "pnpm --filter @kroma/api test",
     "test:unit": "pnpm --filter @kroma/api test:unit",
     "test:coverage": "pnpm --filter @kroma/api test:coverage",
-    "lint": "pnpm --filter @kroma/web lint"
+    "lint": "pnpm --filter @kroma/web lint",
+    "prepare": "husky"
   },
   "packageManager": "pnpm@10.24.0",
   "dependencies": {
     "concurrently": "^9.2.1"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0"
+  },
+  "lint-staged": {
+    "apps/web/**/*.{js,jsx,ts,tsx}": [
+      "pnpm --filter @kroma/web lint"
+    ]
   }
 }

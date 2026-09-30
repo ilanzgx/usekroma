@@ -706,8 +706,8 @@ pnpm install
 # 2. Configuração de variáveis de ambiente do backend
 cp apps/api/.env.example apps/api/.env
 
-# 3. Inicialização da infraestrutura de banco de dados
-docker-compose up -d database
+# 3. Inicialização da infraestrutura (PostgreSQL, RabbitMQ, MinIO)
+task infra:up
 
 # 4. Aplicação de migrações estruturais
 pnpm --filter @kroma/api db:migrate
@@ -718,7 +718,7 @@ uv sync
 cd ../..
 
 # 6. Execução coordenada de todos os serviços (Web + API + Worker)
-pnpm dev
+task dev
 ```
 
 ### 9.4. Implantação Self-Hosted com Docker Compose
