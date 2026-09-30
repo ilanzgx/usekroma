@@ -84,7 +84,7 @@ export function PricingDialog({ open, onOpenChange }: PricingDialogProps) {
                 IA
               </li>
               <li className="flex items-center gap-2">
-                <Check className="size-4 text-green-500" /> Sem marca d'água
+                <Check className="size-4 text-green-500" /> Sem marca d&apos;água
               </li>
               <li className="flex items-center gap-2">
                 <Check className="size-4 text-green-500" /> Suporte prioritário
@@ -116,7 +116,7 @@ export function PricingDialog({ open, onOpenChange }: PricingDialogProps) {
                 IA
               </li>
               <li className="flex items-center gap-2">
-                <Check className="size-4 text-green-500" /> Sem marca d'água
+                <Check className="size-4 text-green-500" /> Sem marca d&apos;água
               </li>
               <li className="flex items-center gap-2">
                 <Check className="size-4 text-green-500" /> Suporte prioritário

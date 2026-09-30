@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { RESIZES } from "@/lib/resizes";
@@ -10,17 +10,9 @@ function ResizePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const ratioParam = searchParams.get("ratio");
-
-  const [selectedRatio, setSelectedRatio] = useState(ratioParam || "1:1");
-
-  useEffect(() => {
-    if (ratioParam) {
-      setSelectedRatio(ratioParam);
-    }
-  }, [ratioParam]);
+  const selectedRatio = ratioParam || "1:1";
 
   const handleRatioChange = (ratio: string) => {
-    setSelectedRatio(ratio);
     router.push(`/studio/resize?ratio=${ratio}`, { scroll: false });
   };
 

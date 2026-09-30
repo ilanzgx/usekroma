@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getProfile } from "@/resources/auth";
 import { TOOLS } from "@/lib/tools";
 import BeforeAfterSlider from "@/components/before-after-slider";
@@ -47,7 +48,7 @@ export default async function Home() {
                   <ArrowRight className="size-3.5" />
                 </Link>
                 {/* User Avatar */}
-                {user.picture && <img src={user.picture} alt={user.name} className="size-8 rounded-full border border-zinc-200 object-cover" />}
+                {user.picture && <Image src={user.picture} alt={user.name} width={32} height={32} className="size-8 rounded-full border border-zinc-200 object-cover" />}
               </div>
             ) : (
               <>

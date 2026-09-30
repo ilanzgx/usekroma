@@ -135,8 +135,6 @@ export default function EditorSection({
     let interval: NodeJS.Timeout | null = null;
 
     if (isProcessing) {
-      setElapsedTime(0);
-      elapsedTimeRef.current = 0;
       interval = setInterval(() => {
         setElapsedTime((prev) => {
           elapsedTimeRef.current = prev + 1;
@@ -208,6 +206,7 @@ export default function EditorSection({
       setQueuePosition(null);
       setProcessingStatus("uploading");
       setElapsedTime(0);
+      elapsedTimeRef.current = 0;
       setFinalTime(null);
       setOutputDetails(null);
 
@@ -378,6 +377,7 @@ export default function EditorSection({
             {previewUrl ? (
               <div className="h-full p-4 flex flex-col min-h-0">
                 <div className="flex-1 relative rounded-lg overflow-hidden bg-gray-100 min-h-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={previewUrl}
                     alt="Preview"
@@ -499,6 +499,7 @@ export default function EditorSection({
             ) : processedUrl ? (
               <div className="h-full p-4 flex flex-col min-h-0">
                 <div className="flex-1 relative rounded-lg overflow-hidden bg-white border min-h-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={processedUrl}
                     alt="Processed"
