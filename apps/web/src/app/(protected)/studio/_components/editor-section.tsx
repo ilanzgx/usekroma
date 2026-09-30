@@ -250,9 +250,15 @@ export default function EditorSection({
 
         if (result.error) {
           setProcessingStatus("error");
-          if (result.error === "PROCESSING_FAILED") {
+          if (result.message) {
+            setError(result.message);
+          } else if (result.error === "PROCESSING_FAILED") {
             setError(
               "Falha ao processar a imagem. O servidor pode estar ocupado. Tente novamente.",
+            );
+          } else if (result.error === "TIMEOUT") {
+            setError(
+              "O processamento demorou mais que o esperado. Tente novamente.",
             );
           } else {
             setError("Ocorreu um erro ao processar a imagem.");

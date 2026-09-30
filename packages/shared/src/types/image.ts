@@ -25,6 +25,7 @@ export interface ImageProcessRequest {
 export interface ImageProcessResponse {
   processedImage?: string;
   error?: "UNAUTHORIZED" | "PROCESSING_FAILED" | "TIMEOUT" | "UNKNOWN";
+  message?: string | null;
 }
 
 export interface ResizeParams {

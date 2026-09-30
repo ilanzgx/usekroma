@@ -53,7 +53,14 @@ export async function processImageClient({
       });
 
       if (!response.ok) {
-        return { error: "PROCESSING_FAILED" };
+        let errorMsg: string | undefined;
+        try {
+          const errData = await response.json();
+          errorMsg = errData?.message || errData?.error;
+        } catch {
+          // Mantém mensagem padrão caso json não seja parseável
+        }
+        return { error: "PROCESSING_FAILED", message: errorMsg };
       }
 
       const { jobId } = (await response.json()) as { jobId?: string };
@@ -78,7 +85,10 @@ export async function processImageClient({
 
         if (job.status === "failed") {
           console.error("Job de imagem falhou:", job.errorMessage);
-          return { error: "PROCESSING_FAILED" };
+          return {
+            error: "PROCESSING_FAILED",
+            message: job.errorMessage,
+          };
         }
 
         if (job.status === "done") {
@@ -98,7 +108,10 @@ export async function processImageClient({
         }
       }
 
-      return { error: "TIMEOUT" };
+      return {
+        error: "TIMEOUT",
+        message: "O processamento demorou mais que o esperado. Tente novamente.",
+      };
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
       console.error("Erro ao processar imagem:", lastError);
@@ -107,10 +120,14 @@ export async function processImageClient({
         continue;
       }
 
-      return { error: "UNKNOWN" };
+      return { error: "UNKNOWN", message: lastError.message };
     }
   }
 
   console.error("Todas as tentativas falharam:", lastError?.message);
-  return { error: "PROCESSING_FAILED" };
+  return {
+    error: "PROCESSING_FAILED",
+    message: lastError?.message || "O servidor pode estar ocupado. Tente novamente.",
+  };
 }
+
