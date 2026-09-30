@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useDropzone } from "react-dropzone";
-import { useRouter } from "next/navigation";
 import { processImageClient } from "@/resources/image/image.client";
 import { getToolBySlug } from "@/lib/tools";
 import { Scaling } from "lucide-react";
@@ -105,7 +104,6 @@ export default function EditorSection({
   resizeRatio,
 }: EditorSectionProps) {
   const tool = getToolBySlug(toolId);
-  const router = useRouter();
 
   // Resize mode: no tool lookup needed
   const isResizeMode = !!resizeRatio;
@@ -250,11 +248,6 @@ export default function EditorSection({
           height: resizeHeight,
         });
 
-        if (result.error === "UNAUTHORIZED") {
-          router.push("/login");
-          return;
-        }
-
         if (result.error) {
           setProcessingStatus("error");
           if (result.error === "PROCESSING_FAILED") {
@@ -285,7 +278,7 @@ export default function EditorSection({
         setIsProcessing(false);
       }
     },
-    [operation, router, extractOutputDetails, isResizeMode, resizeRatio],
+    [operation, extractOutputDetails, isResizeMode, resizeRatio],
   );
 
   const onDrop = useCallback(

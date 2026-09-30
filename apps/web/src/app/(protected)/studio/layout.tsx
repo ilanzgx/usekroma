@@ -3,6 +3,7 @@ import StudioSidebar from "./_components/sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { getProfile } from "@/resources/auth";
 import { UserProvider } from "@/contexts/user-context";
+import { redirect } from "next/navigation";
 
 export default async function StudioLayout({
   children,
@@ -10,6 +11,10 @@ export default async function StudioLayout({
   children: React.ReactNode;
 }) {
   const user = await getProfile();
+
+  if (!user) {
+    redirect("/login?error=session_expired");
+  }
 
   return (
     <UserProvider user={user}>

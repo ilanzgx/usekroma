@@ -228,6 +228,7 @@ sequenceDiagram
     actor User as Usuario
     participant Browser as Navegador (Cliente)
     participant Web as Web (Next.js)
+    participant Middleware as Middleware Next.js (jose)
     participant API as API (Fastify)
     participant Google as Google OAuth2 API
     participant DB as PostgreSQL (Drizzle)
@@ -248,17 +249,53 @@ sequenceDiagram
     else Novo Usuario
         API->>DB: Cria novo registro com saldo inicial de 50 creditos
     end
-    API->>API: Gera JWT assinado (payload: userId, email) com validade de 7 dias
+    API->>API: Gera JWT assinado (payload: userId, email) com validade de 7 dias via @fastify/jwt
     API-->>Browser: Redirecionamento 302 para /api/auth/callback?token=JWT
     Browser->>Web: GET /api/auth/callback?token=JWT (BFF Route)
     Web->>Web: Grava cookie "token" (HttpOnly, Secure, SameSite=Lax, 7 dias)
     Web-->>Browser: Redirecionamento 302 para /studio
-    Browser->>Web: GET /studio (com Cookie anexado)
-    Web->>API: GET /v1/users/me (com Authorization: Bearer JWT extraido do Cookie)
-    API->>DB: Consulta dados completos do usuario
-    DB-->>API: Retorna dados
-    API-->>Web: Retorna DTO do usuario
-    Web-->>Browser: Renderiza Estudio com dados de perfil e saldo de creditos
+
+    Note over Browser,Middleware: Em cada navegacao subsequente para /studio/*
+    Browser->>Middleware: GET /studio (com Cookie token)
+    Middleware->>Middleware: jwtVerify(token, JWT_SECRET) — validacao em memoria, zero rede
+    alt Token valido e dentro do prazo
+        Middleware-->>Browser: next() — renderiza pagina normalmente
+        Browser->>Web: Server Component getProfile() — extrai dados do usuario ja verificado
+        Web->>API: GET /v1/users/me (Authorization: Bearer JWT)
+        API->>DB: Consulta dados completos do usuario
+        DB-->>API: Retorna dados
+        API-->>Web: Retorna DTO do usuario
+        Web-->>Browser: Renderiza Estudio com dados de perfil e saldo de creditos
+    else Token expirado ou invalido
+        Middleware->>Middleware: Deleta cookie "token"
+        Middleware-->>Browser: HTTP 302 para /login?error=session_expired
+        Browser->>Web: GET /login?error=session_expired
+        Web-->>Browser: Exibe tela de login com alerta de sessao expirada
+    end
+```
+
+### 3.3.1. Interceptacao de 401 em Requisicoes do Cliente (apiFetch)
+
+Durante uma sessao ativa no Studio, todas as requisicoes client-side passam pelo wrapper `apiFetch` em `src/lib/api-client.ts`. Caso qualquer rota BFF retorne HTTP 401 (por exemplo, se o token expirar durante a navegacao SPA entre ferramentas):
+
+```mermaid
+sequenceDiagram
+    actor User as Usuario
+    participant Browser as Studio (Client Component)
+    participant apiFetch as apiFetch (api-client.ts)
+    participant BFF as BFF Route Handler
+    participant API as API Fastify
+
+    User->>Browser: Submete imagem para processamento
+    Browser->>apiFetch: POST /api/images/process (FormData)
+    apiFetch->>BFF: fetch /api/images/process
+    BFF->>API: POST /v1/images/process (Bearer JWT)
+    API-->>BFF: HTTP 401 Unauthorized (token expirado)
+    BFF->>BFF: res.cookies.delete("token")
+    BFF-->>apiFetch: HTTP 401
+    apiFetch->>apiFetch: response.status === 401
+    apiFetch->>Browser: window.location.href = /login?error=session_expired
+    Browser-->>User: Redireciona para tela de login com alerta de sessao expirada
 ```
 
 ---
@@ -342,12 +379,35 @@ Construído sobre o ecossistema moderno do **Next.js 16 (App Router)** e **React
   - As rotas em `src/app/api/*` interceptam o ciclo de autenticação e mascaram os tokens de segurança. Os tokens JWT nunca são persistidos em `localStorage` ou `sessionStorage`, eliminando completamente o risco de exfiltração de credenciais via ataques XSS (*Cross-Site Scripting*).
   - O manipulador `src/app/api/images/process/route.ts` recebe os dados do formulário do cliente, injeta o token Bearer recuperado do cookie seguro e atua como um proxy reverso com streaming de resposta.
 
+- **Arquitetura de Sessão em Duas Camadas:**
+
+  **Camada 1 — Middleware Criptográfico (`src/middleware.ts` + `src/lib/jwt.ts`):**
+  - Toda navegação para rotas sob `/studio/*` atravessa o middleware Next.js antes de alcançar qualquer Server Component ou Route Handler.
+  - O middleware utiliza a biblioteca `jose` para executar `jwtVerify(token, JWT_SECRET)` inteiramente em memória (< 1ms). A mesma chave simétrica usada pelo Fastify para assinar o JWT (`@fastify/jwt`) é lida pela variável de ambiente `JWT_SECRET` no Next.js.
+  - Se o token estiver ausente, expirado (`exp`) ou com assinatura inválida, o middleware:
+    1. Remove o cookie `token` via `response.cookies.delete("token")`.
+    2. Redireciona para `/login?error=session_expired` com HTTP 302.
+  - Zero requisições de rede ao Fastify para verificação de sessão em transições de página. O custo é puramente computacional e desprezível.
+  - Garante que sessões zumbi (cookie presente, token expirado) sejam interceptadas na borda, mesmo em transições SPA do App Router.
+
+  **Camada 2 — Interceptor HTTP do Cliente (`src/lib/api-client.ts`):**
+  - Todas as requisições client-side originadas de componentes do Studio (`"use client"`) passam pelo wrapper `apiFetch` em vez do `fetch` nativo.
+  - Se qualquer rota BFF retornar `HTTP 401 Unauthorized` (janela de expiração de token durante sessão ativa ou token inválido que passou pelo middleware), `apiFetch` executa `window.location.href = "/login?error=session_expired"` imediatamente.
+  - Os Route Handlers BFF (`/api/images/process`, `/api/jobs/[id]`, `/api/jobs/[id]/result`) deletam o cookie `token` antes de retornar o 401 ao cliente, garantindo limpeza completa do estado.
+  - Nenhum componente React do Studio precisa tratar `UNAUTHORIZED` individualmente. A responsabilidade é totalmente centralizada.
+
+- **Fluxo de Validação de Sessão no Server Component (após Middleware):**
+  - O `StudioLayout` (`src/app/(protected)/studio/layout.tsx`) chama `getProfile()` do `auth.service.ts`.
+  - `getProfile()` executa uma segunda verificação local com `verifySessionToken(token)` antes de fazer o `fetch` para `/v1/users/me` no Fastify. Tokens já expirados são rejeitados em memória, evitando uma chamada de rede desnecessária.
+  - Se `getProfile()` retornar `null` (por qualquer motivo), o layout executa `redirect("/login?error=session_expired")` via `next/navigation`.
+
 - **Otimização de Memória e Transporte Binário:**
   - Em versões legadas ou soluções ingênuas de edição de imagem, utiliza-se comumente strings em Base64. A representação em Base64 introduz uma sobrecarga de ~33% em tamanho de payload e consome ciclos pesados de CPU no navegador para codificação e decodificação de strings massivas.
   - No Kroma, a camada de transporte opera exclusivamente com **blobs binários puros**. A resposta da API é encapsulada em um `Blob` do navegador e convertida em um identificador de memória volátil via `URL.createObjectURL(blob)`. Quando o usuário limpa o canvas ou substitui a imagem, invoca-se explicitamente `URL.revokeObjectURL()` para desalocação imediata da memória gráfica.
 
 - **Catálogo de Ferramentas e Presets:**
   - O sistema define uma matriz de operações estruturadas em `src/lib/tools.ts`, `src/lib/resizes.ts` e `src/lib/socials.ts`.
+
   - São suportadas 13 ferramentas dedicadas:
     1. `remove-background`: Remoção inteligente de fundo via U2-Net (10 créditos).
     2. `ai-upscale`: Super-resolução 2x baseada em rede LapSRN (5 créditos).
@@ -605,6 +665,8 @@ A arquitetura do Kroma adota o princípio de **Defesa em Profundidade (Defense i
      - `HttpOnly = true`: Impede leitura via scripts maliciosos de terceiros (`document.cookie`).
      - `Secure = true` (em produção): Garante transmissão exclusiva através de túneis TLS/HTTPS.
      - `SameSite = Lax`: Previne vulnerabilidades de CSRF (*Cross-Site Request Forgery*) em requisições de navegação cruzada.
+   - **Validação Criptográfica no Middleware Next.js:** O `middleware.ts` utiliza `jose.jwtVerify` para verificar a assinatura e o campo `exp` (expiração) do token inteiramente em memória, sem chamadas de rede ao Fastify. Tokens expirados ou adulterados são rejeitados na borda em menos de 1ms, com remoção imediata do cookie e redirecionamento para `/login`.
+   - **Interceptor HTTP no Cliente:** O wrapper `apiFetch` captura respostas `HTTP 401` de qualquer rota BFF durante sessões ativas no Studio, disparando limpeza de cookie e redirecionamento automático. Elimina a necessidade de tratamento manual de expiração em cada componente React.
 
 2. **Mitigação de Abuso e Negação de Serviço (DoS):**
    - Controle de fluxo em múltiplos níveis:
@@ -652,6 +714,13 @@ cd ../..
 # 6. Execução coordenada de todos os serviços (Web + API + Worker)
 pnpm dev
 ```
+
+### 9.4. Implantação Self-Hosted com Docker Compose
+O ecossistema conta com orquestração unificada via docker-compose.yml otimizada para ambientes self-hosted:
+1. Copie o arquivo de ambiente centralizado na raiz: cp .env.example .env
+2. Ajuste o domínio (FRONTEND_URL, NEXT_PUBLIC_API_URL, GOOGLE_CALLBACK_URL) e segredos (JWT_SECRET, credenciais Google) no .env.
+3. Inicie toda a infraestrutura com build automático: docker compose up -d --build (ou 	ask infra:all).
+4. As portas dos serviços internos (PostgreSQL, RabbitMQ, MinIO, Worker) são protegidas com bind em 127.0.0.1 e volumes nomeados do Docker garantem persistência sem conflitos de permissão no Linux.
 
 ### 9.3. Portas Padrão de Desenvolvimento
 | Serviço | Endereço Local | Descrição |
@@ -719,7 +788,7 @@ flowchart LR
 - **Nome do Projeto:** Kroma (SaaS de Edição e Processamento de Imagens)
 - **Organização / Monorepo:** `@kroma/web`, `@kroma/api`, `kroma-worker`
 - **Ambientes Suportados:** Desenvolvimento local (Docker Compose), Produção (Vercel + GHCR / Containers em Nuvem)
-- **Data da Última Atualização Arquitetural:** 2026-09-26
+- **Data da Última Atualização Arquitetural:** 2026-09-30
 - **Status do Documento:** Ativo / Living Specification
 
 ---

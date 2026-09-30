@@ -2,8 +2,8 @@
 
 import { cookies } from "next/headers";
 import { User } from "@/resources/user/user.types";
+import { verifySessionToken } from "@/lib/jwt";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 const rawApiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080/v1";
 const API_URL = rawApiUrl.endsWith("/v1") ? rawApiUrl : `${rawApiUrl.replace(/\/+$/, "")}/v1`;
 
@@ -34,10 +34,15 @@ export async function getGoogleAuthUrl(): Promise<string> {
  * @export
  * @return {*}  {(Promise<User | null>)}
  */
-export async function getProfile(): Promise<User | null> {
-  const token = await getToken();
+export async function getProfile(customToken?: string): Promise<User | null> {
+  const token = customToken ?? (await getToken());
 
   if (!token) {
+    return null;
+  }
+
+  const session = await verifySessionToken(token);
+  if (!session) {
     return null;
   }
 
@@ -63,13 +68,15 @@ export async function getProfile(): Promise<User | null> {
 
 /**
  * validateToken
- * validate token from cookie
+ * validate token from cookie or argument using local cryptographic verification
  * @export
  * @return {*}  {Promise<boolean>}
  */
-export async function validateToken(): Promise<boolean> {
-  const user = await getProfile();
-  return user !== null;
+export async function validateToken(customToken?: string): Promise<boolean> {
+  const token = customToken ?? (await getToken());
+  if (!token) return false;
+  const session = await verifySessionToken(token);
+  return session !== null;
 }
 
 /**

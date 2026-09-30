@@ -25,7 +25,9 @@ export async function GET(
     });
 
     if (response.status === 401) {
-      return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+      const res = NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+      res.cookies.delete("token");
+      return res;
     }
 
     if (!response.ok) {

@@ -3,6 +3,7 @@ import type {
   ImageProcessResponse,
   JobDTO,
 } from "@/resources/image/image.types";
+import { apiFetch } from "@/lib/api-client";
 
 const MAX_RETRIES = 1;
 const RETRY_DELAY_MS = 2000;
@@ -17,6 +18,7 @@ function delay(ms: number): Promise<void> {
  * processImageClient
  * Client-side asynchronous image processing via RabbitMQ job queue.
  * Uploads file, polls job status, and returns a Blob Object URL — zero base64 in transport.
+ * 401 responses are handled centrally by apiFetch and trigger an automatic redirect to /login.
  */
 export async function processImageClient({
   file,
@@ -45,14 +47,10 @@ export async function processImageClient({
       }
 
       // 1. Enfileira o job de processamento
-      const response = await fetch("/api/images/process", {
+      const response = await apiFetch("/api/images/process", {
         method: "POST",
         body: formData,
       });
-
-      if (response.status === 401) {
-        return { error: "UNAUTHORIZED" };
-      }
 
       if (!response.ok) {
         return { error: "PROCESSING_FAILED" };
@@ -70,11 +68,7 @@ export async function processImageClient({
       while (Date.now() - startTime < MAX_POLL_TIME_MS) {
         await delay(POLL_INTERVAL_MS);
 
-        const statusResponse = await fetch(`/api/jobs/${jobId}`);
-
-        if (statusResponse.status === 401) {
-          return { error: "UNAUTHORIZED" };
-        }
+        const statusResponse = await apiFetch(`/api/jobs/${jobId}`);
 
         if (!statusResponse.ok) {
           continue;
@@ -89,7 +83,7 @@ export async function processImageClient({
 
         if (job.status === "done") {
           // 3. Baixa o resultado binário diretamente e cria o Object URL
-          const resultResponse = await fetch(`/api/jobs/${jobId}/result`);
+          const resultResponse = await apiFetch(`/api/jobs/${jobId}/result`);
 
           if (!resultResponse.ok) {
             return { error: "PROCESSING_FAILED" };

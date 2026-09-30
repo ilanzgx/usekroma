@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { validateToken } from "@/resources/auth/auth.service";
+import { verifySessionToken } from "@/lib/jwt";
 
 function getBaseUrl(request: NextRequest): string {
   const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
@@ -19,19 +19,36 @@ export async function middleware(request: NextRequest) {
   const isAuthRoute = pathname === "/login";
   const isStudioRoute = pathname.startsWith("/studio");
 
-  if (token && isAuthRoute) {
-    const isValid = await validateToken();
-    if (isValid) {
+  if (isStudioRoute) {
+    if (!token) {
+      return NextResponse.redirect(new URL("/login", getBaseUrl(request)));
+    }
+
+    const session = await verifySessionToken(token);
+    if (!session) {
+      const response = NextResponse.redirect(
+        new URL("/login?error=session_expired", getBaseUrl(request)),
+      );
+      response.cookies.delete("token");
+      return response;
+    }
+
+    return NextResponse.next();
+  }
+
+  if (isAuthRoute) {
+    if (!token) {
+      return NextResponse.next();
+    }
+
+    const session = await verifySessionToken(token);
+    if (session) {
       return NextResponse.redirect(new URL("/studio", getBaseUrl(request)));
     }
 
     const response = NextResponse.next();
     response.cookies.delete("token");
     return response;
-  }
-
-  if (isStudioRoute) {
-    return NextResponse.next();
   }
 
   return NextResponse.next();
