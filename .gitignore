@@ -8,12 +8,39 @@ out/
 node_modules
 .pnpm-store/
 
+# Python Virtualenv & Caches
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
 # Environment
-.env
-.env.local
-.env.development
-.env.test
-.env.production
+.env*
+!.env.example
+
+# Secrets, Keys & Certificates
+*.pem
+*.key
+*.pkcs8
+id_rsa*
+id_ed25519*
+*.p12
+*.pfx
+*.crt
+
+# AI Models & Neural Weights
+*.pb
+*.onnx
+*.pt
+*.bin
+.sr_models/
+.u2net/
 
 # Logs
 *.log

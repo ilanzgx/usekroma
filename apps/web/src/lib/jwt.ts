@@ -7,13 +7,19 @@ export interface SessionPayload {
   iat?: number;
 }
 
-const secret = new TextEncoder().encode(
-  process.env.JWT_SECRET || "therealslimshady",
-);
+function getJwtSecret(): Uint8Array | null {
+  const secretKey = process.env.JWT_SECRET;
+  if (!secretKey) {
+    return null;
+  }
+  return new TextEncoder().encode(secretKey);
+}
 
-export async function verifySessionToken(
-  token: string,
-): Promise<SessionPayload | null> {
+export async function verifySessionToken(token: string): Promise<SessionPayload | null> {
+  const secret = getJwtSecret();
+  if (!secret) {
+    return null;
+  }
   try {
     const { payload } = await jwtVerify(token, secret, {
       clockTolerance: 5,

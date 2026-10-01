@@ -31,3 +31,12 @@ app/images
 .mypy_cache/
 .coverage
 htmlcov/
+
+# Environment
+.env*
+!.env.example
+
+# Models & Weights
+*.pb
+*.onnx
+*.pt
