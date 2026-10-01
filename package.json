@@ -14,8 +14,10 @@
     "build:web": "pnpm --filter @kroma/web build",
     "test": "pnpm --filter @kroma/api test",
     "test:unit": "pnpm --filter @kroma/api test:unit",
-    "test:coverage": "pnpm --filter @kroma/api test:coverage",
-    "lint": "pnpm --filter @kroma/web lint",
+    "lint": "eslint .",
+    "lint:web": "pnpm --filter @kroma/web lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "prepare": "husky"
   },
   "packageManager": "pnpm@10.24.0",
@@ -23,12 +25,21 @@
     "concurrently": "^9.2.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
-    "lint-staged": "^17.6.0"
+    "lint-staged": "^17.6.0",
+    "prettier": "^3.9.9",
+    "typescript-eslint": "^8.71.0"
   },
   "lint-staged": {
-    "apps/web/**/*.{js,jsx,ts,tsx}": [
-      "pnpm --filter @kroma/web lint"
+    "*.{js,jsx,ts,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
     ]
   }
 }

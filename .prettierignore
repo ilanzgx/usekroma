@@ -1,0 +1,11 @@
+node_modules
+.next
+dist
+build
+coverage
+.uv
+.venv
+__pycache__
+*.min.js
+pnpm-lock.yaml
+.agents

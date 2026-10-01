@@ -1,7 +1,4 @@
-import amqp, {
-  AmqpConnectionManager,
-  ChannelWrapper,
-} from "amqp-connection-manager";
+import amqp, { AmqpConnectionManager, ChannelWrapper } from "amqp-connection-manager";
 import type { ConfirmChannel, ConsumeMessage } from "amqplib";
 import { envConfig } from "@/config/env.config";
 
@@ -48,9 +45,9 @@ class QueueService {
     return true;
   }
 
-  async consume(
+  async consume<T = unknown>(
     queueName: string,
-    onMessage: (content: any) => Promise<void>,
+    onMessage: (content: T) => Promise<void>,
   ): Promise<void> {
     this.init();
     if (!this.connection) {
