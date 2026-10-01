@@ -13,11 +13,11 @@ export default function LoginButton() {
   return (
     <Button
       onClick={handleLoginWithGoogle}
-      className="w-full py-6 text-base gap-3"
+      className="w-full h-11 text-sm font-medium gap-3 border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-900 shadow-xs transition-all hover:border-zinc-300 cursor-pointer"
       variant="outline"
     >
-      <Image src="/google-icon.svg" alt="Google" width={24} height={24} />
-      Entrar com o Google
+      <Image src="/google-icon.svg" alt="Google" width={18} height={18} />
+      Continuar com o Google
     </Button>
   );
 }

@@ -2,347 +2,275 @@ import Link from "next/link";
 import Image from "next/image";
 import { getProfile } from "@/resources/auth";
 import { TOOLS } from "@/lib/tools";
-import BeforeAfterSlider from "@/components/before-after-slider";
-import { ArrowRight, Sparkles, Check, Coins, Zap, Shield, Image as ImageIcon } from "lucide-react";
+import { SOCIAL_FORMATS } from "@/lib/socials";
+import { RESIZES } from "@/lib/resizes";
+import { ArrowRight, Image as ImageIcon, Coins, Sparkles, Layers } from "lucide-react";
 
 export default async function Home() {
   const user = await getProfile();
 
-  // Divide tools into AI-powered and Standard for the asymmetric grid layout
   const aiTools = TOOLS.filter((t) => t.isAI);
   const standardTools = TOOLS.filter((t) => !t.isAI);
 
+  // Seleção de formatos sociais populares para visualização direta
+  const featuredSocials = [
+    SOCIAL_FORMATS.find((f) => f.id === "instagram-post-square")!,
+    SOCIAL_FORMATS.find((f) => f.id === "instagram-story")!,
+    SOCIAL_FORMATS.find((f) => f.id === "tiktok-video")!,
+    SOCIAL_FORMATS.find((f) => f.id === "youtube-thumbnail")!,
+    SOCIAL_FORMATS.find((f) => f.id === "linkedin-post-landscape")!,
+    SOCIAL_FORMATS.find((f) => f.id === "twitter-post")!,
+  ].filter(Boolean);
+
   return (
     <div className="min-h-screen bg-[#FAFAFA] text-[#09090B] font-sans antialiased selection:bg-zinc-900 selection:text-white">
-      {/* 1. HEADER */}
-      <header className="sticky top-0 z-40 bg-[#FAFAFA]/80 backdrop-blur-md border-b border-zinc-200/50">
-        <div className="max-w-[1400px] mx-auto px-6 h-20 flex items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="size-9 rounded-md bg-[#09090B] flex items-center justify-center transition-transform group-hover:scale-95 duration-200">
-              <ImageIcon className="size-5 text-[#FAFAFA]" />
+      {/* Header alinhado aos padrões do Studio */}
+      <header className="border-b border-zinc-200 bg-white/90 backdrop-blur-sm sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="size-8 bg-zinc-900 rounded-lg flex items-center justify-center text-white">
+              <ImageIcon className="size-4.5" />
             </div>
-            <span className="font-semibold text-xl tracking-tight">Kroma</span>
+            <span className="font-semibold text-lg tracking-tight">Kroma</span>
           </Link>
 
-          {/* Navigation Links */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-500">
-            <a href="#features" className="hover:text-zinc-950 transition-colors">
-              Recursos
-            </a>
-            <a href="#credits" className="hover:text-zinc-950 transition-colors">
-              Créditos
-            </a>
-            <a href="#about" className="hover:text-zinc-950 transition-colors">
-              Sobre a IA
-            </a>
-          </nav>
-
-          {/* Dynamic Action Buttons based on Auth */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {user ? (
-              <div className="flex items-center gap-3.5">
-                <span className="hidden sm:inline text-xs font-mono text-zinc-400">{user.credits} CRÉDITOS</span>
-                <Link href="/studio" className="inline-flex items-center gap-2 text-xs font-mono tracking-wider uppercase bg-[#09090B] text-white px-4 py-2.5 rounded-md hover:bg-zinc-800 transition-all hover:scale-[1.01] active:scale-[0.99] shadow-xs">
-                  Ir para o Estúdio
-                  <ArrowRight className="size-3.5" />
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/studio"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-zinc-200 rounded-md bg-white hover:bg-zinc-50 text-zinc-700 transition-colors"
+                >
+                  <Coins className="size-3.5 text-zinc-500" />
+                  <span className="font-semibold tabular-nums">{user.credits}</span>
+                  <span className="text-zinc-500">créditos</span>
                 </Link>
-                {/* User Avatar */}
-                {user.picture && <Image src={user.picture} alt={user.name} width={32} height={32} className="size-8 rounded-full border border-zinc-200 object-cover" />}
+
+                <Link
+                  href="/studio"
+                  className="text-xs font-medium bg-zinc-900 text-white px-3.5 py-2 rounded-md hover:bg-zinc-800 transition-colors"
+                >
+                  Abrir estúdio
+                </Link>
+
+                {user.picture ? (
+                  <Image
+                    src={user.picture}
+                    alt={user.name}
+                    width={32}
+                    height={32}
+                    className="size-8 rounded-full border border-zinc-200 object-cover"
+                  />
+                ) : (
+                  <div className="size-8 rounded-full bg-zinc-200 border border-zinc-300 flex items-center justify-center text-xs font-semibold text-zinc-700">
+                    {user.name?.charAt(0).toUpperCase()}
+                  </div>
+                )}
               </div>
             ) : (
-              <>
-                <Link href="/login" className="text-sm font-medium text-zinc-500 hover:text-zinc-950 transition-colors">
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/login"
+                  className="text-sm font-medium text-zinc-600 hover:text-zinc-950 px-3 py-1.5 transition-colors"
+                >
                   Entrar
                 </Link>
-                <Link href="/login" className="inline-flex items-center justify-center text-xs font-mono tracking-wider uppercase bg-[#09090B] text-white px-4.5 py-2.5 rounded-md hover:bg-zinc-800 transition-all hover:scale-[1.01] active:scale-[0.99] shadow-xs">
-                  Criar Conta
+                <Link
+                  href="/login"
+                  className="text-xs font-medium bg-zinc-900 text-white px-3.5 py-2 rounded-md hover:bg-zinc-800 transition-colors"
+                >
+                  Criar conta
                 </Link>
-              </>
+              </div>
             )}
           </div>
         </div>
       </header>
 
-      {/* 2. HERO SECTION (Asymmetric Split) */}
-      <section className="max-w-350 mx-auto px-6 pt-16 md:pt-24 pb-20 md:pb-28">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 md:gap-16 items-center">
-          {/* Left Hero Text: Asymmetric Left-Aligned */}
-          <div className="lg:col-span-5 space-y-8 text-left max-w-xl">
-            {/* Tagline */}
-            <div className="inline-flex items-center gap-2 bg-zinc-100 text-zinc-600 px-3 py-1 rounded-sm text-xs font-mono uppercase tracking-wider">
-              <Sparkles className="size-3 text-zinc-500" />
-              Tecnologia de Edição Inteligente
-            </div>
+      {/* Hero centralizado e direto */}
+      <section className="max-w-4xl mx-auto px-6 pt-20 pb-16 text-center space-y-6">
+        <h1 className="text-4xl sm:text-5xl lg:text-[54px] font-semibold tracking-tight text-[#09090B] leading-[1.12]">
+          Edição e transformação de imagens direto no navegador.
+        </h1>
 
-            {/* Title with Inline Image Typography */}
-            <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight text-[#09090B] leading-[1.15]">
-              Edição de imagens
-              <span className="inline-flex items-center justify-center align-middle mx-2.5 size-9 rounded-full bg-zinc-200 border border-zinc-300 relative overflow-hidden group">
-                <span className="absolute inset-2 rounded-full bg-zinc-900 animate-pulse" />
-              </span>
-              com precisão de laboratório.
-            </h1>
+        <p className="text-zinc-600 text-lg sm:text-xl leading-relaxed max-w-[58ch] mx-auto">
+          Remova fundos com inteligência artificial, aumente a resolução sem perder nitidez e adapte
+          suas fotos para qualquer formato em segundos. Sem instalar nada.
+        </p>
 
-            <p className="text-base sm:text-lg text-zinc-500 font-light leading-relaxed">Kroma é uma plataforma minimalista de processamento de imagens. Remova fundos instantaneamente, faça upscale sem perda de definição e estilize suas fotos através de modelos neurais refinados.</p>
+        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Link
+            href={user ? "/studio" : "/login"}
+            className="inline-flex items-center justify-center gap-2 text-sm font-medium bg-zinc-900 text-white px-6 py-3 rounded-md hover:bg-zinc-800 transition-all hover:translate-y-[-1px] active:translate-y-[0px] shadow-xs"
+          >
+            <span>{user ? "Acessar estúdio" : "Começar a usar"}</span>
+            <ArrowRight className="size-4" />
+          </Link>
 
-            {/* CTA and Stats */}
-            <div className="pt-2 space-y-4">
-              <Link href={user ? "/studio" : "/login"} className="inline-flex items-center justify-center gap-2 w-full sm:w-auto text-sm font-mono tracking-wider uppercase bg-[#09090B] text-white px-8 py-4 rounded-md hover:bg-zinc-800 transition-all active:scale-[0.98] active:translate-y-[1px] shadow-sm">
-                <span>{user ? "Acessar Painel" : "Começar Agora"}</span>
-                <ArrowRight className="size-4" />
-              </Link>
-
-              <div className="flex items-center gap-5 pt-3">
-                <div className="flex items-center gap-1.5 text-xs font-mono text-zinc-400">
-                  <Check className="size-3.5 text-zinc-500" />
-                  Sem Cartão Requerido
-                </div>
-                <div className="flex items-center gap-1.5 text-xs font-mono text-zinc-400">
-                  <Check className="size-3.5 text-zinc-500" />
-                  50 Créditos Grátis no Cadastro
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Hero Visuals: Interactive Slider */}
-          <div className="lg:col-span-7 w-full">
-            <BeforeAfterSlider />
+          <div className="flex items-center gap-1.5 text-xs text-zinc-500 font-medium">
+            <Coins className="size-3.5 text-zinc-500" />
+            <span>50 créditos gratuitos no cadastro</span>
           </div>
         </div>
       </section>
 
-      {/* 3. FEATURES & TOOLS SHOWCASE (Asymmetric Grid Layout) */}
-      <section id="features" className="border-t border-zinc-200 bg-white py-24 md:py-32">
-        <div className="max-w-[1400px] mx-auto px-6">
-          <div className="max-w-2xl mb-16 space-y-4">
-            <span className="text-xs font-mono uppercase tracking-widest text-zinc-400">As Ferramentas</span>
-            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">Processamento sob demanda. Inteligência artificial na ponta dos dedos.</h2>
-            <p className="text-zinc-500 font-light leading-relaxed">Construído para fotógrafos, designers e desenvolvedores. Nossa arquitetura isolada garante velocidade e isolamento de recursos para cada tarefa.</p>
-          </div>
+      {/* Seção Ferramentas & Capacidades (Espelhando a arquitetura do Studio) */}
+      <section className="border-t border-zinc-200 bg-white py-16">
+        <div className="max-w-6xl mx-auto px-6 space-y-12">
+          {/* 1. Ferramentas de IA em Destaque */}
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold text-[#09090B]">
+                Processamento com Inteligência Artificial
+              </h2>
+              <p className="text-sm text-zinc-500 mt-1">
+                Modelos neurais dedicados para isolamento de objetos e aumento de resolução.
+              </p>
+            </div>
 
-          {/* Asymmetric Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Col-span-7: Main AI Features (Bento Large Card) */}
-            <div className="lg:col-span-7 flex flex-col justify-between border border-zinc-200 rounded-2xl p-8 sm:p-10 hover:border-zinc-300 transition-all duration-300 bg-[#FAFAFA]">
-              <div className="space-y-8">
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-zinc-950 text-[#FAFAFA] px-3 py-1 text-[10px] font-mono uppercase tracking-wider">
-                  <Sparkles className="size-3" />
-                  Modelos de IA Avançados
-                </div>
-
-                <div className="space-y-6">
-                  {aiTools.map((tool) => (
-                    <div key={tool.id} className="group flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-zinc-200/60 pb-6 last:border-0 last:pb-0">
-                      <div className="space-y-1 max-w-md">
-                        <h3 className="text-lg font-semibold flex items-center gap-2">
-                          {tool.name}
-                          <span className="text-[10px] font-mono bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold">IA</span>
-                        </h3>
-                        <p className="text-sm text-zinc-500 font-light">{tool.description}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {aiTools.map((tool) => (
+                <Link
+                  key={tool.id}
+                  href={user ? `/studio/${tool.slugs[1] || tool.slugs[0]}` : "/login"}
+                  className="group relative p-5 rounded-xl border border-purple-200/80 bg-purple-50/30 hover:bg-purple-50/60 hover:border-purple-300 transition-all flex flex-col justify-between gap-4"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="size-9 rounded-lg bg-white border border-purple-200 flex items-center justify-center text-purple-700 shadow-xs">
+                        <tool.icon className="size-5" />
                       </div>
-                      <div className="mt-3 sm:mt-0 flex items-center gap-4">
-                        <span className="inline-flex items-center gap-1 text-xs font-mono text-zinc-400">
-                          <Coins className="size-3.5" />
-                          {tool.credits} créditos
-                        </span>
-                        <Link href="/login" className="size-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center hover:bg-[#09090B] hover:text-white transition-all group-hover:translate-x-1">
-                          <ArrowRight className="size-4" />
-                        </Link>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-zinc-900 group-hover:text-purple-900 transition-colors">
+                            {tool.name}
+                          </span>
+                          <span className="inline-flex items-center gap-1 bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                            <Sparkles className="size-2.5" />
+                            IA
+                          </span>
+                        </div>
+                        <p className="text-xs text-zinc-500 mt-0.5">{tool.description}</p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
 
-              <div className="border-t border-zinc-200 pt-8 mt-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider">Processamento instantâneo via Worker Python</span>
-                <span className="text-xs text-zinc-500 font-light">Resultados em alta definição prontos para download.</span>
-              </div>
+                    <span className="text-xs font-semibold tabular-nums text-purple-700 bg-purple-100/80 px-2.5 py-1 rounded-md shrink-0">
+                      {tool.credits} créditos
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs text-purple-700/80 pt-2 border-t border-purple-100">
+                    <span>Executar no estúdio</span>
+                    <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* 2. Filtros Artísticos e Ajustes Clássicos */}
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold text-[#09090B]">Filtros e Ajustes</h2>
+              <p className="text-sm text-zinc-500 mt-1">
+                Efeitos visuais, refinamento de nitidez, contraste e transformações axiais.
+              </p>
             </div>
 
-            {/* Col-span-5: Standard Filters & Adjustments (Bento Stacked Card) */}
-            <div className="lg:col-span-5 flex flex-col justify-between border border-zinc-200 rounded-2xl p-8 sm:p-10 hover:border-zinc-300 transition-all duration-300 bg-[#FAFAFA]">
-              <div className="space-y-8">
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-zinc-200 text-zinc-800 px-3 py-1 text-[10px] font-mono uppercase tracking-wider">
-                  <Zap className="size-3" />
-                  Filtros & Ajustes Padrão
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
-                  {standardTools.slice(0, 8).map((tool) => (
-                    <div key={tool.id} className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <tool.icon className="size-4 text-zinc-600" />
-                        <h4 className="text-sm font-semibold">{tool.name}</h4>
-                      </div>
-                      <p className="text-xs text-zinc-400 font-light leading-relaxed">{tool.description}</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {standardTools.map((tool) => (
+                <Link
+                  key={tool.id}
+                  href={user ? `/studio/${tool.slugs[1] || tool.slugs[0]}` : "/login"}
+                  className="group p-3.5 rounded-lg border border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50/70 transition-colors flex flex-col justify-between gap-3"
+                >
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <tool.icon className={`size-4 ${tool.color}`} />
+                      <span className="text-xs tabular-nums text-zinc-400">
+                        {tool.credits} {tool.credits === 1 ? "crédito" : "créditos"}
+                      </span>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="border-t border-zinc-200 pt-8 mt-10">
-                <p className="text-xs text-zinc-500 font-light leading-relaxed">
-                  Transformações estruturais, nitidez, brilho, espelhamento e efeitos tradicionais. Otimizado para renderização rápida com consumo de apenas <span className="font-mono font-semibold text-zinc-700">1 a 2 créditos</span>.
-                </p>
-              </div>
+                    <span className="text-sm font-medium text-zinc-900 block">{tool.name}</span>
+                    <p className="text-xs text-zinc-500 line-clamp-2">{tool.description}</p>
+                  </div>
+                </Link>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* 4. CREDIT SYSTEM SECTION (Total Transparency) */}
-      <section id="credits" className="py-24 md:py-32 bg-[#FAFAFA]">
-        <div className="max-w-[1400px] mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 md:gap-16 items-start">
-            {/* Left side text */}
-            <div className="lg:col-span-4 space-y-6">
-              <span className="text-xs font-mono uppercase tracking-widest text-zinc-400">Preços & Créditos</span>
-              <h2 className="text-3xl font-semibold tracking-tight text-[#09090B]">Transparência absoluta. Pague apenas pelo que utilizar.</h2>
-              <p className="text-zinc-500 font-light leading-relaxed">Esqueça planos de assinatura mensais caros e limites artificiais. Na Kroma, você opera por meio de créditos consumidos por operação.</p>
-              <div className="bg-white border border-zinc-200 p-5 rounded-lg space-y-2">
-                <span className="text-xs font-mono text-zinc-400 uppercase tracking-widest block">Créditos de Entrada</span>
-                <p className="text-sm text-zinc-700 leading-relaxed">
-                  Ganhe <span className="font-mono font-bold text-[#09090B] text-base">50 créditos</span> ao criar sua conta de forma instantânea para começar a editar suas fotos imediatamente.
-                </p>
-              </div>
+          {/* 3. Formatos para Redes Sociais & Proporções */}
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold text-[#09090B]">Formatos Sociais e Dimensões</h2>
+              <p className="text-sm text-zinc-500 mt-1">
+                Presets prontos com resoluções oficiais para cada plataforma.
+              </p>
             </div>
 
-            {/* Right side cost sheet (Monochrome Clean Table) */}
-            <div className="lg:col-span-8 w-full bg-white border border-zinc-200 rounded-xl overflow-hidden shadow-xs">
-              <div className="p-6 border-b border-zinc-200 bg-[#FAFAFA]/50">
-                <span className="text-xs font-mono tracking-wider uppercase text-zinc-500">Tabela de Custo de Operações</span>
-              </div>
-              <div className="divide-y divide-zinc-100 font-mono text-xs">
-                {/* Headers */}
-                <div className="flex px-6 py-3.5 bg-zinc-50 text-zinc-400 font-bold uppercase tracking-wider">
-                  <div className="w-1/2">Operação</div>
-                  <div className="w-1/4 text-center">Tecnologia</div>
-                  <div className="w-1/4 text-right">Custo unitário</div>
-                </div>
-
-                <div className="flex px-6 py-4 items-center hover:bg-zinc-50/55 transition-colors">
-                  <div className="w-1/2 font-sans font-semibold text-zinc-900">Remover Fundo</div>
-                  <div className="w-1/4 text-center">
-                    <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-[10px] font-bold">Inteligência Artificial</span>
-                  </div>
-                  <div className="w-1/4 text-right font-bold text-zinc-900">10 CRÉDITOS</div>
-                </div>
-
-                <div className="flex px-6 py-4 items-center hover:bg-zinc-50/55 transition-colors">
-                  <div className="w-1/2 font-sans font-semibold text-zinc-900">Aumentar Resolução</div>
-                  <div className="w-1/4 text-center">
-                    <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-[10px] font-bold">Super Resolução</span>
-                  </div>
-                  <div className="w-1/4 text-right font-bold text-zinc-900">5 CRÉDITOS</div>
-                </div>
-
-                <div className="flex px-6 py-4 items-center hover:bg-zinc-50/55 transition-colors">
-                  <div className="w-1/2 font-sans font-semibold text-zinc-900">Cartoon, Pintura a Óleo, Sketch</div>
-                  <div className="w-1/4 text-center text-zinc-500">Filtro Artístico</div>
-                  <div className="w-1/4 text-right font-bold text-zinc-900">2 CRÉDITOS</div>
-                </div>
-
-                <div className="flex px-6 py-4 items-center hover:bg-zinc-50/55 transition-colors">
-                  <div className="w-1/2 font-sans font-semibold text-zinc-900">Nitidez, Blur, Grayscale, Sépia, Vinheta</div>
-                  <div className="w-1/4 text-center text-zinc-500">Ajuste Básico</div>
-                  <div className="w-1/4 text-right font-bold text-zinc-900">1 CRÉDITO</div>
-                </div>
-
-                <div className="flex px-6 py-4 items-center hover:bg-zinc-50/55 transition-colors">
-                  <div className="w-1/2 font-sans font-semibold text-zinc-900">Resize, Inverter, Espelhar, Girar</div>
-                  <div className="w-1/4 text-center text-zinc-500">Transformação</div>
-                  <div className="w-1/4 text-right font-bold text-zinc-900">1 CRÉDITO</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. ABOUT THE AI */}
-      <section id="about" className="py-24 md:py-32 bg-white border-t border-zinc-200">
-        <div className="max-w-350 mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            {/* Tech Specs Left side */}
-            <div className="lg:col-span-6 space-y-6">
-              <span className="text-xs font-mono uppercase tracking-widest text-zinc-400">Tecnologia e Performance</span>
-              <h2 className="text-3xl font-semibold tracking-tight text-[#09090B]">Processamento ultrarrápido com privacidade absoluta.</h2>
-              <p className="text-zinc-500 font-light leading-relaxed">Nossos servidores foram estruturados para processar edições complexas em menos de 2 segundos. Desenvolvemos algoritmos que identificam o assunto principal da foto e removem o fundo com máxima precisão, sem comprometer a resolução original da sua imagem.</p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
-                <div className="space-y-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+              {featuredSocials.map((format) => (
+                <Link
+                  key={format.id}
+                  href={user ? `/studio/social/${format.slugs[1] || format.slugs[0]}` : "/login"}
+                  className="p-3 border border-zinc-200 rounded-lg hover:border-zinc-300 hover:bg-zinc-50/70 transition-colors flex flex-col gap-1.5"
+                >
                   <div className="flex items-center gap-2">
-                    <Shield className="size-4 text-zinc-700" />
-                    <span className="font-semibold text-sm">Privacidade Garantida</span>
+                    <Image
+                      src={format.platformIcon}
+                      alt={format.platform}
+                      width={16}
+                      height={16}
+                      className="size-4 shrink-0"
+                    />
+                    <span className="text-xs font-semibold text-zinc-900 truncate">
+                      {format.platform}
+                    </span>
                   </div>
-                  <p className="text-xs text-zinc-400 leading-relaxed">Seus arquivos processados são temporários e deletados automaticamente após download.</p>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Zap className="size-4 text-zinc-700" />
-                    <span className="font-semibold text-sm">Velocidade Máxima</span>
-                  </div>
-                  <p className="text-xs text-zinc-400 leading-relaxed">Fila assíncrona de processamento com semáforo dedicado para evitar gargalos.</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Visual Abstract Wireframe Right side */}
-            <div className="lg:col-span-6 border border-zinc-200 bg-[#FAFAFA] rounded-2xl p-8 sm:p-10 flex flex-col justify-center min-h-[300px] relative overflow-hidden">
-              <div className="space-y-6 font-mono text-[11px] text-zinc-400 relative z-10">
-                <div className="flex justify-between border-b border-zinc-200/60 pb-3">
-                  <span>SYSTEM_STATUS</span>
-                  <span className="text-emerald-600 font-semibold flex items-center gap-1">
-                    <span className="size-2 rounded-full bg-emerald-500 animate-ping inline-block" />
-                    OPERATIONAL
+                  <span className="text-xs text-zinc-600 truncate">{format.name}</span>
+                  <span className="text-xs tabular-nums text-zinc-400">
+                    {format.width}x{format.height}
                   </span>
-                </div>
-                <div className="space-y-1 text-zinc-500">
-                  <p>&gt; Upload completo. Carregando imagem...</p>
-                  <p>&gt; Analisando elementos visuais...</p>
-                  <p>&gt; Isolando o elemento principal da foto...</p>
-                  <p className="text-zinc-800 font-semibold">&gt; Sucesso: Fundo removido em 1.2 segundos</p>
-                  <p className="text-zinc-800 font-semibold">&gt; Imagem em alta resolução pronta para download</p>
-                </div>
-                <div className="border-t border-zinc-200/60 pt-4 flex items-center justify-between text-[10px] text-zinc-400">
-                  <span>TIME: {new Date().toLocaleDateString("pt-BR")}</span>
-                  <span>NODE_ID: WORKER-IMAGE-01</span>
-                </div>
-              </div>
+                </Link>
+              ))}
+            </div>
 
-              {/* Decorative faint background grid lines */}
-              <div
-                className="absolute inset-0 opacity-5 pointer-events-none"
-                style={{
-                  backgroundImage: "linear-gradient(to right, #000 1px, transparent 1px), linear-gradient(to bottom, #000 1px, transparent 1px)",
-                  backgroundSize: "20px 20px",
-                }}
-              />
+            {/* Proporções de Aspecto Rápidas */}
+            <div className="pt-2 flex flex-wrap items-center gap-2">
+              <span className="text-xs text-zinc-400 flex items-center gap-1.5 mr-2">
+                <Layers className="size-3.5" />
+                Proporções livres:
+              </span>
+              {RESIZES.map((resize) => (
+                <Link
+                  key={resize.id}
+                  href={user ? "/studio/resize" : "/login"}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs border border-zinc-200 rounded-md bg-zinc-50/50 hover:bg-zinc-100 hover:border-zinc-300 text-zinc-700 transition-colors"
+                >
+                  <resize.icon className="size-3 text-zinc-500" />
+                  <span>{resize.name}</span>
+                  <span className="text-xs tabular-nums text-zinc-400">({resize.aspectRatio})</span>
+                </Link>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* 6. FOOTER */}
-      <footer className="border-t border-zinc-200 bg-white py-12">
-        <div className="max-w-[1400px] mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2.5">
-            <div className="size-7 rounded-sm bg-[#09090B] flex items-center justify-center">
-              <ImageIcon className="size-4 text-[#FAFAFA]" />
-            </div>
-            <span className="font-semibold text-base tracking-tight">Kroma</span>
+      {/* Footer */}
+      <footer className="border-t border-zinc-200 bg-zinc-50 py-10 text-xs text-zinc-500">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-zinc-900">Kroma</span>
+            <span>•</span>
+            <span>Estúdio de processamento e visão computacional</span>
           </div>
 
-          <p className="text-xs text-zinc-400 font-light">© {new Date().getFullYear()} Kroma. Todos os direitos reservados. Edição de imagem facilitada com IA.</p>
-
-          <div className="flex gap-6 text-xs text-zinc-400">
-            <Link href="/termos" className="hover:text-zinc-950 transition-colors">
-              Termos de Uso
+          <div className="flex items-center gap-4">
+            <Link href="/termos" className="hover:text-zinc-900 transition-colors">
+              Termos
             </Link>
-            <Link href="/privacidade" className="hover:text-zinc-950 transition-colors">
+            <Link href="/privacidade" className="hover:text-zinc-900 transition-colors">
               Privacidade
             </Link>
           </div>
