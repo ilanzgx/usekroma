@@ -22,5 +22,6 @@ npm-debug.log*
 # Docker Local
 .docker/
 
-# Agents
+# Agents & Design Skills
 .agents/
+.impeccable/
