@@ -10,12 +10,17 @@ os.environ.setdefault("OMP_NUM_THREADS", "1")
 os.environ.setdefault("ONNX_NUM_THREADS", "1")
 
 import aio_pika
+from pathlib import Path
 from dotenv import load_dotenv
 
 from app.services.image_service import process_image
 from app.utils.image_loader import load_image_from_bytes
 from app.utils.storage import download_bytes, upload_bytes
 
+# Carrega .env local do worker e da raiz do monorepo se existirem
+_worker_dir = Path(__file__).resolve().parent.parent
+load_dotenv(_worker_dir / ".env")
+load_dotenv(_worker_dir.parent.parent / ".env")
 load_dotenv()
 
 logger = logging.getLogger(__name__)

@@ -20,7 +20,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "author": "",
-  "license": "ISC",
+  "license": "GPL-3.0-only",
   "packageManager": "pnpm@10.24.0",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1142.0",

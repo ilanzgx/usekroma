@@ -2,6 +2,7 @@
   "name": "kroma",
   "version": "1.0.0",
   "private": true,
+  "license": "GPL-3.0-only",
   "description": "Kroma - AI Image Processing Platform",
   "scripts": {
     "dev": "concurrently -k -n \"WORKER,API,WEB\" -c \"magenta,blue,cyan\" \"pnpm run start:worker-image\" \"pnpm run start:api\" \"pnpm run start:web\"",
@@ -18,7 +19,7 @@
     "lint:web": "pnpm --filter @kroma/web lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "husky"
+    "prepare": "node -e \"if (require('fs').existsSync('.git')) { try { require('child_process').execSync('pnpm exec husky', { stdio: 'inherit' }); } catch {} }\""
   },
   "packageManager": "pnpm@10.24.0",
   "dependencies": {

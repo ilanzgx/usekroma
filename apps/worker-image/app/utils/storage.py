@@ -1,9 +1,14 @@
 import os
+from pathlib import Path
 
 import boto3
 from botocore.client import Config
 from dotenv import load_dotenv
 
+# Carrega .env local do worker e da raiz do monorepo se existirem
+_worker_dir = Path(__file__).resolve().parent.parent.parent
+load_dotenv(_worker_dir / ".env")
+load_dotenv(_worker_dir.parent.parent / ".env")
 load_dotenv()
 
 STORAGE_ENDPOINT = os.getenv("STORAGE_ENDPOINT", "http://localhost:9000")

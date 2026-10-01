@@ -11,6 +11,7 @@ O objetivo deste documento é servir como a **única fonte da verdade (SSOT)** p
 O **Kroma** foi projetado para fornecer um estúdio de edição de imagens com velocidade de nível profissional, foco na experiência do usuário e alta fidelidade visual. A aplicação combina manipulações clássicas de visão computacional (redimensionamento de alta fidelidade, filtros de cor, ajustes de nitidez) com modelos profundos de aprendizado de máquina (remoção de plano de fundo e super-resolução por IA).
 
 ### 1.1. Principais Diretrizes Arquiteturais
+
 - **Segregação de Responsabilidades (SoC):** Separação estrita entre o roteamento/orquestração de regras de negócio em Node.js e o processamento intensivo de matrizes e tensores numéricos em Python.
 - **Resiliência a Travamento de Event Loop:** Nenhuma computação pesada de pixels é executada na camada Node.js, garantindo que o Gateway de API mantenha latência milimétrica em I/O.
 - **Proteção contra Falhas por Exaustão de Memória (OOM):** Controle estrito de concorrência via semáforos assíncronos no motor Python, assegurando que o consumo de RAM permaneça estável sob cargas severas.
@@ -376,7 +377,7 @@ Construído sobre o ecossistema moderno do **Next.js 16 (App Router)** e **React
 
 - **Padrão Backend-for-Frontend (BFF):**
   - O frontend atua não apenas como cliente de renderização, mas como uma camada de segurança e adaptação de protocolos.
-  - As rotas em `src/app/api/*` interceptam o ciclo de autenticação e mascaram os tokens de segurança. Os tokens JWT nunca são persistidos em `localStorage` ou `sessionStorage`, eliminando completamente o risco de exfiltração de credenciais via ataques XSS (*Cross-Site Scripting*).
+  - As rotas em `src/app/api/*` interceptam o ciclo de autenticação e mascaram os tokens de segurança. Os tokens JWT nunca são persistidos em `localStorage` ou `sessionStorage`, eliminando completamente o risco de exfiltração de credenciais via ataques XSS (_Cross-Site Scripting_).
   - O manipulador `src/app/api/images/process/route.ts` recebe os dados do formulário do cliente, injeta o token Bearer recuperado do cookie seguro e atua como um proxy reverso com streaming de resposta.
 
 - **Arquitetura de Sessão em Duas Camadas:**
@@ -434,7 +435,7 @@ Implementada com **Fastify 5**, **TypeScript** e **Drizzle ORM**. O Fastify foi 
   - **Routes (`src/routes/`):** Declaração de endpoints, mapeamento de métodos e associação de schemas de validação.
   - **Controllers (`src/controllers/`):** Recepção de requisições, extração de parâmetros e serialização da resposta de saída.
   - **Usecases (`src/usecases/`):** Encapsulamento estrito das regras de negócio. Totalmente desacoplados de frameworks de transporte (não conhecem `FastifyRequest` ou `FastifyReply`), o que permite testes unitários puros e reutilização universal.
-  - **Repositories (`src/repositories/`):** Abstração de persistência implementada através do padrão *Repository Pattern* (`IUserRepository`), viabilizando a troca de infraestrutura de dados ou mockagem sem impacto nas regras de negócio.
+  - **Repositories (`src/repositories/`):** Abstração de persistência implementada através do padrão _Repository Pattern_ (`IUserRepository`), viabilizando a troca de infraestrutura de dados ou mockagem sem impacto nas regras de negócio.
   - **Factories (`src/factories/`):** Módulos de composição responsáveis por instanciar a cadeia de dependências de cada controlador.
 
 - **Proteção Perimetral e Resiliência:**
@@ -444,7 +445,7 @@ Implementada com **Fastify 5**, **TypeScript** e **Drizzle ORM**. O Fastify foi 
   - **Teto de Carga Útil (@fastify/multipart):**
     - Limite máximo estrito de **5MB** por arquivo. Requisições que excedam o valor são rejeitadas na borda antes de alocarem memória.
   - **Timeouts Estratégicos:**
-    - O caso de uso `ProcessImageUseCase` configura um `AbortController` com tempo limite de **120.000 ms (2 minutos)** para cobrir tanto o processamento quanto eventuais partidas a frio (*cold starts*) de containers do worker.
+    - O caso de uso `ProcessImageUseCase` configura um `AbortController` com tempo limite de **120.000 ms (2 minutos)** para cobrir tanto o processamento quanto eventuais partidas a frio (_cold starts_) de containers do worker.
   - **Encerramento Gracioso (Graceful Shutdown):**
     - Utilização de `close-with-grace` para interceptar sinais do sistema operacional (`SIGINT`, `SIGTERM`), aguardando o encerramento das requisições em trânsito e fechando o pool de conexões com o PostgreSQL antes do encerramento do processo.
 
@@ -462,7 +463,7 @@ Servico desenvolvido em **Python 3.11** utilizando **aio-pika**, **FastAPI**, **
     ```
   - **Desacoplamento por Fila:** O RabbitMQ retem requisicoes excedentes na fila `image-processing`. O worker apenas puxa a proxima mensagem apos concluir o processamento da anterior e enviar o `ack()`. Isso substitui o bloqueio de conexoes HTTP e permite escalabilidade horizontal trivial (basta instanciar novos containers do worker).
   - **Execucao Desacoplada e Contencao de Threads (Deadlock Prevention):**
-    - Como a manipulacao de matrizes do OpenCV e a inferencia de IA sao operacoes que bloqueiam a CPU (*CPU-bound*), elas sao delegadas ao pool de threads via:
+    - Como a manipulacao de matrizes do OpenCV e a inferencia de IA sao operacoes que bloqueiam a CPU (_CPU-bound_), elas sao delegadas ao pool de threads via:
       ```python
       loop = asyncio.get_running_loop()
       output_bytes = await asyncio.wait_for(
@@ -481,13 +482,13 @@ Servico desenvolvido em **Python 3.11** utilizando **aio-pika**, **FastAPI**, **
   - **Limpeza Agressiva de Memoria:** Ao final de cada ciclo de processamento no bloco `finally`, invoca-se explicitamente o coletor de lixo do Python (`gc.collect()`), devolvendo blocos de memoria nao referenciados ao sistema operacional.
 
 - **Ciclo de Vida de Modelos (Lazy Loading & Descarregamento Dinamico):**
-  - O modelo de remocao de plano de fundo **U2-Net** (~170MB de tensores ONNX) e os modelos de super-resolucao **LapSRN** (~1MB a ~4MB) utilizam o padrao de *Carregamento Sob Demanda*.
+  - O modelo de remocao de plano de fundo **U2-Net** (~170MB de tensores ONNX) e os modelos de super-resolucao **LapSRN** (~1MB a ~4MB) utilizam o padrao de _Carregamento Sob Demanda_.
   - A instancia do modelo so e inicializada na primeira vez em que a operacao e solicitada.
-  - As rotas contam com a opcao `unload_after=True`. Quando ativado, os ponteiros globais de sessao (`_session` e `_sr_instance`) sao zerados e a memoria e limpa imediatamente apos a geracao do resultado, viabilizando arquiteturas de escala zero (*Scale-to-Zero*) em ambientes de nuvem serverless/containers.
+  - As rotas contam com a opcao `unload_after=True`. Quando ativado, os ponteiros globais de sessao (`_session` e `_sr_instance`) sao zerados e a memoria e limpa imediatamente apos a geracao do resultado, viabilizando arquiteturas de escala zero (_Scale-to-Zero_) em ambientes de nuvem serverless/containers.
 
 - **Destaques dos Algoritmos de Visao e Efeitos:**
   - **Cartoon Avancado:** Combinacao de filtro bilateral (`cv2.bilateralFilter`) para atenuacao de textura com preservacao de arestas; quantizacao de cores acelerada atraves de miniatura com **K-Means** e projecao via **KDTree** (`scipy.spatial.cKDTree`); elevacao de saturacao no espaco de cores HSV em 40%; e mascara de contornos por limiarizacao adaptativa (`cv2.adaptiveThreshold`).
-  - **Pencil Sketch (Desenho a Lapis Realista):** Aplicacao da tecnica classica de fusao *Color Dodge* (inversao da escala de cinza e divisao pelo desfoque Gaussiano invertido); contraste adaptativo CLAHE; injecao de 5 camadas de hachura direcional em angulos distintos (30°, 60°, 80°, 120°, 150°); e fusao textural de micro-ruido de grafite e granulacao de papel artesanal.
+  - **Pencil Sketch (Desenho a Lapis Realista):** Aplicacao da tecnica classica de fusao _Color Dodge_ (inversao da escala de cinza e divisao pelo desfoque Gaussiano invertido); contraste adaptativo CLAHE; injecao de 5 camadas de hachura direcional em angulos distintos (30°, 60°, 80°, 120°, 150°); e fusao textural de micro-ruido de grafite e granulacao de papel artesanal.
   - **Oil Painting (Pintura a Oleo):** Suavizacao pictorica inicial; filtro especializado `cv2.xphoto.oilPainting`; adicao de pinceladas anisotropicas direcionais atraves de convolucoes com **filtros de Gabor**; redistribuicao tonal no espaco de cores perceptual **LAB**; e compressao de realces para conferir peso de tinta oleo.
 
 ---
@@ -497,6 +498,7 @@ Servico desenvolvido em **Python 3.11** utilizando **aio-pika**, **FastAPI**, **
 A persistencia do ecossistema e centralizada no **PostgreSQL 17**, gerenciado atraves do **Drizzle ORM** com tipagem estatica e suporte a migracoes deterministicas.
 
 ### 5.1. Configuracao do Pool de Conexoes (`apps/api/src/config/database.config.ts`)
+
 - **Driver:** `postgres` (postgres-js).
 - **Tamanho Maximo do Pool (`max`):** 10 conexoes simultaneas por instancia de API.
 - **Tempo Limite de Ociosidade (`idle_timeout`):** 20 segundos antes do encerramento de conexao ociosa.
@@ -541,37 +543,39 @@ erDiagram
 
 #### Tabela `users` (`apps/api/src/database/schema/users.schema.ts`)
 
-| Campo | Tipo SQL | Modificadores | Descricao de Dominio |
-| :--- | :--- | :--- | :--- |
-| `id` | `uuid` | `PRIMARY KEY`, `DEFAULT gen_random_uuid()` | Chave primaria canonica |
-| `name` | `text` | `NOT NULL` | Nome completo do usuario |
-| `email` | `text` | `NOT NULL`, `UNIQUE` | E-mail corporativo ou pessoal |
-| `credits` | `integer` | `NOT NULL`, `DEFAULT 50` | Moeda interna para consumo de processamento |
-| `google_id` | `text` | `NOT NULL`, `UNIQUE` | ID estavel de autenticacao federada |
-| `picture` | `text` | `NOT NULL` | Link publico do avatar do Google |
-| `created_at` | `timestamp` | `NOT NULL`, `DEFAULT now()` | Registro de auditoria temporal |
-| `updated_at` | `timestamp` | `NOT NULL`, `DEFAULT now()` | Atualizacao de auditoria temporal |
+| Campo        | Tipo SQL    | Modificadores                              | Descricao de Dominio                        |
+| :----------- | :---------- | :----------------------------------------- | :------------------------------------------ |
+| `id`         | `uuid`      | `PRIMARY KEY`, `DEFAULT gen_random_uuid()` | Chave primaria canonica                     |
+| `name`       | `text`      | `NOT NULL`                                 | Nome completo do usuario                    |
+| `email`      | `text`      | `NOT NULL`, `UNIQUE`                       | E-mail corporativo ou pessoal               |
+| `credits`    | `integer`   | `NOT NULL`, `DEFAULT 50`                   | Moeda interna para consumo de processamento |
+| `google_id`  | `text`      | `NOT NULL`, `UNIQUE`                       | ID estavel de autenticacao federada         |
+| `picture`    | `text`      | `NOT NULL`                                 | Link publico do avatar do Google            |
+| `created_at` | `timestamp` | `NOT NULL`, `DEFAULT now()`                | Registro de auditoria temporal              |
+| `updated_at` | `timestamp` | `NOT NULL`, `DEFAULT now()`                | Atualizacao de auditoria temporal           |
 
 #### Tabela `jobs` (`apps/api/src/database/schema/jobs.schema.ts`)
 
-| Campo | Tipo SQL | Modificadores | Descricao de Dominio |
-| :--- | :--- | :--- | :--- |
-| `id` | `uuid` | `PRIMARY KEY`, `DEFAULT gen_random_uuid()` | Identificador unico do job assincrono |
-| `user_id` | `uuid` | `NOT NULL`, `REFERENCES users(id) ON DELETE CASCADE` | Proprietario do job |
-| `status` | `job_status` | `NOT NULL`, `DEFAULT 'pending'` | Enum: `pending`, `processing`, `done`, `failed` |
-| `operation` | `text` | `NOT NULL` | Operacao de transformacao |
-| `params` | `jsonb` | `NULLABLE` | Dimensoes e parametros adicionais |
-| `original_key` | `text` | `NOT NULL` | Caminho do objeto original no bucket S3 |
-| `result_key` | `text` | `NULLABLE` | Caminho do resultado final no bucket S3 |
-| `error_message` | `text` | `NULLABLE` | Descricao textual da falha |
-| `created_at` | `timestamp` | `NOT NULL`, `DEFAULT now()` | Momento da submissao |
-| `updated_at` | `timestamp` | `NOT NULL`, `DEFAULT now()` | Ultima alteracao de status |
-| `completed_at` | `timestamp` | `NULLABLE` | Momento da finalizacao |
+| Campo           | Tipo SQL     | Modificadores                                        | Descricao de Dominio                            |
+| :-------------- | :----------- | :--------------------------------------------------- | :---------------------------------------------- |
+| `id`            | `uuid`       | `PRIMARY KEY`, `DEFAULT gen_random_uuid()`           | Identificador unico do job assincrono           |
+| `user_id`       | `uuid`       | `NOT NULL`, `REFERENCES users(id) ON DELETE CASCADE` | Proprietario do job                             |
+| `status`        | `job_status` | `NOT NULL`, `DEFAULT 'pending'`                      | Enum: `pending`, `processing`, `done`, `failed` |
+| `operation`     | `text`       | `NOT NULL`                                           | Operacao de transformacao                       |
+| `params`        | `jsonb`      | `NULLABLE`                                           | Dimensoes e parametros adicionais               |
+| `original_key`  | `text`       | `NOT NULL`                                           | Caminho do objeto original no bucket S3         |
+| `result_key`    | `text`       | `NULLABLE`                                           | Caminho do resultado final no bucket S3         |
+| `error_message` | `text`       | `NULLABLE`                                           | Descricao textual da falha                      |
+| `created_at`    | `timestamp`  | `NOT NULL`, `DEFAULT now()`                          | Momento da submissao                            |
+| `updated_at`    | `timestamp`  | `NOT NULL`, `DEFAULT now()`                          | Ultima alteracao de status                      |
+| `completed_at`  | `timestamp`  | `NULLABLE`                                           | Momento da finalizacao                          |
 
 ---
 
 ### 5.4. Ciclo de Vida de Migracoes
+
 As migracoes sao gerenciadas pelo `drizzle-kit`:
+
 - `0000_worried_dazzler.sql`: Estrutura inicial da tabela `users` com restricoes de unicidade em `email` e `google_id`.
 - `0001_nasty_lady_ursula.sql`: Adicao da coluna de monetizacao/saldo `credits` com valor padrao `0`.
 - `0002_nappy_outlaw_kid.sql`: Criacao do tipo enum `job_status` e da tabela relacional `jobs` associada a `users`.
@@ -580,25 +584,28 @@ As migracoes sao gerenciadas pelo `drizzle-kit`:
 
 ### 5.3. Detalhamento do Schema (`apps/api/src/database/schema/users.schema.ts`)
 
-| Campo | Tipo SQL | Modificadores | Descrição de Domínio |
-| :--- | :--- | :--- | :--- |
-| `id` | `uuid` | `PRIMARY KEY`, `DEFAULT gen_random_uuid()` | Chave primária canônica |
-| `name` | `text` | `NOT NULL` | Nome completo do usuário |
-| `email` | `text` | `NOT NULL`, `UNIQUE` | E-mail corporativo ou pessoal |
-| `credits` | `integer` | `NOT NULL`, `DEFAULT 50` | Moeda interna para consumo de processamento |
-| `google_id` | `text` | `NOT NULL`, `UNIQUE` | ID estável de autenticação federada |
-| `picture` | `text` | `NOT NULL` | Link público do avatar do Google |
-| `created_at` | `timestamp` | `NOT NULL`, `DEFAULT now()` | Registro de auditoria temporal |
-| `updated_at` | `timestamp` | `NOT NULL`, `DEFAULT now()` | Atualização de auditoria temporal |
+| Campo        | Tipo SQL    | Modificadores                              | Descrição de Domínio                        |
+| :----------- | :---------- | :----------------------------------------- | :------------------------------------------ |
+| `id`         | `uuid`      | `PRIMARY KEY`, `DEFAULT gen_random_uuid()` | Chave primária canônica                     |
+| `name`       | `text`      | `NOT NULL`                                 | Nome completo do usuário                    |
+| `email`      | `text`      | `NOT NULL`, `UNIQUE`                       | E-mail corporativo ou pessoal               |
+| `credits`    | `integer`   | `NOT NULL`, `DEFAULT 50`                   | Moeda interna para consumo de processamento |
+| `google_id`  | `text`      | `NOT NULL`, `UNIQUE`                       | ID estável de autenticação federada         |
+| `picture`    | `text`      | `NOT NULL`                                 | Link público do avatar do Google            |
+| `created_at` | `timestamp` | `NOT NULL`, `DEFAULT now()`                | Registro de auditoria temporal              |
+| `updated_at` | `timestamp` | `NOT NULL`, `DEFAULT now()`                | Atualização de auditoria temporal           |
 
 ---
 
 ### 5.4. Ciclo de Vida de Migrações
+
 As migrações são gerenciadas pelo `drizzle-kit`:
+
 - `0000_worried_dazzler.sql`: Estrutura inicial da tabela `users` com restrições de unicidade em `email` e `google_id`.
 - `0001_nasty_lady_ursula.sql`: Adição da coluna de monetização/saldo `credits` com valor padrão `0` (sobrescrito para 50 na criação de novos usuários no caso de uso `GoogleAuthUseCase`).
 
 Comandos operacionais:
+
 - Geração de migrações por diff do schema: `pnpm db:generate`
 - Execução de migrações pendentes: `pnpm db:migrate`
 - Inspeção visual de dados via Web: `pnpm db:studio`
@@ -607,12 +614,12 @@ Comandos operacionais:
 
 ## 6. Integrações Externas & Serviços de Terceiros
 
-| Serviço / Provedor | Tipo de Integração | Protocolo | Finalidade no Sistema |
-| :--- | :--- | :--- | :--- |
-| **Google Identity Services** | OAuth 2.0 Authorization Code Flow | HTTPS / REST / JSON | Autenticação unificada de usuários, validação de e-mail e recuperação de foto e nome |
-| **Vercel** | Plataforma de Hospedagem Edge | Git Integration & CLI Deploy | Hospedagem em escala global da aplicação Next.js com CDN e otimização de borda |
-| **GitHub Container Registry (GHCR)** | Registro OCI de Imagens Docker | Docker Registry v2 API | Armazenamento seguro e versionado dos contêineres Docker da API e do Worker |
-| **Azure Container Apps / ECS** (Alvo) | Orquestração de Contêineres | Docker / HTTP Health Probes | Ambiente recomendado para a hospedagem do Worker com capacidade de escala horizontal e escala a zero |
+| Serviço / Provedor                    | Tipo de Integração                | Protocolo                    | Finalidade no Sistema                                                                                |
+| :------------------------------------ | :-------------------------------- | :--------------------------- | :--------------------------------------------------------------------------------------------------- |
+| **Google Identity Services**          | OAuth 2.0 Authorization Code Flow | HTTPS / REST / JSON          | Autenticação unificada de usuários, validação de e-mail e recuperação de foto e nome                 |
+| **Vercel**                            | Plataforma de Hospedagem Edge     | Git Integration & CLI Deploy | Hospedagem em escala global da aplicação Next.js com CDN e otimização de borda                       |
+| **GitHub Container Registry (GHCR)**  | Registro OCI de Imagens Docker    | Docker Registry v2 API       | Armazenamento seguro e versionado dos contêineres Docker da API e do Worker                          |
+| **Azure Container Apps / ECS** (Alvo) | Orquestração de Contêineres       | Docker / HTTP Health Probes  | Ambiente recomendado para a hospedagem do Worker com capacidade de escala horizontal e escala a zero |
 
 ---
 
@@ -623,6 +630,7 @@ A infraestrutura é orientada a contêineres imutáveis e automações via **Git
 ### 7.1. Fluxos de Trabalho Automatizados (Workflows)
 
 #### 1. Pipeline de Integração Contínua (`.github/workflows/ci.yml`)
+
 - Disparado a cada `push` e `pull_request` no branch `main`.
 - Utiliza `dorny/paths-filter` para isolar execuções de acordo com as pastas modificadas:
   - **Mudanças em `apps/api/**`:** Configura Node.js 22, instala pacotes com lockfile estrito (`--frozen-lockfile`), executa a suíte de testes de unidade via Vitest (`pnpm test:unit`) e compila o código TypeScript (`pnpm build`).
@@ -630,6 +638,7 @@ A infraestrutura é orientada a contêineres imutáveis e automações via **Git
   - **Mudanças em `apps/worker-image/**`:** Configura Python 3.11, instala `uv`, sincroniza o ambiente virtual (`uv sync`) e executa o linter de alta velocidade **Ruff** (`uv run ruff check .`) e a suíte de testes com **Pytest** (`uv run pytest`).
 
 #### 2. Pipeline de Release de Contêineres (`.github/workflows/release-docker.yml`)
+
 - Disparado exclusivamente na criação de tags de versão (`v*`, ex: `git tag v1.0.0`) ou sob demanda via `workflow_dispatch`.
 - Constrói em paralelo e publica no GHCR as imagens OCI versionadas:
   - `ghcr.io/<repo>/api:<tag>` e `ghcr.io/<repo>/api:latest`
@@ -640,21 +649,24 @@ A infraestrutura é orientada a contêineres imutáveis e automações via **Git
 ### 7.2. Engenharia dos Dockerfiles
 
 #### Worker Image (`apps/worker-image/Dockerfile`)
+
 - **Estratégia Multi-Stage:**
-  - *Stage 1 (Builder):* Base python:3.11-slim, instalacao do compilador C/C++ (gcc, g++), uso de uv para resolucao e compilacao ultra-rapida de rodas binarias (*wheels*), pre-compilacao de bytecode (python -m compileall) para eliminar latencia de cold start do interpretador Python.
-  - *Pré-carregamento de Modelos:* Os modelos U2-Net e LapSRN (x2 e x4) são baixados diretamente durante o build do contêiner. Isso assegura que o contêiner inicie imediatamente sem depender de conectividade externa de rede para download em runtime.
-  - *Stage 2 (Runner):* Imagem limpa sem ferramentas de compilação.
+  - _Stage 1 (Builder):_ Base python:3.11-slim, instalacao do compilador C/C++ (gcc, g++), uso de uv para resolucao e compilacao ultra-rapida de rodas binarias (_wheels_), pre-compilacao de bytecode (python -m compileall) para eliminar latencia de cold start do interpretador Python.
+  - _Pré-carregamento de Modelos:_ Os modelos U2-Net e LapSRN (x2 e x4) são baixados diretamente durante o build do contêiner. Isso assegura que o contêiner inicie imediatamente sem depender de conectividade externa de rede para download em runtime.
+  - _Stage 2 (Runner):_ Imagem limpa sem ferramentas de compilação.
 - **Configurações de Execução Otimizada:**
   - `ONNX_NUM_THREADS=1` e `OMP_NUM_THREADS=1`: Impede que bibliotecas de visão criem dezenas de threads concorrentes que competem por CPU em instâncias de nuvem com núcleos limitados.
   - Execução sob usuário restrito não-root (`appuser`), garantindo segurança contra escalonamento de privilégios.
 
 #### API Gateway (`apps/api/Dockerfile`)
+
 - Baseada em `node:24-alpine`.
 - Build multi-stage com cache montado para o armazenamento do pnpm (`--mount=type=cache,id=pnpm,target=/pnpm/store`).
 - Compilação via TypeScript e resolução de aliases de caminho com `tsc-alias`.
 - Imagem final de produção enxuta contendo apenas dependências de produção e o diretório `dist/`.
 
 #### Web (`apps/web/Dockerfile`)
+
 - Baseada em `node:24-alpine`.
 - Compilação no modo **Next.js Standalone**, que isola somente os módulos estritamente necessários para rodar o servidor, descartando o `node_modules` completo de desenvolvimento.
 - Execução sob usuário de sistema sem privilégios (`nextjs`).
@@ -670,7 +682,7 @@ A arquitetura do Kroma adota o princípio de **Defesa em Profundidade (Defense i
    - O cookie gravado no navegador recebe as flags:
      - `HttpOnly = true`: Impede leitura via scripts maliciosos de terceiros (`document.cookie`).
      - `Secure = true` (em produção): Garante transmissão exclusiva através de túneis TLS/HTTPS.
-     - `SameSite = Lax`: Previne vulnerabilidades de CSRF (*Cross-Site Request Forgery*) em requisições de navegação cruzada.
+     - `SameSite = Lax`: Previne vulnerabilidades de CSRF (_Cross-Site Request Forgery_) em requisições de navegação cruzada.
    - **Validação Criptográfica no Middleware Next.js:** O `middleware.ts` utiliza `jose.jwtVerify` para verificar a assinatura e o campo `exp` (expiração) do token inteiramente em memória, sem chamadas de rede ao Fastify. Tokens expirados ou adulterados são rejeitados na borda em menos de 1ms, com remoção imediata do cookie e redirecionamento para `/login`.
    - **Interceptor HTTP no Cliente:** O wrapper `apiFetch` captura respostas `HTTP 401` de qualquer rota BFF durante sessões ativas no Studio, disparando limpeza de cookie e redirecionamento automático. Elimina a necessidade de tratamento manual de expiração em cada componente React.
 
@@ -692,6 +704,7 @@ A arquitetura do Kroma adota o princípio de **Defesa em Profundidade (Defense i
 ## 9. Ambiente de Desenvolvimento & Guia Operacional
 
 ### 9.1. Requisitos de Sistema
+
 - Node.js versão `>= 22`
 - Gerenciador de pacotes `pnpm` versão `10.24.0+`
 - Python versão `>= 3.11` e `< 3.13`
@@ -699,6 +712,7 @@ A arquitetura do Kroma adota o princípio de **Defesa em Profundidade (Defense i
 - Docker e Docker Compose instalados
 
 ### 9.2. Inicialização do Ambiente Local
+
 ```bash
 # 1. Instalação das dependências do monorepo
 pnpm install
@@ -722,21 +736,28 @@ task dev
 ```
 
 ### 9.4. Implantação Self-Hosted com Docker Compose
+
 O ecossistema conta com orquestração unificada via docker-compose.yml otimizada para ambientes self-hosted:
+
 1. Copie o arquivo de ambiente centralizado na raiz: cp .env.example .env
 2. Ajuste o domínio (FRONTEND_URL, NEXT_PUBLIC_API_URL, GOOGLE_CALLBACK_URL) e segredos (JWT_SECRET, credenciais Google) no .env.
-3. Inicie toda a infraestrutura com build automático: docker compose up -d --build (ou 	ask infra:all).
+3. Inicie toda a infraestrutura com build automático: docker compose up -d --build (ou ask infra:all).
 4. As portas dos serviços internos (PostgreSQL, RabbitMQ, MinIO, Worker) são protegidas com bind em 127.0.0.1 e volumes nomeados do Docker garantem persistência sem conflitos de permissão no Linux.
 
 ### 9.3. Portas Padrão de Desenvolvimento
-| Serviço | Endereço Local | Descrição |
-| :--- | :--- | :--- |
-| **Web** | `http://localhost:3000` | Interface do usuário e Estúdio de edição |
-| **API** | `http://localhost:8080` | Servidor Fastify e endpoints REST |
-| **Scalar API Docs** | `http://localhost:8080/docs` | Documentação interativa OpenAPI do backend |
-| **Worker Image** | `http://localhost:8000` | Servidor FastAPI de visão computacional |
-| **PostgreSQL** | `localhost:5432` | Instância local de banco relacional |
-| **Drizzle Studio** | `http://localhost:4983` | GUI interativa para gerenciamento do banco (`pnpm start:drizzle-studio`) |
+
+| Serviço                 | Endereço Local               | Descrição                                                                |
+| :---------------------- | :--------------------------- | :----------------------------------------------------------------------- |
+| **Web**                 | `http://localhost:3000`      | Interface do usuário e Estúdio de edição                                 |
+| **API**                 | `http://localhost:8080`      | Servidor Fastify e endpoints REST                                        |
+| **Scalar API Docs**     | `http://localhost:8080/docs` | Documentação interativa OpenAPI do backend                               |
+| **Worker Image**        | `http://localhost:8000`      | Servidor FastAPI de visão computacional                                  |
+| **PostgreSQL**          | `localhost:5432`             | Instância local de banco relacional                                      |
+| **RabbitMQ AMQP**       | `localhost:5672`             | Broker de mensageria assíncrona (AMQP 0-9-1)                             |
+| **RabbitMQ Management** | `http://localhost:15672`     | Painel web de monitoramento do RabbitMQ                                  |
+| **MinIO API (S3)**      | `http://localhost:9000`      | Object Storage local compatível com AWS S3                               |
+| **MinIO Console**       | `http://localhost:9001`      | Interface web de administração do MinIO                                  |
+| **Drizzle Studio**      | `http://localhost:4983`      | GUI interativa para gerenciamento do banco (`pnpm start:drizzle-studio`) |
 
 ---
 
@@ -746,7 +767,7 @@ O ecossistema conta com orquestração unificada via docker-compose.yml otimizad
 
 1. **Comunicação HTTP Síncrona entre API e Worker:**
    - Atualmente, a requisição de processamento permanece com a conexão HTTP aberta desde o navegador até o worker durante todo o tempo de inferência (podendo levar de 2 a 15 segundos).
-   - *Impacto:* Se o tráfego aumentar repentinamente, o semáforo do worker reterá requisições e clientes receberão erros 503/504 rapidamente.
+   - _Impacto:_ Se o tráfego aumentar repentinamente, o semáforo do worker reterá requisições e clientes receberão erros 503/504 rapidamente.
 2. **Armazenamento de Imagens Volátil:**
    - As imagens processadas existem apenas como bytes transitórios no buffer da memória e são retornadas imediatamente ao usuário. Não há persistência de histórico de edições ou galeria de trabalhos anteriores.
 3. **Escala de Instância Única do Worker:**
@@ -762,17 +783,17 @@ flowchart LR
         Client["Browser"] -->|"Upload direto pré-assinado"| S3["Object Storage\n(Cloudflare R2 / AWS S3)"]
         Client -->|"Cria Job de Processamento"| FastifyAPI["Fastify API Gateway"]
         FastifyAPI -->|"Publica mensagem na fila"| RedisQueue["Fila Distribuída\n(Redis + BullMQ)"]
-        
+
         subgraph WorkerPool ["Pool Elástico de Workers"]
             Worker1["Worker 1 (GPU/CPU)"]
             Worker2["Worker 2 (GPU/CPU)"]
             WorkerN["Worker N (GPU/CPU)"]
         end
-        
+
         RedisQueue -->|"Consome tarefa"| Worker1
         RedisQueue -->|"Consome tarefa"| Worker2
         RedisQueue -->|"Consome tarefa"| WorkerN
-        
+
         WorkerPool -->|"Lê original e grava resultado"| S3
         WorkerPool -->|"Notifica conclusão"| FastifyAPI
         FastifyAPI -.->|"Server-Sent Events (SSE) / WebSocket"| Client
@@ -783,7 +804,7 @@ flowchart LR
    - Introduzir **Redis** com **BullMQ** ou RabbitMQ/Celery entre a API e o Worker.
    - O upload do arquivo despacha um `job_id` instantâneo (HTTP 202 Accepted) e o cliente acompanha o progresso via polling ou WebSockets / Server-Sent Events (SSE).
 2. **Armazenamento em Objeto Centralizado (Object Storage):**
-   - Integração com **AWS S3** ou **Cloudflare R2** para armazenamento de originais e resultados com geração de URLs pré-assinadas (*Presigned URLs*), descarregando completamente o trânsito de bytes pesados da API de negócios.
+   - Integração com **AWS S3** ou **Cloudflare R2** para armazenamento de originais e resultados com geração de URLs pré-assinadas (_Presigned URLs_), descarregando completamente o trânsito de bytes pesados da API de negócios.
 3. **Sistema Transacional de Dedução de Créditos:**
    - Adicionar tabela `credit_transactions` para registro atômico e rastreabilidade de saldo consumido por cada operação executada com sucesso.
 
@@ -812,6 +833,6 @@ flowchart LR
 - **ONNX (Open Neural Network Exchange):** Formato aberto e otimizado para representação e execução de modelos de aprendizado de máquina em diferentes aceleradores de hardware.
 - **OOM (Out Of Memory):** Condição crítica em que o sistema operacional finaliza um processo que tentou alocar mais memória RAM do que a capacidade física disponível.
 - **SSOT (Single Source of Truth):** Princípio de estruturação de dados e documentação em que cada elemento de informação possui uma única origem canônica.
-- **U2-Net:** Arquitetura de rede neural convolucional de dois níveis (*nested U-structure*) otimizada para segmentação de objetos salientes e recorte de primeiro plano.
+- **U2-Net:** Arquitetura de rede neural convolucional de dois níveis (_nested U-structure_) otimizada para segmentação de objetos salientes e recorte de primeiro plano.
 - **Unsharp Mask:** Algoritmo clássico de nitidez que subtrai uma versão desfocada da imagem original para destacar transições de alta frequência nas bordas.
 - **uv:** Gerenciador de projetos e instalador de pacotes extremamente rápido para Python, construído em Rust.

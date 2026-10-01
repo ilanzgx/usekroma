@@ -1,6 +1,7 @@
 FROM node:24-alpine AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
+ENV HUSKY=0
 RUN corepack enable
 WORKDIR /app
 

@@ -5,7 +5,7 @@
 
   <p>
     <a href="https://github.com/ilanzgx/saas-image/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/ilanzgx/saas-image/ci.yml?branch=main&label=CI&style=flat&color=09090b" alt="CI Status" /></a>
-    <a href="https://github.com/ilanzgx/saas-image/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-ISC-09090b" alt="License: ISC" /></a>
+    <a href="https://github.com/ilanzgx/saas-image/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-09090b" alt="License: GPL-3.0" /></a>
     <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/node-24-09090b?logo=nodedotjs&logoColor=white" alt="Node.js 24" /></a>
     <a href="https://fastify.dev/"><img src="https://img.shields.io/badge/fastify-5.8-09090b?logo=fastify&logoColor=white" alt="Fastify 5" /></a>
     <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/next.js-16.2-09090b?logo=nextdotjs&logoColor=white" alt="Next.js 16" /></a>
@@ -29,7 +29,7 @@ O **Kroma** e um estudio de processamento visual construido com foco em velocida
 - **Remocao de Fundo com IA:** Isolamento e recorte de primeiro plano com canal alfa transparente usando a rede neural profunda **U2-Net**.
 - **Super-Resolucao Inteligente (AI Upscale):** Aumento de resolucao de 2x a 4x preservando detalhes com redes convolucionais **LapSRN**.
 - **Filtros Artisticos & Pictoricos:** Estilizacao cartoon via quantizacao cromatica K-Means e KDTree, desenho a lapis com textura de grafite/papel e pintura a oleo com filtros direcionais de Gabor.
-- **Aprimoramento & Ajustes Opticos:** Nitidez por *Unsharp Mask*, desfoque Gaussiano, controle dinamico de saturacao cromatica, conversao para escala de cinza, efeito sepia matricial e vinheta radial.
+- **Aprimoramento & Ajustes Opticos:** Nitidez por _Unsharp Mask_, desfoque Gaussiano, controle dinamico de saturacao cromatica, conversao para escala de cinza, efeito sepia matricial e vinheta radial.
 - **Transformacoes & Proporcoes Sociais:** Redimensionamento por interpolacao Lanczos e catalogo pre-configurado para Instagram, TikTok, YouTube, LinkedIn, Pinterest, Twitter/X, Facebook e Twitch.
 - **Pipeline Assincrono com Mensageria & S3:** Desacoplamento total entre ingestao e computacao visual utilizando **RabbitMQ** e **MinIO (S3)**, com respostas HTTP 202 Accepted, acompanhamento de progresso e estorno automatico de creditos em caso de falha.
 - **Streaming Binario Puro:** Zero sobrecarga de Base64 em transito; transferencia direta de streams binarios (`Blob` / `Buffer` / `image/png`) do storage ate a memoria do navegador.
@@ -151,37 +151,37 @@ saas-image/
 
 ## Stack Tecnologica
 
-| Camada | Tecnologias Principais |
-| :--- | :--- |
-| **Frontend (Web & BFF)** | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Radix UI, Lucide Icons, react-dropzone |
-| **Backend (API Gateway)** | Fastify 5, TypeScript, Zod, fastify-type-provider-zod, amqp-connection-manager, @aws-sdk/client-s3, @scalar/fastify-api-reference, @fastify/jwt, @fastify/oauth2 |
-| **Processamento (Worker)** | Python 3.11, FastAPI, Uvicorn, aio-pika (AMQP), aiobotocore (S3), OpenCV (contrib headless), Pillow, NumPy, rembg (U2-Net ONNX), LapSRN DNN, uv |
-| **Mensageria & Filas** | RabbitMQ 3.13 (AMQP 0-9-1 com conexoes persistentes e prefetch throttling) |
-| **Object Storage (S3)** | MinIO / Silo (S3-compatible bucket `kroma-storage`) |
-| **Banco de Dados & ORM** | PostgreSQL 17, Drizzle ORM, Drizzle Kit, postgres-js |
-| **Infraestrutura & DevOps** | Docker, Docker Compose, GitHub Actions, GitHub Container Registry (GHCR), Vercel |
-| **Testes & Qualidade** | Vitest (API unit tests), Pytest + HTTPX (Worker tests), Ruff (Python linter), ESLint (Next.js) |
+| Camada                      | Tecnologias Principais                                                                                                                                           |
+| :-------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Frontend (Web & BFF)**    | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Radix UI, Lucide Icons, react-dropzone                                                           |
+| **Backend (API Gateway)**   | Fastify 5, TypeScript, Zod, fastify-type-provider-zod, amqp-connection-manager, @aws-sdk/client-s3, @scalar/fastify-api-reference, @fastify/jwt, @fastify/oauth2 |
+| **Processamento (Worker)**  | Python 3.11, FastAPI, Uvicorn, aio-pika (AMQP), aiobotocore (S3), OpenCV (contrib headless), Pillow, NumPy, rembg (U2-Net ONNX), LapSRN DNN, uv                  |
+| **Mensageria & Filas**      | RabbitMQ 3.13 (AMQP 0-9-1 com conexoes persistentes e prefetch throttling)                                                                                       |
+| **Object Storage (S3)**     | MinIO / Silo (S3-compatible bucket `kroma-storage`)                                                                                                              |
+| **Banco de Dados & ORM**    | PostgreSQL 17, Drizzle ORM, Drizzle Kit, postgres-js                                                                                                             |
+| **Infraestrutura & DevOps** | Docker, Docker Compose, GitHub Actions, GitHub Container Registry (GHCR), Vercel                                                                                 |
+| **Testes & Qualidade**      | Vitest (API unit tests), Pytest + HTTPX (Worker tests), Ruff (Python linter), ESLint (Next.js)                                                                   |
 
 ---
 
 ## Catalogo de Ferramentas & Efeitos
 
-| Operacao | Nome na Interface | Creditos | Motor Tecnico | Descricao |
-| :--- | :--- | :---: | :--- | :--- |
-| `remove_background` | **Remover Fundo** | 10 | U2-Net (ONNX) | Segmentacao neural com canal alfa transparente de alta precisao |
-| `ai_upscale` | **Aumentar Resolucao** | 5 | LapSRN DNN | Super-resolucao de 2x a 4x baseada em rede neural convolucional profunda |
-| `cartoon` | **Cartoon** | 2 | OpenCV + SciPy | Quantizacao de cores por KDTree K-Means e deteccao de bordas adaptativa |
-| `pencil_sketch` | **Desenho a Lapis** | 2 | OpenCV + CLAHE | Color Dodge invertido, hachuras multi-angulares e microtextura de papel |
-| `oil_painting` | **Pintura a Oleo** | 2 | OpenCV xphoto | Textura pictorica classica combinada com convolucoes de filtros de Gabor |
-| `sharpen` | **Nitidez** | 1 | Pillow UnsharpMask | Filtro de alta frequencia para realce cirurgico de arestas e detalhes |
-| `blur` | **Desfoque** | 1 | Gaussian Blur | Desfoque Gaussiano uniforme para efeitos artisticos e privacidade |
-| `saturate` | **Saturacao** | 1 | Pillow Enhance | Ampliacao de vibracao no espaco cromatico com preservacao tonal |
-| `grayscale` | **Preto e Branco** | 1 | Luminance Map | Conversao monocromatica classica para escala de cinza |
-| `sepia` | **Sepia** | 1 | Transformacao Matricial | Efeito fotografico classico envelhecido em tons de ambar |
-| `vignette` | **Vinheta** | 1 | Gradiente Radial | Escurecimento progressivo e dramatico das bordas da imagem |
-| `flip_horizontal` | **Espelhar** | 1 | Transposicao Axial | Inversao horizontal de orientacao espacial |
-| `flip_vertical` | **Inverter** | 1 | Transposicao Axial | Inversao vertical de orientacao espacial |
-| `resize` | **Redimensionar** | 1 | Lanczos Resampling | Ajuste de dimensoes exatas e adaptacao para presets de redes sociais |
+| Operacao            | Nome na Interface      | Creditos | Motor Tecnico           | Descricao                                                                |
+| :------------------ | :--------------------- | :------: | :---------------------- | :----------------------------------------------------------------------- |
+| `remove_background` | **Remover Fundo**      |    10    | U2-Net (ONNX)           | Segmentacao neural com canal alfa transparente de alta precisao          |
+| `ai_upscale`        | **Aumentar Resolucao** |    5     | LapSRN DNN              | Super-resolucao de 2x a 4x baseada em rede neural convolucional profunda |
+| `cartoon`           | **Cartoon**            |    2     | OpenCV + SciPy          | Quantizacao de cores por KDTree K-Means e deteccao de bordas adaptativa  |
+| `pencil_sketch`     | **Desenho a Lapis**    |    2     | OpenCV + CLAHE          | Color Dodge invertido, hachuras multi-angulares e microtextura de papel  |
+| `oil_painting`      | **Pintura a Oleo**     |    2     | OpenCV xphoto           | Textura pictorica classica combinada com convolucoes de filtros de Gabor |
+| `sharpen`           | **Nitidez**            |    1     | Pillow UnsharpMask      | Filtro de alta frequencia para realce cirurgico de arestas e detalhes    |
+| `blur`              | **Desfoque**           |    1     | Gaussian Blur           | Desfoque Gaussiano uniforme para efeitos artisticos e privacidade        |
+| `saturate`          | **Saturacao**          |    1     | Pillow Enhance          | Ampliacao de vibracao no espaco cromatico com preservacao tonal          |
+| `grayscale`         | **Preto e Branco**     |    1     | Luminance Map           | Conversao monocromatica classica para escala de cinza                    |
+| `sepia`             | **Sepia**              |    1     | Transformacao Matricial | Efeito fotografico classico envelhecido em tons de ambar                 |
+| `vignette`          | **Vinheta**            |    1     | Gradiente Radial        | Escurecimento progressivo e dramatico das bordas da imagem               |
+| `flip_horizontal`   | **Espelhar**           |    1     | Transposicao Axial      | Inversao horizontal de orientacao espacial                               |
+| `flip_vertical`     | **Inverter**           |    1     | Transposicao Axial      | Inversao vertical de orientacao espacial                                 |
+| `resize`            | **Redimensionar**      |    1     | Lanczos Resampling      | Ajuste de dimensoes exatas e adaptacao para presets de redes sociais     |
 
 ---
 
@@ -225,26 +225,26 @@ task dev
 
 O monorepo pode ser operado via **Task** (`task`) ou via scripts do **pnpm**:
 
-| Acao | Via Task | Via pnpm |
-| :--- | :--- | :--- |
-| **Iniciar aplicacoes em paralelo** | `task dev` | `pnpm dev` |
-| **Iniciar apenas o Frontend Web** | `task dev:web` | `pnpm start:web` |
-| **Iniciar apenas a API Backend** | `task dev:api` | `pnpm start:api` |
-| **Iniciar apenas o Worker Python** | `task dev:worker` | `pnpm start:worker-image` |
-| **Subir infraestrutura local (DB, Fila, S3)** | `task infra:up` | `docker compose up -d postgres rabbitmq minio` |
-| **Subir todos os containers (Apps + Infra)** | `task infra:all` | `docker compose up -d --build` |
-| **Parar infraestrutura local** | `task infra:down` | `docker compose down` |
-| **Logs da infraestrutura** | `task infra:logs` | `docker compose logs -f` |
-| **Executar todas as suites de teste** | `task test` | `pnpm test` |
-| **Executar testes da API (Vitest)** | `task test:api` | `pnpm --filter @kroma/api test:unit` |
-| **Executar testes do Worker (pytest)** | `task test:worker` | `cd apps/worker-image && uv run pytest` |
-| **Cobertura de testes da API** | `task test:coverage` | `pnpm --filter @kroma/api test:coverage` |
-| **Executar linters (Web + Worker)** | `task lint` | `pnpm lint` |
-| **Aplicar migracoes no banco** | `task db:migrate` | `pnpm --filter @kroma/api db:migrate` |
-| **Gerar novas migracoes Drizzle** | `task db:generate` | `pnpm --filter @kroma/api db:generate` |
-| **Abrir painel Drizzle Studio** | `task db:studio` | `pnpm start:drizzle-studio` |
-| **Compilar pacote compartilhado** | `task build:shared` | `pnpm --filter @kroma/shared build` |
-| **Compilar todos os pacotes (Build)** | `task build:all` | `pnpm build` |
+| Acao                                          | Via Task             | Via pnpm                                       |
+| :-------------------------------------------- | :------------------- | :--------------------------------------------- |
+| **Iniciar aplicacoes em paralelo**            | `task dev`           | `pnpm dev`                                     |
+| **Iniciar apenas o Frontend Web**             | `task dev:web`       | `pnpm start:web`                               |
+| **Iniciar apenas a API Backend**              | `task dev:api`       | `pnpm start:api`                               |
+| **Iniciar apenas o Worker Python**            | `task dev:worker`    | `pnpm start:worker-image`                      |
+| **Subir infraestrutura local (DB, Fila, S3)** | `task infra:up`      | `docker compose up -d postgres rabbitmq minio` |
+| **Subir todos os containers (Apps + Infra)**  | `task infra:all`     | `docker compose up -d --build`                 |
+| **Parar infraestrutura local**                | `task infra:down`    | `docker compose down`                          |
+| **Logs da infraestrutura**                    | `task infra:logs`    | `docker compose logs -f`                       |
+| **Executar todas as suites de teste**         | `task test`          | `pnpm test`                                    |
+| **Executar testes da API (Vitest)**           | `task test:api`      | `pnpm --filter @kroma/api test:unit`           |
+| **Executar testes do Worker (pytest)**        | `task test:worker`   | `cd apps/worker-image && uv run pytest`        |
+| **Cobertura de testes da API**                | `task test:coverage` | `pnpm --filter @kroma/api test:coverage`       |
+| **Executar linters (Web + Worker)**           | `task lint`          | `pnpm lint`                                    |
+| **Aplicar migracoes no banco**                | `task db:migrate`    | `pnpm --filter @kroma/api db:migrate`          |
+| **Gerar novas migracoes Drizzle**             | `task db:generate`   | `pnpm --filter @kroma/api db:generate`         |
+| **Abrir painel Drizzle Studio**               | `task db:studio`     | `pnpm start:drizzle-studio`                    |
+| **Compilar pacote compartilhado**             | `task build:shared`  | `pnpm --filter @kroma/shared build`            |
+| **Compilar todos os pacotes (Build)**         | `task build:all`     | `pnpm build`                                   |
 
 ---
 
@@ -259,6 +259,6 @@ O monorepo pode ser operado via **Task** (`task`) ou via scripts do **pnpm**:
 
 ## Licenca & Autoria
 
-Distribuido sob a licenca **ISC**. Consulte o arquivo de licenca para mais detalhes.
+Distribuido sob a licenca **GNU General Public License v3.0 (GPL-3.0)**. Consulte o arquivo [LICENSE](./LICENSE) para mais detalhes.
 
 Desenvolvido por **[Ilan](https://github.com/ilanzgx)**.
