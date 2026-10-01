@@ -4,17 +4,17 @@
   <p>Plataforma SaaS de ponta a ponta para edicao, aprimoramento e processamento de imagens alimentada por Inteligencia Artificial e Visao Computacional de alta performance.</p>
 
   <p>
-    <a href="https://github.com/ilanzgx/saas-image/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/ilanzgx/saas-image/ci.yml?branch=main&label=CI&style=flat&color=09090b" alt="CI Status" /></a>
-    <a href="https://github.com/ilanzgx/saas-image/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-09090b" alt="License: GPL-3.0" /></a>
-    <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/node-24-09090b?logo=nodedotjs&logoColor=white" alt="Node.js 24" /></a>
-    <a href="https://fastify.dev/"><img src="https://img.shields.io/badge/fastify-5.8-09090b?logo=fastify&logoColor=white" alt="Fastify 5" /></a>
-    <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/next.js-16.2-09090b?logo=nextdotjs&logoColor=white" alt="Next.js 16" /></a>
-    <a href="https://react.dev/"><img src="https://img.shields.io/badge/react-19.2-09090b?logo=react&logoColor=white" alt="React 19" /></a>
-    <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.11-09090b?logo=python&logoColor=white" alt="Python 3.11" /></a>
-    <a href="https://www.rabbitmq.com/"><img src="https://img.shields.io/badge/rabbitmq-3.13-09090b?logo=rabbitmq&logoColor=white" alt="RabbitMQ 3.13" /></a>
-    <a href="https://min.io/"><img src="https://img.shields.io/badge/minio-s3-09090b?logo=minio&logoColor=white" alt="MinIO S3" /></a>
-    <a href="https://www.postgresql.org/"><img src="https://img.shields.io/badge/postgresql-17-09090b?logo=postgresql&logoColor=white" alt="PostgreSQL 17" /></a>
-    <a href="https://orm.drizzle.team/"><img src="https://img.shields.io/badge/drizzle_orm-0.45-09090b?logo=drizzle&logoColor=white" alt="Drizzle ORM" /></a>
+    <a href="https://github.com/ilanzgx/usekroma/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/ilanzgx/usekroma/ci.yml?branch=main&label=CI&logo=githubactions&logoColor=white" alt="CI Status" /></a>
+    <a href="https://github.com/ilanzgx/usekroma/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue?style=flat&logo=gnu&logoColor=white" alt="License: GPL-3.0" /></a>
+    <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/node-24-339933?logo=nodedotjs&logoColor=white" alt="Node.js 24" /></a>
+    <a href="https://fastify.dev/"><img src="https://img.shields.io/badge/fastify-5.8-000000?logo=fastify&logoColor=white" alt="Fastify 5" /></a>
+    <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/next.js-16.2-000000?logo=nextdotjs&logoColor=white" alt="Next.js 16" /></a>
+    <a href="https://react.dev/"><img src="https://img.shields.io/badge/react-19.2-20232A?logo=react&logoColor=61DAFB" alt="React 19" /></a>
+    <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.11-3776AB?logo=python&logoColor=white" alt="Python 3.11" /></a>
+    <a href="https://www.rabbitmq.com/"><img src="https://img.shields.io/badge/rabbitmq-3.13-FF6600?logo=rabbitmq&logoColor=white" alt="RabbitMQ 3.13" /></a>
+    <a href="https://min.io/"><img src="https://img.shields.io/badge/minio-s3-C72C48?logo=minio&logoColor=white" alt="MinIO S3" /></a>
+    <a href="https://www.postgresql.org/"><img src="https://img.shields.io/badge/postgresql-17-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL 17" /></a>
+    <a href="https://orm.drizzle.team/"><img src="https://img.shields.io/badge/drizzle_orm-0.45-C5F74F?logo=drizzle&logoColor=black" alt="Drizzle ORM" /></a>
   </p>
 </div>
 
@@ -250,7 +250,7 @@ O monorepo pode ser operado via **Task** (`task`) ou via scripts do **pnpm**:
 
 ## CI/CD & Pipeline de Integracao
 
-- **Frontend (`apps/web`):** Validacao de tipagem, compilacao Next.js e deploy continuo em producao na **Vercel** acionado a cada `push` na branch `main`.
+- **Frontend (`apps/web`):** Validacao de tipagem TypeScript, analise estatica com ESLint e compilacao Next.js.
 - **Backend (`apps/api`):** Verificacao TypeScript, execucao da suite de testes unitarios via Vitest e build de producao com lockfile estrito.
 - **Worker (`apps/worker-image`):** Sincronizacao de ambiente via `uv`, analise estatica de codigo com Ruff e suite de testes do consumidor e processadores com Pytest.
 - **Conteineres e Releases:** Publicacao paralela de imagens Docker no GitHub Container Registry (`ghcr.io`) disparada exclusivamente na criacao de tags de versao (`v*`) ou via acionamento manual (`workflow_dispatch`).
