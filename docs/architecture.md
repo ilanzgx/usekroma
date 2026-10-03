@@ -148,16 +148,16 @@ flowchart TB
     Client["Navegador do Cliente\n[React 19 / Client Components]"]
 
     subgraph WebBoundary ["apps/web - Camada de Apresentacao e BFF (Next.js 16)"]
-        Pages["App Router (SSR e Static Pages)\n[/studio, /login, /profile]"]
+        Pages["App Router (SSR e Static Pages)\n[/studio, /studio/images, /login, /profile]"]
         BFFAuth["Route Handler: /api/auth/callback\n[Gerencia Cookies HttpOnly]"]
         BFFProcess["Route Handler: /api/images/process\n[Enfileira Job - Retorna 202]"]
-        BFFJobs["Route Handlers: /api/jobs/[id]/*\n[Polling de Status e Stream de Resultado]"]
+        BFFJobs["Route Handlers: /api/jobs e /api/jobs/[id]/*\n[Listagem, Polling, Stream e Delecao]"]
     end
 
     subgraph APIBoundary ["apps/api - Gateway de Regras e Orquestracao (Fastify 5)"]
         AuthModule["Modulo de Autenticacao\n(OAuth2 + Emissao de JWT)"]
         UserModule["Modulo de Usuarios\n(Gestao de Contas e Creditos)"]
-        ImageModule["Modulo de Imagens e Jobs\n(Upload S3, Enfileiramento RabbitMQ)"]
+        ImageModule["Modulo de Imagens e Jobs\n(Upload S3, Enfileiramento RabbitMQ, Listagem e Delecao)"]
         ResultsConsumer["Consumidor de Resultados\n(Atualiza status no PostgreSQL)"]
         FastifyCore["Fastify Engine\n(PreHandler AuthMiddleware, Zod Provider)"]
     end
@@ -185,11 +185,11 @@ flowchart TB
     Client -->|"Navegacao e UI"| Pages
     Client -->|"Inicia fluxo de login"| BFFAuth
     Client -->|"Submete Multipart FormData"| BFFProcess
-    Client -->|"Polling de status e download"| BFFJobs
+    Client -->|"Listagem, polling, download e delecao"| BFFJobs
 
     BFFAuth -->|"Valida codigo e perfil"| AuthModule
     BFFProcess -->|"POST /v1/images/process"| ImageModule
-    BFFJobs -->|"GET /v1/jobs/:id e /result"| ImageModule
+    BFFJobs -->|"GET /v1/jobs, GET /:id, GET /:id/result, DELETE /:id"| ImageModule
     Pages -->|"GET /v1/users/me (SSR)"| UserModule
 
     FastifyCore --- AuthModule
