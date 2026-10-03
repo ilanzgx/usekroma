@@ -11,6 +11,7 @@ export interface JobDTO {
   id: string;
   status: JobStatus;
   operation: ImageProcessOperations | string;
+  params?: JobParams | null;
   queuePosition?: number | null;
   errorMessage?: string | null;
   createdAt: Date | string;
@@ -20,4 +21,21 @@ export interface JobDTO {
 export interface CreateJobResponse {
   jobId: string;
   status: "pending";
+}
+
+export interface ListJobsQuery {
+  status?: JobStatus;
+  operation?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface ListJobsResponse {
+  jobs: JobDTO[];
+  total: number;
+}
+
+export interface DeleteJobResponse {
+  success: boolean;
+  jobId: string;
 }
