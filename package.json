@@ -15,8 +15,7 @@
     "build:web": "pnpm --filter @kroma/web build",
     "test": "pnpm --filter @kroma/api test",
     "test:unit": "pnpm --filter @kroma/api test:unit",
-    "lint": "eslint .",
-    "lint:web": "pnpm --filter @kroma/web lint",
+    "lint": "oxlint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "node -e \"if (require('fs').existsSync('.git')) { try { require('child_process').execSync('pnpm exec husky', { stdio: 'inherit' }); } catch {} }\""
@@ -31,13 +30,14 @@
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
+    "oxlint": "^1.86.0",
     "prettier": "^3.9.9",
     "typescript-eslint": "^8.71.0"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
       "prettier --write",
-      "eslint --fix"
+      "oxlint --fix"
     ],
     "*.{json,md,yml,yaml}": [
       "prettier --write"
