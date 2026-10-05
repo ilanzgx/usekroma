@@ -1,0 +1,55 @@
+#!/bin/sh
+set -e
+
+echo "Running pre-push checks..."
+
+changed_files=$(git diff --name-only @{u}..HEAD 2>/dev/null || git diff --name-only origin/main..HEAD 2>/dev/null || git diff --name-only HEAD~1..HEAD 2>/dev/null || true)
+
+if [ -z "$changed_files" ]; then
+  echo "No changed files detected. Skipping pre-push checks."
+  exit 0
+fi
+
+# Shared package build (se alterado)
+if echo "$changed_files" | grep -q '^packages/shared/'; then
+  echo "Changes detected in packages/shared. Building shared package..."
+  pnpm run build:shared
+fi
+
+# 1. API Build
+if echo "$changed_files" | grep -qE '^apps/api/|^packages/shared/|^package\.json|^pnpm-lock\.yaml'; then
+  if echo "$changed_files" | grep -q '^apps/api/'; then
+    echo "Changes detected in apps/api. Building API..."
+  elif echo "$changed_files" | grep -q '^packages/shared/'; then
+    echo "Shared package changed. Building API..."
+  else
+    echo "Root dependencies or monorepo configs changed. Building API..."
+  fi
+  pnpm run build:api
+else
+  echo "No API changes detected. Skipping API build."
+fi
+
+# 2. Web Build
+if echo "$changed_files" | grep -qE '^apps/web/|^packages/shared/|^package\.json|^pnpm-lock\.yaml'; then
+  if echo "$changed_files" | grep -q '^apps/web/'; then
+    echo "Changes detected in apps/web. Building Web..."
+  elif echo "$changed_files" | grep -q '^packages/shared/'; then
+    echo "Shared package changed. Building Web..."
+  else
+    echo "Root dependencies or monorepo configs changed. Building Web..."
+  fi
+  pnpm run build:web
+else
+  echo "No Web changes detected. Skipping Web build."
+fi
+
+# 3. Worker Ruff Check
+if echo "$changed_files" | grep -qE '^apps/worker-image/'; then
+  echo "Changes detected in apps/worker-image. Checking Python worker with ruff..."
+  (cd apps/worker-image && uv run ruff check .)
+else
+  echo "No worker changes detected. Skipping worker checks."
+fi
+
+echo "All required pre-push checks passed successfully!"

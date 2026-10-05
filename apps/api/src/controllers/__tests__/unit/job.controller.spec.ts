@@ -92,7 +92,7 @@ describe("JobController unit tests", () => {
         user: { userId: "user-123" },
         query: { limit: 10, offset: 0 },
         log: { error: vi.fn() },
-      } as unknown as FastifyRequest;
+      } as unknown as Parameters<typeof sut.list>[0];
       const reply = createMockReply();
 
       await sut.list(req, reply);
@@ -117,7 +117,7 @@ describe("JobController unit tests", () => {
         user: { userId: "user-123" },
         params: { id: "job-999" },
         log: { error: vi.fn(), warn: vi.fn() },
-      } as unknown as FastifyRequest;
+      } as unknown as Parameters<typeof sut.delete>[0];
       const reply = createMockReply();
 
       await sut.delete(req, reply);
@@ -149,7 +149,7 @@ describe("JobController unit tests", () => {
         user: { userId: "user-123" },
         params: { id: "job-1" },
         log: { error: vi.fn(), warn: vi.fn() },
-      } as unknown as FastifyRequest;
+      } as unknown as Parameters<typeof sut.delete>[0];
       const reply = createMockReply();
 
       await sut.delete(req, reply);
