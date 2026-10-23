@@ -5,6 +5,7 @@
 **Kroma** is an AI-powered SaaS platform for image transformation, enhancement, and computer vision operations.
 
 The platform processes raster images through neural models and computer vision pipelines:
+
 - **Neural Image Manipulation:** Background removal via U2-Net, AI super-resolution (LapSRN x2 and x4 via OpenCV DNN), artistic filters (cartoon, pencil sketch, oil painting).
 - **Computer Vision Operations:** Dynamic resizing, format conversions, directional flips, blur, sepia, grayscale, saturation, and unsharp masking.
 - **Zero-Base64 Binary Streaming:** Pure binary pipeline across all layers (multipart uploads -> Node.js Buffer -> Python raw bytes -> Next.js Blob proxy -> browser ObjectURL).
@@ -17,7 +18,7 @@ The platform processes raster images through neural models and computer vision p
 
 - **AVOID unnecessary comments**. Match the surrounding file's conventions: naming, comment density, module structure. Comments explain why, never restate what.
 - **NEVER run backend or frontend dev servers manually.** The human runs their own environment or uses Taskfile.
-- **NO NestJS in backend.** The API is strictly Fastify 5 organized under Clean Architecture (Controllers -> UseCases -> Repositories).
+- **NO NestJS in backend.** The API is strictly Fastify 5 organized under Vertical Slice Architecture (Feature-Driven / Modular: modules/{auth,users,images,jobs} + shared kernel).
 - **NO Base64 in image transport.** Images must flow as raw binary buffers and blobs (image/png).
 - **NO emojis or emoticons anywhere** in user interfaces or system documentation.
 - **NO Inter font.** The UI typography strictly mandates Outfit.
@@ -32,7 +33,7 @@ The platform processes raster images through neural models and computer vision p
 ## 3. Technology Stack
 
 - **Backend API & Gateway:** Fastify 5.8, Node.js 22, TypeScript 5.8
-- **API Architecture:** Clean Architecture (Routes -> Controllers -> UseCases -> Repositories -> Drizzle ORM)
+- **API Architecture:** Vertical Slice Architecture (Modules: routes -> controller -> usecases/services -> Drizzle ORM)
 - **Vision & AI Compute Node:** FastAPI 0.115, Python 3.11, OpenCV 4.11 (cv2), U2-Net (rembg), LapSRN (cv2.dnn_superres), Pillow (PIL), NumPy
 - **Frontend & BFF Layer:** Next.js 16.2 (App Router), React 19.2, Tailwind CSS v4, Radix UI, Lucide Icons, react-dropzone
 - **Shared Contracts Package:** @kroma/shared (TypeScript DTOs, image operation enums, request/response contracts)
@@ -86,29 +87,30 @@ Detailed diagrams, schemas, and sequence flows are documented in docs/architectu
 
 The project uses Taskfile with pnpm and uv workspaces:
 
-| Command | Action |
-| :--- | :--- |
-| `task dev` | Runs Worker (8000), API (8080), and Web (3000) concurrently |
-| `task dev:api` | Runs Fastify API with tsx watch |
-| `task dev:worker` | Runs FastAPI worker with uvicorn --reload |
-| `task dev:web` | Runs Next.js frontend with hot reload |
-| `task infra:up` | Boots PostgreSQL 17, RabbitMQ and MinIO containers |
-| `task infra:all` | Boots all project containers (Web, API, Worker, DB, RabbitMQ, MinIO) |
-| `task infra:down` | Stops containers (docker compose down) |
-| `task infra:logs` | Streams PostgreSQL logs (docker compose logs -f) |
-| `task test` | Runs all test suites (Vitest on API and Pytest on Worker) |
-| `task test:api` | Runs API unit tests via Vitest (pnpm --filter @kroma/api test) |
-| `task test:worker` | Runs Worker unit tests via Pytest (uv run pytest) |
-| `task lint` | Runs ESLint on Web and Ruff on Worker |
-| `task db:generate` | Generates Drizzle migration files from schemas |
-| `task db:migrate` | Applies pending database migrations |
-| `task db:studio` | Launches Drizzle Studio database UI on port 4983 |
-| `task build:shared`| Compiles @kroma/shared package |
-| `task build:api` | Compiles API to dist/ |
-| `task build:web` | Builds Next.js production bundle |
-| `task build:all` | Compiles all packages and applications in dependency order |
+| Command             | Action                                                               |
+| :------------------ | :------------------------------------------------------------------- |
+| `task dev`          | Runs Worker (8000), API (8080), and Web (3000) concurrently          |
+| `task dev:api`      | Runs Fastify API with tsx watch                                      |
+| `task dev:worker`   | Runs FastAPI worker with uvicorn --reload                            |
+| `task dev:web`      | Runs Next.js frontend with hot reload                                |
+| `task infra:up`     | Boots PostgreSQL 17, RabbitMQ and MinIO containers                   |
+| `task infra:all`    | Boots all project containers (Web, API, Worker, DB, RabbitMQ, MinIO) |
+| `task infra:down`   | Stops containers (docker compose down)                               |
+| `task infra:logs`   | Streams PostgreSQL logs (docker compose logs -f)                     |
+| `task test`         | Runs all test suites (Vitest on API and Pytest on Worker)            |
+| `task test:api`     | Runs API unit tests via Vitest (pnpm --filter @kroma/api test)       |
+| `task test:worker`  | Runs Worker unit tests via Pytest (uv run pytest)                    |
+| `task lint`         | Runs ESLint on Web and Ruff on Worker                                |
+| `task db:generate`  | Generates Drizzle migration files from schemas                       |
+| `task db:migrate`   | Applies pending database migrations                                  |
+| `task db:studio`    | Launches Drizzle Studio database UI on port 4983                     |
+| `task build:shared` | Compiles @kroma/shared package                                       |
+| `task build:api`    | Compiles API to dist/                                                |
+| `task build:web`    | Builds Next.js production bundle                                     |
+| `task build:all`    | Compiles all packages and applications in dependency order           |
 
 ### Adding Dependencies
+
 - **Shared Package:** `pnpm --filter @kroma/shared add <pkg>`
 - **API (Fastify):** `pnpm --filter @kroma/api add <pkg>`
 - **Web (Next.js):** `pnpm --filter @kroma/web add <pkg>`
@@ -119,21 +121,28 @@ The project uses Taskfile with pnpm and uv workspaces:
 ## 8. Directory Structure & Key Responsibilities
 
 ### `packages/shared` (`@kroma/shared`)
+
 - `src/types/user.ts`: UserDTO, User, GoogleUserInfo contracts.
 - `src/types/image.ts`: ImageProcessOperations union, ImageProcessRequest, ImageProcessResponse, ResizeParams.
 - `src/index.ts`: Barrel export consumed by apps/api and apps/web via workspace:*.
 
 ### `apps/api` (Fastify 5 + Drizzle ORM)
+
 - `src/server.ts`: Plugin registrations (CORS, Cookie, JWT, Multipart, RateLimit, Swagger, Scalar) and graceful shutdown.
 - `src/config/`: Environment configuration with Zod validation, database pool, JWT, and rate limit settings.
-- `src/routes/`: Route declarations (/health, /v1/users, /v1/auth, /v1/images).
-- `src/controllers/`: Request extraction and HTTP response handling.
-- `src/usecases/`: Pure business logic decoupled from HTTP frameworks.
-- `src/repositories/`: Repository interfaces and Drizzle SQL implementations.
-- `src/database/schema/`: Typed table definitions (users.schema.ts).
-- `src/database/migrations/`: Versioned SQL migration files generated by drizzle-kit.
+- `src/routes.ts`: Central route registration mounting module routes and /health check.
+- `src/modules/`: Feature-driven vertical slices colocalizing routes, controllers, use cases, and tests:
+  - `auth/`: Google OAuth callback, JWT generation, and logout.
+  - `users/`: User profile query and repository operations.
+  - `images/`: Binary multipart intake, job persistence, and processing queue dispatch.
+  - `jobs/`: Job status queries, binary image result streaming, deletion, and results queue consumer.
+- `src/shared/`: Cross-cutting technical infrastructure:
+  - `database/`: Drizzle client connection, typed table definitions (users.schema.ts, jobs.schema.ts), and SQL migrations.
+  - `infra/`: AWS S3/MinIO binary storage and RabbitMQ messaging queue adapter.
+  - `middlewares/`: Global JWT authentication and route protection preHandler.
 
 ### `apps/web` (Next.js 16 App Router)
+
 - `src/app/(public)/login/`: Authentication screen with Google OAuth trigger.
 - `src/app/(protected)/studio/`: Main studio workspace, dynamic [tool]/page.tsx route, and resize editor.
 - `src/app/api/auth/callback/route.ts`: BFF handler receiving JWT and setting HttpOnly cookie.
@@ -142,6 +151,7 @@ The project uses Taskfile with pnpm and uv workspaces:
 - `src/lib/`: Static tool catalogs (tools.ts, resizes.ts, socials.ts).
 
 ### `apps/worker-image` (Python 3.11 + FastAPI)
+
 - `app/main.py`: FastAPI entry point, semaphore limiter, timeouts, and forced garbage collection.
 - `app/services/image_service.py`: Operation router mapping action strings to processor functions.
 - `app/processor/`: Image processing implementations:
@@ -159,16 +169,18 @@ The project uses Taskfile with pnpm and uv workspaces:
 ## 9. Engineering Workbooks (Adding Capabilities)
 
 ### Adding a New Image Effect
+
 1. **Worker:** Implement effect function in `apps/worker-image/app/processor/effects.py`. Register operation in `app/services/image_service.py`. Add unit test in `tests/test_processors.py`.
 2. **Shared:** Add operation string literal to `ImageProcessOperations` in `packages/shared/src/types/image.ts`. Run `task build:shared`.
 3. **Web:** Add tool entry to `TOOLS` catalog in `apps/web/src/lib/tools.ts`. The dynamic route `/studio/[tool]` will handle UI state automatically.
 
 ### Adding a New API Endpoint
-1. Create UseCase with unit tests in `apps/api/src/usecases/<domain>/`.
-2. Define repository methods in `apps/api/src/repositories/interfaces/` and implement in Drizzle repository.
-3. Create controller method in `apps/api/src/controllers/`.
-4. Register route with Zod schema validation in `apps/api/src/routes/`.
-5. Update DI factory in `apps/api/src/factories/`.
+
+1. Place or expand the feature slice inside `apps/api/src/modules/<feature>/`.
+2. Define repository methods (if accessing database) and implement use cases with unit tests (`*.spec.ts`).
+3. Create or update controller method in `<feature>.controller.ts`.
+4. Register route in `<feature>.routes.ts` and mount in `src/routes.ts`.
+5. Update factory in `<feature>.factory.ts` (if using dependency injection).
 
 ---
 

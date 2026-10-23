@@ -16,10 +16,7 @@ export default defineConfig({
       {
         test: {
           name: "integration",
-          include: [
-            "src/**/*.integration.test.ts",
-            "src/**/*.integration.spec.ts",
-          ],
+          include: ["src/**/*.integration.test.ts", "src/**/*.integration.spec.ts"],
           alias: {
             "@": path.resolve(__dirname, "./src"),
           },
@@ -32,7 +29,7 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
-      exclude: ["node_modules", "src/database/migrations", "**/*.config.ts"],
+      exclude: ["node_modules", "src/shared/database/migrations", "**/*.config.ts"],
     },
   },
   resolve: {

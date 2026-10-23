@@ -12,7 +12,7 @@ import { fastifyJwt } from "@fastify/jwt";
 import { fastifyMultipart } from "@fastify/multipart";
 import { fastifyRateLimit } from "@fastify/rate-limit";
 import { routes } from "@/routes";
-import { authMiddleware } from "@/middlewares/auth.middleware";
+import { authMiddleware } from "@/shared/middlewares/auth.middleware";
 import { googleOAuthConfig } from "@/config/oauth.config";
 import { jwtConfig } from "@/config/jwt.config";
 import { multipartConfig } from "@/config/multipart.config";
@@ -22,7 +22,7 @@ import { rateLimitConfig } from "@/config/rate-limit.config";
 import { envConfig } from "@/config/env.config";
 import ScalarApiReference from "@scalar/fastify-api-reference";
 import closeWithGrace from "close-with-grace";
-import { startResultsConsumer } from "@/lib/results-consumer";
+import { startResultsConsumer } from "@/modules/jobs/jobs.consumer";
 
 // ********************************************
 // Fastify instance
@@ -50,18 +50,13 @@ const app = fastify({
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
-app.setErrorHandler(
-  (error: FastifyError, request: FastifyRequest, reply: FastifyReply) => {
-    request.log.error(error);
-    const statusCode = error.statusCode! >= 400 ? error.statusCode! : 500;
-    const message =
-      statusCode === 500 ? "Internal server error" : error.message;
+app.setErrorHandler((error: FastifyError, request: FastifyRequest, reply: FastifyReply) => {
+  request.log.error(error);
+  const statusCode = error.statusCode! >= 400 ? error.statusCode! : 500;
+  const message = statusCode === 500 ? "Internal server error" : error.message;
 
-    reply
-      .status(statusCode)
-      .send({ success: false, message: message, code: statusCode });
-  },
-);
+  reply.status(statusCode).send({ success: false, message: message, code: statusCode });
+});
 
 // ********************************************
 // Plugins
@@ -105,9 +100,7 @@ app
   })
   .then(async () => {
     await startResultsConsumer();
-    console.log(
-      `HTTP Server running on http://${envConfig.SERVER_HOST}:${envConfig.SERVER_PORT}`,
-    );
+    console.log(`HTTP Server running on http://${envConfig.SERVER_HOST}:${envConfig.SERVER_PORT}`);
     console.log(
       `API Reference available at http://${envConfig.SERVER_HOST}:${envConfig.SERVER_PORT}/docs`,
     );

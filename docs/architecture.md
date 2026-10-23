@@ -60,18 +60,16 @@ O repositório é organizado no formato monorepo utilizando **pnpm workspaces** 
 │   ├── api/                            # Gateway de Negócios e Orquestrador (Fastify 5 + TypeScript)
 │   │   ├── src/
 │   │   │   ├── config/                 # Módulos de configuração desacoplados (CORS, JWT, Rate-limit, OAuth)
-│   │   │   ├── controllers/            # Controladores HTTP (User, Auth, Image)
-│   │   │   ├── database/               # Camada de persistência Drizzle ORM
-│   │   │   │   ├── migrations/         # Arquivos de migração SQL versionados
-│   │   │   │   ├── schema/             # Definição tipada de tabelas (users.schema.ts)
-│   │   │   │   ├── connection.ts       # Pool de conexões do driver postgres-js
-│   │   │   │   └── index.ts            # Ponto de exportação do cliente de dados
-│   │   │   ├── factories/              # Injeção de dependências e fábricas de casos de uso
-│   │   │   ├── middlewares/            # Interceptores de autenticação (auth.middleware.ts)
-│   │   │   ├── models/                 # Tipos de domínio inferidos e DTOs
-│   │   │   ├── repositories/           # Implementações e contratos de acesso ao banco (Repository Pattern)
-│   │   │   ├── routes/                 # Registro modular de rotas REST
-│   │   │   ├── usecases/               # Casos de uso de aplicação isolados (Clean Architecture)
+│   │   │   ├── modules/                # Fatias verticais autônomas por funcionalidade (Vertical Slice Architecture)
+│   │   │   │   ├── auth/               # Rotas, controller, usecase e testes de autenticação OAuth2
+│   │   │   │   ├── images/             # Rotas, controller, usecase e testes de upload e despacho
+│   │   │   │   ├── jobs/               # Rotas, controller, testes e worker consumidor de resultados
+│   │   │   │   └── users/              # Rotas, controller, usecases, repositório e testes de usuários
+│   │   │   ├── shared/                 # Núcleo compartilhado e adaptadores de infraestrutura
+│   │   │   │   ├── database/           # Pool Drizzle, conexão, schemas (users, jobs) e migrações SQL
+│   │   │   │   ├── infra/              # Adaptadores de storage S3/MinIO e mensageria RabbitMQ
+│   │   │   │   └── middlewares/        # Interceptores de autenticação (auth.middleware.ts)
+│   │   │   ├── routes.ts               # Ponto de registro central de rotas e healthcheck
 │   │   │   └── server.ts               # Ponto de entrada, plugins Fastify e encerramento gracioso
 │   │   ├── Dockerfile                  # Build multi-stage Alpine para produção
 │   │   ├── drizzle.config.ts           # Configuração de migração e Drizzle Studio
@@ -431,12 +429,10 @@ Construído sobre o ecossistema moderno do **Next.js 16 (App Router)** e **React
 
 Implementada com **Fastify 5**, **TypeScript** e **Drizzle ORM**. O Fastify foi selecionado por apresentar desempenho significativamente superior ao Express (até 4x mais requisições por segundo e menor alocação de memória por contexto de requisição).
 
-- **Estrutura Baseada em Clean Architecture:**
-  - **Routes (`src/routes/`):** Declaração de endpoints, mapeamento de métodos e associação de schemas de validação.
-  - **Controllers (`src/controllers/`):** Recepção de requisições, extração de parâmetros e serialização da resposta de saída.
-  - **Usecases (`src/usecases/`):** Encapsulamento estrito das regras de negócio. Totalmente desacoplados de frameworks de transporte (não conhecem `FastifyRequest` ou `FastifyReply`), o que permite testes unitários puros e reutilização universal.
-  - **Repositories (`src/repositories/`):** Abstração de persistência implementada através do padrão _Repository Pattern_ (`IUserRepository`), viabilizando a troca de infraestrutura de dados ou mockagem sem impacto nas regras de negócio.
-  - **Factories (`src/factories/`):** Módulos de composição responsáveis por instanciar a cadeia de dependências de cada controlador.
+- **Estrutura Baseada em Vertical Slice Architecture (Feature-Driven / Modular):**
+  - **Modules (`src/modules/`):** Organização autônoma por domínio de funcionalidade (`auth`, `users`, `images`, `jobs`), colocalizando rotas, controladores, regras de negócio e testes específicos.
+  - **Shared Kernel (`src/shared/`):** Infraestrutura compartilhada contendo persistência Drizzle (`shared/database/`), clientes de storage S3 e mensageria RabbitMQ (`shared/infra/`) e interceptores de autenticação JWT (`shared/middlewares/`).
+  - **Routes (`src/routes.ts`):** Ponto único de montagem dos prefixos de cada módulo e verificação de saúde do sistema (`/health`).
 
 - **Proteção Perimetral e Resiliência:**
   - **Taxa Limite de Requisições (@fastify/rate-limit):**
@@ -541,7 +537,7 @@ erDiagram
 
 ### 5.3. Detalhamento dos Schemas
 
-#### Tabela `users` (`apps/api/src/database/schema/users.schema.ts`)
+#### Tabela `users` (`apps/api/src/shared/database/schema/users.schema.ts`)
 
 | Campo        | Tipo SQL    | Modificadores                              | Descricao de Dominio                        |
 | :----------- | :---------- | :----------------------------------------- | :------------------------------------------ |
@@ -554,7 +550,7 @@ erDiagram
 | `created_at` | `timestamp` | `NOT NULL`, `DEFAULT now()`                | Registro de auditoria temporal              |
 | `updated_at` | `timestamp` | `NOT NULL`, `DEFAULT now()`                | Atualizacao de auditoria temporal           |
 
-#### Tabela `jobs` (`apps/api/src/database/schema/jobs.schema.ts`)
+#### Tabela `jobs` (`apps/api/src/shared/database/schema/jobs.schema.ts`)
 
 | Campo           | Tipo SQL     | Modificadores                                        | Descricao de Dominio                            |
 | :-------------- | :----------- | :--------------------------------------------------- | :---------------------------------------------- |
@@ -582,7 +578,7 @@ As migracoes sao gerenciadas pelo `drizzle-kit`:
 
 ---
 
-### 5.3. Detalhamento do Schema (`apps/api/src/database/schema/users.schema.ts`)
+### 5.3. Detalhamento do Schema (`apps/api/src/shared/database/schema/users.schema.ts`)
 
 | Campo        | Tipo SQL    | Modificadores                              | Descrição de Domínio                        |
 | :----------- | :---------- | :----------------------------------------- | :------------------------------------------ |
